@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typography workshop — Schuck Data</title>
+
+    <!-- Preconnect to Google Fonts for faster loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Inter (variable) — clean modern sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- IBM Plex Sans + IBM Plex Mono — technical feel -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Fraunces (variable serif) — distinctive editorial headings -->
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #ffffff;
+            --bg-muted: #f5f5f5;
+            --text: #0a0a0a;
+            --text-muted: #525252;
+            --accent: #1e3a5f;
+            --border: #e5e5e5;
+            --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-muted);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 2.5rem 1.25rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .page {
+            max-width: 64rem;
+            margin: 0 auto;
+        }
+
+        .page > header {
+            margin-bottom: 2.5rem;
+        }
+
+        .page > header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .page > header p {
+            color: var(--text-muted);
+            max-width: 44rem;
+            font-size: 0.9375rem;
+        }
+
+        .option {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1.75rem;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .option-meta {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: #fafafa;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.5rem;
+            align-items: baseline;
+        }
+
+        .option-meta .label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+        }
+
+        .option-meta h2 {
+            font-size: 1.0625rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .option-meta .stack {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+        }
+
+        .option-meta .perf {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .option-desc {
+            padding: 1rem 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            line-height: 1.55;
+        }
+
+        .hero {
+            padding: 3rem 2rem;
+            display: grid;
+            gap: 1.25rem;
+            justify-items: start;
+        }
+
+        .hero .eyebrow {
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+        }
+
+        .hero h3 {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            line-height: 1.1;
+            letter-spacing: -0.025em;
+            font-weight: 600;
+            color: var(--text);
+            max-width: 28ch;
+        }
+
+        .hero p.lead {
+            font-size: 1.0625rem;
+            color: var(--text-muted);
+            max-width: 52ch;
+            line-height: 1.55;
+        }
+
+        .hero p.body {
+            font-size: 0.9375rem;
+            color: var(--text-muted);
+            max-width: 60ch;
+            line-height: 1.65;
+        }
+
+        .hero .cta-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .hero .cta {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.625rem 1.125rem;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: transform 80ms ease;
+        }
+
+        .hero .cta.primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .hero .cta.secondary {
+            border: 1px solid var(--border);
+            color: var(--text);
+            background: transparent;
+        }
+
+        .hero .cta:active { transform: scale(0.98); }
+
+        /* ============= Option-specific type stacks ============= */
+
+        /* 1. System sans only */
+        .opt-system .hero {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .opt-system .hero h3 {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* 2. Inter */
+        .opt-inter .hero,
+        .opt-inter .hero h3 {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+            font-feature-settings: "cv11", "ss01", "ss03";
+        }
+
+        /* 3. IBM Plex */
+        .opt-plex .hero,
+        .opt-plex .hero h3 {
+            font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .opt-plex .hero .eyebrow {
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
+            letter-spacing: 0.08em;
+        }
+
+        /* 4. Fraunces (headings) + Inter (body) */
+        .opt-serif .hero {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .opt-serif .hero h3 {
+            font-family: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+            font-weight: 600;
+            font-variation-settings: "opsz" 96, "SOFT" 50;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <h1>Typography workshop — Schuck Data</h1>
+            <p>Four type directions, each rendering the same homepage-style content. Look at how the headlines feel, how the body reads at a glance, and whether the overall personality fits a data consultancy. All four meet the Section 508 / WCAG 2.0 AA contrast bar — the choice here is about character, not legibility.</p>
+        </header>
+
+        <!-- ============= Option 1: System sans ============= -->
+        <section class="option opt-system">
+            <div class="option-meta">
+                <span class="label">Option 1</span>
+                <h2>System sans</h2>
+                <span class="stack">-apple-system, Segoe UI, Roboto, ...</span>
+                <span class="perf">0 font downloads · instant</span>
+            </div>
+            <div class="option-desc">
+                Use whatever sans-serif the visitor's operating system provides. macOS gets San Francisco; Windows gets Segoe UI; Android gets Roboto. Pragmatic and zero-cost — but the site looks subtly different on every platform, and on Windows specifically you inherit Segoe's slightly older feel. Defensible choice for a small business site; sets a low bar for brand distinctiveness.
+            </div>
+            <div class="hero">
+                <span class="eyebrow">Schuck Data</span>
+                <h3>Trustworthy data, clearer decisions.</h3>
+                <p class="lead">Dashboards, pipelines, and data quality you can act on — built for teams that need their numbers to mean something.</p>
+                <p class="body">Schuck Data partners with operations, analytics, and leadership teams to design data systems that produce reliable, decision-grade information. Whether you're building a new reporting layer, untangling a legacy pipeline, or trying to figure out why your dashboards keep disagreeing, we'll help you get to ground truth.</p>
+                <div class="cta-row">
+                    <a class="cta primary" href="#">Start a conversation</a>
+                    <a class="cta secondary" href="#">See how we work</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============= Option 2: Inter ============= -->
+        <section class="option opt-inter">
+            <div class="option-meta">
+                <span class="label">Option 2</span>
+                <h2>Inter</h2>
+                <span class="stack">Inter (Google Fonts, variable)</span>
+                <span class="perf">~25 KB · 1 request</span>
+            </div>
+            <div class="option-desc">
+                The default modern web sans. Designed by Rasmus Andersson for UI use — neutral, highly legible at small sizes, supports OpenType features like contextual alternates and tabular numerals (useful for displaying data). Used by Mozilla, GitHub Issues, Notion, Figma marketing, and roughly half of all B2B SaaS. Safe in the way "everyone reads it without noticing" — which is exactly what good UI type should do.
+            </div>
+            <div class="hero">
+                <span class="eyebrow">Schuck Data</span>
+                <h3>Trustworthy data, clearer decisions.</h3>
+                <p class="lead">Dashboards, pipelines, and data quality you can act on — built for teams that need their numbers to mean something.</p>
+                <p class="body">Schuck Data partners with operations, analytics, and leadership teams to design data systems that produce reliable, decision-grade information. Whether you're building a new reporting layer, untangling a legacy pipeline, or trying to figure out why your dashboards keep disagreeing, we'll help you get to ground truth.</p>
+                <div class="cta-row">
+                    <a class="cta primary" href="#">Start a conversation</a>
+                    <a class="cta secondary" href="#">See how we work</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============= Option 3: IBM Plex ============= -->
+        <section class="option opt-plex">
+            <div class="option-meta">
+                <span class="label">Option 3</span>
+                <h2>IBM Plex Sans + Plex Mono</h2>
+                <span class="stack">"IBM Plex Sans", "IBM Plex Mono"</span>
+                <span class="perf">~45 KB · 1 request</span>
+            </div>
+            <div class="option-desc">
+                IBM's open-source corporate typeface. More personality than Inter — slightly more humanist, recognizable terminals, less anonymous. The Mono companion (used here for the eyebrow label) reinforces a "technical, engineering" brand register without going full developer-tool. Strong choice if you want to signal "we work with engineering teams" without it feeling like a startup.
+            </div>
+            <div class="hero">
+                <span class="eyebrow">Schuck Data</span>
+                <h3>Trustworthy data, clearer decisions.</h3>
+                <p class="lead">Dashboards, pipelines, and data quality you can act on — built for teams that need their numbers to mean something.</p>
+                <p class="body">Schuck Data partners with operations, analytics, and leadership teams to design data systems that produce reliable, decision-grade information. Whether you're building a new reporting layer, untangling a legacy pipeline, or trying to figure out why your dashboards keep disagreeing, we'll help you get to ground truth.</p>
+                <div class="cta-row">
+                    <a class="cta primary" href="#">Start a conversation</a>
+                    <a class="cta secondary" href="#">See how we work</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============= Option 4: Fraunces + Inter ============= -->
+        <section class="option opt-serif">
+            <div class="option-meta">
+                <span class="label">Option 4</span>
+                <h2>Fraunces (headings) + Inter (body)</h2>
+                <span class="stack">"Fraunces" + "Inter"</span>
+                <span class="perf">~55 KB · 2 requests</span>
+            </div>
+            <div class="option-desc">
+                Editorial serif headings with a clean sans body. Fraunces is a contemporary serif inspired by 1970s commercial type — confident, distinctive, slightly soft. Pairs the gravitas of a serif with the legibility of Inter for running text. Higher brand differentiation than the all-sans options, with a "we take this seriously" register. Reference: Stripe Press, some consulting and editorial brands. Risk: serifs can feel formal — your call whether that's a feature.
+            </div>
+            <div class="hero">
+                <span class="eyebrow">Schuck Data</span>
+                <h3>Trustworthy data, clearer decisions.</h3>
+                <p class="lead">Dashboards, pipelines, and data quality you can act on — built for teams that need their numbers to mean something.</p>
+                <p class="body">Schuck Data partners with operations, analytics, and leadership teams to design data systems that produce reliable, decision-grade information. Whether you're building a new reporting layer, untangling a legacy pipeline, or trying to figure out why your dashboards keep disagreeing, we'll help you get to ground truth.</p>
+                <div class="cta-row">
+                    <a class="cta primary" href="#">Start a conversation</a>
+                    <a class="cta secondary" href="#">See how we work</a>
+                </div>
+            </div>
+        </section>
+
+        <footer style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 1.5rem; line-height: 1.6;">
+            <p>All Google Fonts are served via Google's CDN with <code>display=swap</code>, meaning system fonts render immediately and the web font fades in once downloaded — no blank text. Performance impact in real-world conditions is single-digit milliseconds on modern connections.</p>
+        </footer>
+    </div>
+</body>
+</html>
