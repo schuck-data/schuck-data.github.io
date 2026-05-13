@@ -1,6 +1,8 @@
 /* ---------------------------------------------------------
    Schuck Data — base styles
    Color palette: Deep Ink Blue (see docs/decisions.md)
+   Theme: respects system preference by default; manual
+   override via data-theme="light"|"dark" on the root element.
    --------------------------------------------------------- */
 
 :root {
@@ -9,19 +11,48 @@
     --text: #0a0a0a;
     --text-muted: #555555;
     --accent: #1e3a5f;
-    --accent-contrast: #ffffff; /* text color on accent backgrounds */
+    --accent-contrast: #ffffff;
     --border: #e5e5e5;
+    --surface-translucent: rgba(255, 255, 255, 0.6);
+    --surface-solid: #ffffff;
 }
 
+/* Dark mode via system preference (only applies when no manual override) */
 @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
         --bg: #0a0a0a;
         --text: #e5e5e5;
         --text-muted: #a3a3a3;
         --accent: #93c5fd;
         --accent-contrast: #0a0a0a;
         --border: #262626;
+        --surface-translucent: rgba(10, 10, 10, 0.6);
+        --surface-solid: #1a1a1a;
     }
+}
+
+/* Manual override: dark */
+:root[data-theme="dark"] {
+    --bg: #0a0a0a;
+    --text: #e5e5e5;
+    --text-muted: #a3a3a3;
+    --accent: #93c5fd;
+    --accent-contrast: #0a0a0a;
+    --border: #262626;
+    --surface-translucent: rgba(10, 10, 10, 0.6);
+    --surface-solid: #1a1a1a;
+}
+
+/* Manual override: light (explicit, in case system is dark) */
+:root[data-theme="light"] {
+    --bg: #ffffff;
+    --text: #0a0a0a;
+    --text-muted: #555555;
+    --accent: #1e3a5f;
+    --accent-contrast: #ffffff;
+    --border: #e5e5e5;
+    --surface-translucent: rgba(255, 255, 255, 0.6);
+    --surface-solid: #ffffff;
 }
 
 * {
@@ -73,4 +104,56 @@ a {
 
 a:hover {
     text-decoration-thickness: 2px;
+}
+
+/* ---------------------------------------------------------
+   Theme toggle
+   --------------------------------------------------------- */
+
+.theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface-translucent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
+    padding: 0;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+    background: var(--surface-solid);
+    color: var(--accent);
+    border-color: var(--accent);
+    outline: none;
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
+}
+
+.theme-toggle svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+/* Show the right icon based on the current theme */
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: block; }
+    :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
 }

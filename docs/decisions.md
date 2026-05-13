@@ -4,6 +4,22 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ---
 
+## 2026-05-13 — Theme toggle (manual override of system preference)
+
+**Decision:** Add a small fixed-position toggle button (top-right) that lets users manually switch between light and dark mode. Default behavior still respects the OS `prefers-color-scheme`; clicking the toggle saves an explicit override to `localStorage`.
+
+**Why:** Some users prefer to lock the site to a specific mode independent of their system setting (e.g., reading in a dark office during daytime). Toggle gives that control without sacrificing the smart default.
+
+**Implementation notes:**
+- CSS theme variables switch on the `data-theme` attribute of `<html>` (`"light"` or `"dark"`).
+- Inline `<script>` in `<head>` applies saved preference before first paint to avoid theme flash.
+- A separate script at end of `<body>` wires up the click handler.
+- Two-state toggle (light ↔ dark) — no "reset to system" option yet. Trade-off: simpler UX, but once toggled, the page no longer follows OS mode changes. Revisit if it becomes annoying.
+
+**Alternatives considered:** Three-state cycle (system → light → dark) — rejected for now as less obvious. Could be added later without breaking existing user preferences.
+
+---
+
 ## 2026-05-13 — Color palette: Deep Ink Blue, with light + dark mode support
 
 **Decision:** Adopt the "Deep Ink Blue" palette from the color workshop. Site supports both light and dark mode via `prefers-color-scheme`, with light as the primary brand presentation (used for screenshots, social previews, marketing materials).
