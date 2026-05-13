@@ -1,71 +1,87 @@
 /* ---------------------------------------------------------
-   Schuck Data — base styles
-   Palette: Deep Ink Blue (see docs/decisions.md)
-   Theme: respects system preference; manual override via
-   data-theme="light"|"dark" on the <html> element.
+   Schuck Data — site styles
+   Palette: Deep Ink Blue (light) + Electric Cobalt (dark)
+   Layout: grey page background with white content tiles
+   See docs/decisions.md for rationale.
    --------------------------------------------------------- */
 
 :root {
-    --bg: #ffffff;
+    /* Light mode (default) */
+    --page-bg: #f4f4f5;
+    --surface: #ffffff;
+    --surface-elevated: #ffffff;
     --text: #0a0a0a;
     --text-muted: #525252;
+    --text-subtle: #737373;
     --accent: #1e3a5f;
     --accent-strong: #15293f;
     --accent-contrast: #ffffff;
     --border: #e5e5e5;
     --border-strong: #d4d4d4;
-    --surface: #ffffff;
-    --surface-elevated: #fafafa;
-    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
-    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.05);
+    --shadow-lg: 0 1px 3px rgba(15, 23, 42, 0.06), 0 20px 40px rgba(15, 23, 42, 0.08);
 }
 
+/* Dark mode via system preference (no manual override set) */
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --bg: #0a0a0a;
-        --text: #e5e5e5;
-        --text-muted: #a3a3a3;
-        --accent: #93c5fd;
-        --accent-strong: #bfdbfe;
-        --accent-contrast: #0a0a0a;
-        --border: #262626;
-        --border-strong: #404040;
-        --surface: #171717;
-        --surface-elevated: #1f1f1f;
+        --page-bg: #0a0c10;
+        --surface: #14171f;
+        --surface-elevated: #181c25;
+        --text: #e5e7eb;
+        --text-muted: #a1a1aa;
+        --text-subtle: #71717a;
+        --accent: #60a5fa;
+        --accent-strong: #93c5fd;
+        --accent-contrast: #0a0c10;
+        --border: #262a36;
+        --border-strong: #353a47;
         --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+        --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 1px 3px rgba(0, 0, 0, 0.4), 0 20px 40px rgba(0, 0, 0, 0.5);
     }
 }
 
+/* Manual override: dark */
 :root[data-theme="dark"] {
-    --bg: #0a0a0a;
-    --text: #e5e5e5;
-    --text-muted: #a3a3a3;
-    --accent: #93c5fd;
-    --accent-strong: #bfdbfe;
-    --accent-contrast: #0a0a0a;
-    --border: #262626;
-    --border-strong: #404040;
-    --surface: #171717;
-    --surface-elevated: #1f1f1f;
+    --page-bg: #0a0c10;
+    --surface: #14171f;
+    --surface-elevated: #181c25;
+    --text: #e5e7eb;
+    --text-muted: #a1a1aa;
+    --text-subtle: #71717a;
+    --accent: #60a5fa;
+    --accent-strong: #93c5fd;
+    --accent-contrast: #0a0c10;
+    --border: #262a36;
+    --border-strong: #353a47;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 1px 3px rgba(0, 0, 0, 0.4), 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
+/* Manual override: light (explicit, when system is dark) */
 :root[data-theme="light"] {
-    --bg: #ffffff;
+    --page-bg: #f4f4f5;
+    --surface: #ffffff;
+    --surface-elevated: #ffffff;
     --text: #0a0a0a;
     --text-muted: #525252;
+    --text-subtle: #737373;
     --accent: #1e3a5f;
     --accent-strong: #15293f;
     --accent-contrast: #ffffff;
     --border: #e5e5e5;
     --border-strong: #d4d4d4;
-    --surface: #ffffff;
-    --surface-elevated: #fafafa;
-    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
-    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.05);
+    --shadow-lg: 0 1px 3px rgba(15, 23, 42, 0.06), 0 20px 40px rgba(15, 23, 42, 0.08);
 }
+
+/* ---------------------------------------------------------
+   Base
+   --------------------------------------------------------- */
 
 * {
     box-sizing: border-box;
@@ -81,39 +97,12 @@ body {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-feature-settings: "cv11", "ss01", "ss03";
     color: var(--text);
-    background: var(--bg);
+    background: var(--page-bg);
     line-height: 1.5;
     min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 2rem;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 200ms ease, color 200ms ease;
-}
-
-main {
-    max-width: 36rem;
-    text-align: center;
-}
-
-h1 {
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--accent);
-    margin-bottom: 0.5rem;
-}
-
-.tagline {
-    font-size: 1.125rem;
-    color: var(--text-muted);
-    margin-bottom: 2rem;
-}
-
-.status {
-    font-size: 0.9375rem;
-    color: var(--text-muted);
 }
 
 a {
@@ -135,46 +124,109 @@ a:focus-visible {
 }
 
 /* ---------------------------------------------------------
-   Theme toggle — top-right floating control
-   Always-visible icon, solid surface, accent on hover.
+   Page layout — grey background, white content tiles
+   --------------------------------------------------------- */
+
+.page {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 2rem;
+    display: grid;
+    gap: 1rem;
+    min-height: 100vh;
+    grid-template-rows: auto 1fr auto;
+}
+
+@media (min-width: 48rem) {
+    .page {
+        padding: 2rem 1.5rem 2.5rem;
+        gap: 1.25rem;
+    }
+}
+
+/* ---------------------------------------------------------
+   Site header — tile across the top
+   --------------------------------------------------------- */
+
+.site-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    padding: 0.875rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.site-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+}
+
+.site-logo:hover {
+    text-decoration: none;
+}
+
+.site-logo:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+.logo-mark {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 4px;
+    background: var(--accent);
+    flex-shrink: 0;
+}
+
+.logo-text {
+    color: var(--text);
+}
+
+/* ---------------------------------------------------------
+   Theme toggle (now lives in the header)
    --------------------------------------------------------- */
 
 .theme-toggle {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 2.25rem;
+    height: 2.25rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 999px;
     border: 1px solid var(--border-strong);
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: var(--shadow-sm);
+    background: transparent;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 0;
     transition:
         background-color 150ms ease,
         color 150ms ease,
         border-color 150ms ease,
-        box-shadow 150ms ease,
         transform 80ms ease;
-    z-index: 50;
+    flex-shrink: 0;
 }
 
 .theme-toggle:hover {
     color: var(--accent-contrast);
     background: var(--accent);
     border-color: var(--accent);
-    box-shadow: var(--shadow-md);
 }
 
 .theme-toggle:focus-visible {
     outline: none;
     border-color: var(--accent);
-    box-shadow: var(--shadow-md), 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .theme-toggle:active {
@@ -182,12 +234,11 @@ a:focus-visible {
 }
 
 .theme-toggle svg {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.125rem;
+    height: 1.125rem;
     display: block;
 }
 
-/* Icon visibility: show moon in light mode, sun in dark mode */
 .theme-toggle .icon-sun { display: none; }
 .theme-toggle .icon-moon { display: block; }
 
@@ -198,6 +249,99 @@ a:focus-visible {
     :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: block; }
     :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
 }
+
+/* ---------------------------------------------------------
+   Main content tile
+   --------------------------------------------------------- */
+
+.page-main {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
+    padding: 2.5rem 1.5rem;
+    display: grid;
+    place-items: center;
+    min-height: 24rem;
+}
+
+@media (min-width: 48rem) {
+    .page-main {
+        padding: 4rem 3rem;
+    }
+}
+
+/* ---------------------------------------------------------
+   Hero (the actual page content)
+   --------------------------------------------------------- */
+
+.hero {
+    max-width: 36rem;
+    text-align: center;
+}
+
+.hero .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 0.875rem;
+}
+
+.hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.hero .lead {
+    font-size: 1.0625rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.hero .contact-prompt {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------
+   Site footer — subtle, sits on the grey page bg (no tile)
+   --------------------------------------------------------- */
+
+.site-footer {
+    padding: 0.5rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8125rem;
+    color: var(--text-subtle);
+}
+
+.site-footer p {
+    margin: 0;
+}
+
+.site-footer a {
+    color: var(--text-subtle);
+    text-decoration: none;
+}
+
+.site-footer a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+/* ---------------------------------------------------------
+   Accessibility — reduced motion
+   --------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
     *,

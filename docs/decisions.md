@@ -4,6 +4,46 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ---
 
+## 2026-05-13 — Jekyll for shared chrome across pages
+
+**Decision:** Use Jekyll (GitHub Pages' built-in static site engine) to share header/footer/layout across pages, rather than duplicating HTML or using runtime JavaScript includes.
+
+**Implementation:**
+- `_config.yml` — minimal Jekyll config (site title, description, exclude list)
+- `_layouts/default.html` — page wrapper with `<head>`, header include, content slot, footer include, theme toggle script
+- `_includes/header.html` — site header (logo + theme toggle)
+- `_includes/footer.html` — site footer (copyright + contact)
+- Each page has a small YAML frontmatter block specifying `layout: default` and optional `title` / `description`, then page-specific content
+
+**Why:** With ~5 planned pages sharing the same header and footer, duplication would multiply maintenance cost; JS includes would hurt SEO (search engines don't reliably execute JavaScript for content) and cause a flash of unstyled content on load. Jekyll is built into GitHub Pages (zero configuration on the publishing side), requires no local build tooling for editing pages, and is the canonical solution for this exact problem.
+
+**Trade-offs:**
+- Pages have YAML frontmatter at the top instead of being raw HTML. Minor cognitive cost.
+- Previewing locally requires Ruby + Jekyll installed. Mitigation: site owner reviews on the live URL anyway (no working preview panel in their environment).
+- Migration away from Jekyll is straightforward — inline the includes back into pages, delete `_config.yml` and `_layouts/`, and you have plain HTML again.
+
+**Alternatives considered:** Duplicate HTML (rejected — scales poorly); JS `fetch()` includes (rejected — SEO and UX cost); Astro / Eleventy (rejected — adds local build tooling, contradicts the hand-written-HTML decision).
+
+---
+
+## 2026-05-13 — Layout pattern: grey page background with white content tiles
+
+**Decision:** Page background is a neutral light grey (`#F4F4F5`) in light mode and near-black (`#0A0C10`) in dark mode. The header and main content sit inside white (or dark-elevated) rounded "tiles" with subtle borders and shadow. Footer sits directly on the page background without a tile.
+
+**Why:** This pattern reads as "calm, structured, modern" — used by Linear, Vercel, Stripe Dashboard, Cal.com. Tiles give content visible boundaries without heavy hairlines, and the grey background prevents the page from feeling like an unstructured wall of text. Aligns with the design references workshopped earlier (Linear / Vercel / Plausible).
+
+---
+
+## 2026-05-13 — Dark mode palette switched to Electric Cobalt
+
+**Decision:** Light mode keeps the Deep Ink Blue palette (accent `#1E3A5F` on white). Dark mode swaps to Electric Cobalt values: background `#0A0C10`, surface `#14171F`, accent `#60A5FA`.
+
+**Why:** Workshop-time decision was Deep Ink Blue across both modes. On reflection, the Electric Cobalt dark-mode accent (`#60A5FA`) reads more vibrantly against the deep cool-black surface than the lighter sky-blue (`#93C5FD`) read against pure black — it has more "presence" without being saturated. Light mode unchanged.
+
+**Note:** The accent colors are different hues, but they share visual family (both are calm cool blues). The brand identity is anchored to Deep Ink Blue; the dark-mode shift is a render adjustment for the surface change, not a separate brand.
+
+---
+
 ## 2026-05-13 — Typography: Inter
 
 **Decision:** Use Inter (Google Fonts, variable weight) for all text — headings and body. Falls back to the system sans stack if the web font fails to load (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ...`).

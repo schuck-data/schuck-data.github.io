@@ -6,7 +6,8 @@ Live site: https://schuckdata.com (custom domain) / https://schuck-data.github.i
 
 ## Stack
 
-- Hand-written HTML and CSS — no framework, no build step
+- Hand-written HTML and CSS
+- **Jekyll** for shared layout/header/footer across pages — runs automatically on GitHub Pages, no local build tooling required for editing
 - Hosted on **GitHub Pages** (free, static-only)
 - Repo named `schuck-data.github.io` so GitHub serves it as a [user site](https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages#types-of-github-pages-sites)
 - Custom domain `schuckdata.com` configured via DNS at Namecheap
@@ -15,18 +16,30 @@ Live site: https://schuckdata.com (custom domain) / https://schuck-data.github.i
 
 ```
 schuckdata/
-├── index.html          # Home page
+├── _config.yml         # Jekyll site config
+├── _layouts/
+│   └── default.html    # Shared page wrapper (head, header, footer, scripts)
+├── _includes/
+│   ├── header.html     # Site header (logo + theme toggle)
+│   └── footer.html     # Site footer (copyright + contact)
+├── index.html          # Home page (Jekyll-processed: frontmatter + content)
 ├── styles.css          # All site styles
+├── CNAME               # Custom domain for GitHub Pages
 ├── README.md           # This file
 ├── LICENSE             # MIT
 ├── .gitignore
-└── docs/
-    └── decisions.md    # Running log of design/architecture decisions
+├── docs/
+│   └── decisions.md    # Running log of design/architecture decisions
+└── mockups/            # Workshop reference pages (colors, typography)
 ```
 
 ## Local development
 
-No build step. Just open `index.html` in a browser, or use VS Code's "Live Server" extension for auto-reload on save.
+Editing content and styles: open files in any editor. No build step required for that.
+
+Previewing locally with shared chrome rendered: you'd need Ruby + Jekyll installed (`gem install bundler jekyll`, then `bundle exec jekyll serve`). In practice, the project owner reviews changes on the deployed site after pushing — local Jekyll setup is optional.
+
+GitHub builds the Jekyll site automatically on every push to `main`. Build status is visible under the **Actions** tab in the GitHub repo.
 
 ## Deploying
 

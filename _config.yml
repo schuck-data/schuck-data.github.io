@@ -1,0 +1,20 @@
+# Jekyll site configuration — schuckdata.com
+# https://jekyllrb.com/docs/configuration/
+
+title: Schuck Data
+description: Dashboards, data pipelines, and data quality.
+url: https://schuckdata.com
+lang: en
+
+# Files Jekyll should ignore (won't be copied to the built site)
+exclude:
+  - README.md
+  - LICENSE
+  - docs/
+  - .gitignore
+  - Gemfile
+  - Gemfile.lock
+  - vendor/
+
+# Disable default Jekyll plugins we don't need; keep build minimal.
+plugins: []

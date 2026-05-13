@@ -1,79 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schuck Data — Dashboards, data pipelines, data quality</title>
-    <meta name="description" content="Schuck Data — a consultancy for dashboards, data pipelines, and data quality.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <script>
-        // Apply saved theme before paint to avoid flash of unstyled content.
-        (function () {
-            try {
-                var saved = localStorage.getItem('theme');
-                if (saved === 'light' || saved === 'dark') {
-                    document.documentElement.setAttribute('data-theme', saved);
-                }
-            } catch (e) { /* localStorage may be blocked; fall through to system preference */ }
-        })();
-    </script>
-</head>
-<body>
-    <button
-        type="button"
-        class="theme-toggle"
-        aria-label="Toggle light and dark mode"
-        title="Toggle light and dark mode"
-    >
-        <!-- Moon icon — shown in light mode (clicking switches to dark) -->
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-        <!-- Sun icon — shown in dark mode (clicking switches to light) -->
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            <circle cx="12" cy="12" r="4"/>
-            <path d="M12 2v2"/>
-            <path d="M12 20v2"/>
-            <path d="M4.93 4.93l1.41 1.41"/>
-            <path d="M17.66 17.66l1.41 1.41"/>
-            <path d="M2 12h2"/>
-            <path d="M20 12h2"/>
-            <path d="M4.93 19.07l1.41-1.41"/>
-            <path d="M17.66 6.34l1.41-1.41"/>
-        </svg>
-    </button>
+---
+layout: default
+title: Schuck Data — Dashboards, data pipelines, data quality
+description: Schuck Data — a consultancy for dashboards, data pipelines, and data quality.
+---
 
-    <main>
-        <h1>Schuck Data</h1>
-        <p class="tagline">Dashboards. Data pipelines. Data quality.</p>
-        <p class="status">
-            Site under construction. Get in touch:
-            <a href="mailto:dakota@schuckdata.com">dakota@schuckdata.com</a>
-        </p>
-    </main>
-
-    <script>
-        (function () {
-            var btn = document.querySelector('.theme-toggle');
-            if (!btn) return;
-
-            var mql = window.matchMedia('(prefers-color-scheme: dark)');
-
-            function currentTheme() {
-                var override = document.documentElement.getAttribute('data-theme');
-                if (override === 'light' || override === 'dark') return override;
-                return mql.matches ? 'dark' : 'light';
-            }
-
-            btn.addEventListener('click', function () {
-                var next = currentTheme() === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', next);
-                try { localStorage.setItem('theme', next); } catch (e) { /* ignore */ }
-            });
-        })();
-    </script>
-</body>
-</html>
+<section class="hero">
+    <p class="eyebrow">Schuck Data</p>
+    <h1>Dashboards. Data pipelines.<br>Data quality.</h1>
+    <p class="lead">Site under construction.</p>
+    <p class="contact-prompt">
+        Get in touch: <a href="mailto:dakota@schuckdata.com">dakota@schuckdata.com</a>
+    </p>
+</section>
