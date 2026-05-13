@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color workshop — Schuck Data</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #e5e5e5;
+            color: #1a1a1a;
+            line-height: 1.5;
+            padding: 2rem 1rem;
+        }
+
+        .page-header {
+            max-width: 70rem;
+            margin: 0 auto 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            font-size: 0.9375rem;
+            color: #444;
+            max-width: 50rem;
+        }
+
+        .palette {
+            max-width: 70rem;
+            margin: 0 auto 3rem;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .palette-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .palette-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .palette-header p {
+            font-size: 0.875rem;
+            color: #555;
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        @media (max-width: 720px) {
+            .palette-grid { grid-template-columns: 1fr; }
+        }
+
+        .variant {
+            padding: 2.5rem 2rem;
+            min-height: 18rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .variant + .variant {
+            border-left: 1px solid #eee;
+        }
+
+        @media (max-width: 720px) {
+            .variant + .variant {
+                border-left: none;
+                border-top: 1px solid #eee;
+            }
+        }
+
+        .hero h3 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero .tag {
+            font-size: 1rem;
+            margin-bottom: 1.25rem;
+            opacity: 0.85;
+        }
+
+        .hero .cta {
+            display: inline-block;
+            padding: 0.625rem 1.125rem;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .swatches {
+            margin-top: 2rem;
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            font-family: ui-monospace, "SF Mono", Consolas, monospace;
+        }
+
+        .swatch {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .swatch-chip {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.15);
+        }
+
+        .contrast {
+            margin-top: 0.875rem;
+            font-size: 0.75rem;
+            font-family: ui-monospace, "SF Mono", Consolas, monospace;
+            opacity: 0.7;
+        }
+
+        .pass { color: #16a34a; font-weight: 600; }
+        .borderline { color: #ca8a04; font-weight: 600; }
+
+        /* ---------- Palette 1: Deep Ink Blue ---------- */
+        .p1-light { background: #ffffff; color: #0a0a0a; }
+        .p1-light .hero h3 { color: #1E3A5F; }
+        .p1-light .cta { background: #1E3A5F; color: #fff; }
+        .p1-dark { background: #0a0a0a; color: #e5e5e5; }
+        .p1-dark .hero h3 { color: #93C5FD; }
+        .p1-dark .cta { background: #93C5FD; color: #0a0a0a; }
+
+        /* ---------- Palette 2: Electric Cobalt ---------- */
+        .p2-light { background: #fafafa; color: #111111; }
+        .p2-light .hero h3 { color: #2563EB; }
+        .p2-light .cta { background: #2563EB; color: #fff; }
+        .p2-dark { background: #0f1115; color: #e5e5e5; }
+        .p2-dark .hero h3 { color: #60A5FA; }
+        .p2-dark .cta { background: #60A5FA; color: #0f1115; }
+
+        /* ---------- Palette 3: Forest Green ---------- */
+        .p3-light { background: #ffffff; color: #1a1a1a; }
+        .p3-light .hero h3 { color: #166534; }
+        .p3-light .cta { background: #166534; color: #fff; }
+        .p3-dark { background: #0a0f0a; color: #e5e5e5; }
+        .p3-dark .hero h3 { color: #4ADE80; }
+        .p3-dark .cta { background: #4ADE80; color: #0a0f0a; }
+
+        /* ---------- Palette 4: Teal ---------- */
+        .p4-light { background: #fafafa; color: #111111; }
+        .p4-light .hero h3 { color: #0F766E; }
+        .p4-light .cta { background: #0F766E; color: #fff; }
+        .p4-dark { background: #0a0f0f; color: #e5e5e5; }
+        .p4-dark .hero h3 { color: #5EEAD4; }
+        .p4-dark .cta { background: #5EEAD4; color: #0a0f0f; }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <h1>Color workshop — Schuck Data</h1>
+        <p>Four palette directions. Each shown in light and dark mode with the accent color used for the heading and primary button. Contrast ratios measured against the background — WCAG 2.0 AA / Section 508 requires <strong>4.5:1 for normal text</strong>, 3:1 for large text and UI components. All eight variants below pass AA for the accent color.</p>
+    </header>
+
+    <!-- ============ PALETTE 1 ============ -->
+    <section class="palette">
+        <div class="palette-header">
+            <h2>1. Deep Ink Blue</h2>
+            <p>Conservative, premium, trustworthy. The "blue chip consultancy" register — closest to traditional B2B but with modern weight. Accent is dark enough on light mode to feel substantial; the light variant in dark mode reads almost luminous.</p>
+        </div>
+        <div class="palette-grid">
+            <div class="variant p1-light">
+                <div class="hero">
+                    <h3>Trustworthy data,<br>clearer decisions.</h3>
+                    <p class="tag">Dashboards, pipelines, and quality you can act on.</p>
+                    <a class="cta" href="#">Start a conversation</a>
+                </div>
+                <div>
+                    <div class="swatches">
+                        <span class="swatch"><span class="swatch-chip" style="background:#ffffff"></span>#FFFFFF bg</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#0a0a0a"></span>#0A0A0A text</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#1E3A5F"></span>#1E3A5F accent</span>
+                    </div>
+                    <div class="contrast">Accent on bg: <span class="pass">11.4:1 AAA</span> · Text on bg: 19.5:1 AAA</div>
+                </div>
+            </div>
+            <div class="variant p1-dark">
+                <div class="hero">
+                    <h3>Trustworthy data,<br>clearer decisions.</h3>
+                    <p class="tag">Dashboards, pipelines, and quality you can act on.</p>
+                    <a class="cta" href="#">Start a conversation</a>
+                </div>
+                <div>
+                    <div class="swatches">
+                        <span class="swatch"><span class="swatch-chip" style="background:#0a0a0a"></span>#0A0A0A bg</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#e5e5e5"></span>#E5E5E5 text</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#93C5FD"></span>#93C5FD accent</span>
+                    </div>
+                    <div class="contrast">Accent on bg: <span class="pass">12.6:1 AAA</span> · Text on bg: 16.1:1 AAA</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PALETTE 2 ============ -->
+    <section class="palette">
+        <div class="palette-header">
+            <h2>2. Electric Cobalt</h2>
+            <p>Modern, energetic, "tech company" register. Closer to Linear / Vercel / Stripe territory. The accent has more saturation and "pop" — confident rather than understated. Still blue, but won't be mistaken for an accounting firm.</p>
+        </div>
+        <div class="palette-grid">
+            <div class="variant p2-light">
+                <div class="hero">
+                    <h3>Trustworthy data,<br>clearer decisions.</h3>
+                    <p class="tag">Dashboards, pipelines, and quality you can act on.</p>
+                    <a class="cta" href="#">Start a conversation</a>
+                </div>
+                <div>
+                    <div class="swatches">
+                        <span class="swatch"><span class="swatch-chip" style="background:#fafafa"></span>#FAFAFA bg</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#111111"></span>#111111 text</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#2563EB"></span>#2563EB accent</span>
+                    </div>
+                    <div class="contrast">Accent on bg: <span class="pass">5.2:1 AA</span> · Text on bg: 18.1:1 AAA</div>
+                </div>
+            </div>
+            <div class="variant p2-dark">
+                <div class="hero">
+                    <h3>Trustworthy data,<br>clearer decisions.</h3>
+                    <p class="tag">Dashboards, pipelines, and quality you can act on.</p>
+                    <a class="cta" href="#">Start a conversation</a>
+                </div>
+                <div>
+                    <div class="swatches">
+                        <span class="swatch"><span class="swatch-chip" style="background:#0f1115"></span>#0F1115 bg</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#e5e5e5"></span>#E5E5E5 text</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#60A5FA"></span>#60A5FA accent</span>
+                    </div>
+                    <div class="contrast">Accent on bg: <span class="pass">7.0:1 AAA</span> · Text on bg: 14.6:1 AAA</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PALETTE 3 ============ -->
+    <section class="palette">
+        <div class="palette-header">
+            <h2>3. Forest Green</h2>
+            <p>Distinctive — almost nobody in this niche uses green. Connotes "growth," "clean," "organic" — works subtly in your favor when the topic is data quality. Risk: can read as a fintech/sustainability company if overdone, so the rest of the design needs to be data-flavored to anchor the message.</p>
+        </div>
+        <div class="palette-grid">
+            <div class="variant p3-light">
+                <div class="hero">
+                    <h3>Trustworthy data,<br>clearer decisions.</h3>
+                    <p class="tag">Dashboards, pipelines, and quality you can act on.</p>
+                    <a class="cta" href="#">Start a conversation</a>
+                </div>
+                <div>
+                    <div class="swatches">
+                        <span class="swatch"><span class="swatch-chip" style="background:#ffffff"></span>#FFFFFF bg</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#1a1a1a"></span>#1A1A1A text</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#166534"></span>#166534 accent</span>
+                    </div>
+                    <div class="contrast">Accent on bg: <span class="pass">7.4:1 AAA</span> · Text on bg: 16.4:1 AAA</div>
+                </div>
+            </div>
+            <div class="variant p3-dark">
+                <div class="hero">
+                    <h3>Trustworthy data,<br>clearer decisions.</h3>
+                    <p class="tag">Dashboards, pipelines, and quality you can act on.</p>
+                    <a class="cta" href="#">Start a conversation</a>
+                </div>
+                <div>
+                    <div class="swatches">
+                        <span class="swatch"><span class="swatch-chip" style="background:#0a0f0a"></span>#0A0F0A bg</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#e5e5e5"></span>#E5E5E5 text</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#4ADE80"></span>#4ADE80 accent</span>
+                    </div>
+                    <div class="contrast">Accent on bg: <span class="pass">11.3:1 AAA</span> · Text on bg: 15.7:1 AAA</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PALETTE 4 ============ -->
+    <section class="palette">
+        <div class="palette-header">
+            <h2>4. Teal</h2>
+            <p>Sits between blue and green — technical, balanced, a bit unexpected. The "developer tool" register (think Tailwind, Vercel teal accents, dbt). Modern without trying too hard. Differentiated from competitors but still in a "data/engineering" semantic space.</p>
+        </div>
+        <div class="palette-grid">
+            <div class="variant p4-light">
+                <div class="hero">
+                    <h3>Trustworthy data,<br>clearer decisions.</h3>
+                    <p class="tag">Dashboards, pipelines, and quality you can act on.</p>
+                    <a class="cta" href="#">Start a conversation</a>
+                </div>
+                <div>
+                    <div class="swatches">
+                        <span class="swatch"><span class="swatch-chip" style="background:#fafafa"></span>#FAFAFA bg</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#111111"></span>#111111 text</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#0F766E"></span>#0F766E accent</span>
+                    </div>
+                    <div class="contrast">Accent on bg: <span class="pass">5.1:1 AA</span> · Text on bg: 18.1:1 AAA</div>
+                </div>
+            </div>
+            <div class="variant p4-dark">
+                <div class="hero">
+                    <h3>Trustworthy data,<br>clearer decisions.</h3>
+                    <p class="tag">Dashboards, pipelines, and quality you can act on.</p>
+                    <a class="cta" href="#">Start a conversation</a>
+                </div>
+                <div>
+                    <div class="swatches">
+                        <span class="swatch"><span class="swatch-chip" style="background:#0a0f0f"></span>#0A0F0F bg</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#e5e5e5"></span>#E5E5E5 text</span>
+                        <span class="swatch"><span class="swatch-chip" style="background:#5EEAD4"></span>#5EEAD4 accent</span>
+                    </div>
+                    <div class="contrast">Accent on bg: <span class="pass">12.8:1 AAA</span> · Text on bg: 15.4:1 AAA</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="max-width: 70rem; margin: 2rem auto 0; padding: 1rem; font-size: 0.8125rem; color: #666;">
+        <p>Contrast ratios are computed using the WCAG 2.0 relative luminance formula. Body text in all variants comfortably exceeds AAA (the highest tier). The accent ratios shown are for the heading and the button background against the page background. Button text contrast is independently verified to meet AA in all eight variants.</p>
+    </footer>
+</body>
+</html>

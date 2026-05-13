@@ -4,6 +4,26 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ---
 
+## 2026-05-13 — Color palette: Deep Ink Blue, with light + dark mode support
+
+**Decision:** Adopt the "Deep Ink Blue" palette from the color workshop. Site supports both light and dark mode via `prefers-color-scheme`, with light as the primary brand presentation (used for screenshots, social previews, marketing materials).
+
+| Token | Light mode | Dark mode |
+|---|---|---|
+| Background | `#FFFFFF` | `#0A0A0A` |
+| Text | `#0A0A0A` | `#E5E5E5` |
+| Accent (headings, buttons, links) | `#1E3A5F` | `#93C5FD` |
+
+All combinations exceed WCAG 2.0 AAA contrast (the highest tier).
+
+**Why:** Trustworthy and substantial — the "blue chip consultancy" register fits a data quality / decision-support firm better than energetic startup or experimental palettes. Of the four directions workshopped (Deep Ink, Electric Cobalt, Forest, Teal), this one is hardest to look unprofessional and translates well across screenshots, PDFs, and print. The lighter dark-mode variant (`#93C5FD`) reads almost luminous against pure black, giving the dark theme a distinct character without becoming a different brand.
+
+**Alternatives considered:** Electric Cobalt (rejected — overused in B2B SaaS, would dilute differentiation); Forest Green (rejected — risks reading as fintech or sustainability brand); Teal (close second — more differentiated, but Deep Ink prioritizes trust over novelty, which is on-strategy for the consultancy positioning).
+
+**See:** `mockups/colors.html` for the full workshop (kept in repo as reference).
+
+---
+
 ## 2026-05-13 — Hosting on GitHub Pages with custom domain
 
 **Decision:** Host on GitHub Pages from the `schuck-data.github.io` user-site repo, point `schuckdata.com` at it via Namecheap DNS.
