@@ -4,6 +4,23 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ---
 
+## 2026-05-13 — Typography: Inter
+
+**Decision:** Use Inter (Google Fonts, variable weight) for all text — headings and body. Falls back to the system sans stack if the web font fails to load (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ...`).
+
+**Implementation:**
+- Loaded via Google Fonts with `display=swap` so text renders immediately in the fallback stack, then swaps to Inter once downloaded — no FOIT (flash of invisible text).
+- `font-feature-settings: "cv11", "ss01", "ss03"` enabled — Inter's stylistic variants for a more readable lowercase `l`, single-story `a`, and improved figure rendering.
+- `<link rel="preconnect">` to `fonts.googleapis.com` and `fonts.gstatic.com` for faster initial load.
+
+**Why:** Of the four options workshopped (System sans, Inter, IBM Plex, Fraunces+Inter), Inter is the most-used modern web typeface for B2B / SaaS for good reason: highly legible at all sizes, designed specifically for UI, supports useful OpenType features (tabular numerals, contextual alternates), and renders identically across operating systems. Lower brand-distinctiveness than IBM Plex or Fraunces, but the trade is "instantly familiar and easy to read" — which for a consultancy is on-strategy.
+
+**Alternatives considered:** System sans (rejected — inconsistent across platforms); IBM Plex (close second — more character, slightly more technical register); Fraunces+Inter (rejected — serif headings are distinctive but lean formal-editorial, more identity commitment than is warranted at launch).
+
+**See:** `mockups/typography.html` retained in repo as workshop reference.
+
+---
+
 ## 2026-05-13 — Theme toggle (manual override of system preference)
 
 **Decision:** Add a small fixed-position toggle button (top-right) that lets users manually switch between light and dark mode. Default behavior still respects the OS `prefers-color-scheme`; clicking the toggle saves an explicit override to `localStorage`.
