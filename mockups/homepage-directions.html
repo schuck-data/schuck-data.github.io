@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage directions — Schuck Data</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --page-bg: #e5e5e5;
+            --surface: #ffffff;
+            --surface-subtle: #fafafa;
+            --text: #0a0a0a;
+            --text-muted: #525252;
+            --text-subtle: #737373;
+            --accent: #1e3a5f;
+            --accent-soft: rgba(30, 58, 95, 0.08);
+            --border: #e5e5e5;
+            --border-strong: #d4d4d4;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.06), 0 12px 32px rgba(15, 23, 42, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-feature-settings: "cv11", "ss01", "ss03";
+            background: var(--page-bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 2.5rem 1rem;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page {
+            max-width: 70rem;
+            margin: 0 auto;
+        }
+
+        .page > header {
+            margin-bottom: 2rem;
+        }
+
+        .page > header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.5rem;
+        }
+
+        .page > header p {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+            max-width: 50rem;
+        }
+
+        .direction {
+            margin-bottom: 2.5rem;
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+        }
+
+        .direction-meta {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-subtle);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.5rem;
+            align-items: baseline;
+        }
+
+        .direction-meta .label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+        }
+
+        .direction-meta h2 {
+            font-size: 1.0625rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .direction-desc {
+            padding: 1rem 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            line-height: 1.55;
+        }
+
+        .direction-desc strong { color: var(--text); font-weight: 600; }
+
+        .render { background: var(--surface); }
+
+        /* ============================================================
+           Shared element styles used across multiple directions
+           ============================================================ */
+
+        .eyebrow {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+        }
+
+        .cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: transform 80ms ease;
+            border: 1px solid transparent;
+        }
+
+        .cta:active { transform: scale(0.98); }
+
+        .cta.primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .cta.primary:hover { background: #15293f; }
+
+        .cta.secondary {
+            background: transparent;
+            color: var(--text);
+            border-color: var(--border-strong);
+        }
+
+        .cta.secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+        .availability {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem 0.375rem 0.625rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            background: var(--surface-subtle);
+        }
+
+        .availability::before {
+            content: "";
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+        }
+
+        .service-card {
+            padding: 1.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: border-color 150ms ease, transform 150ms ease;
+        }
+
+        .service-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .service-card .num {
+            font-family: ui-monospace, "SF Mono", Consolas, monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .service-card h4 {
+            font-size: 1.0625rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .service-card p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+        }
+
+        /* ============================================================
+           Direction 1 — Refined Minimal
+           ============================================================ */
+        .dir-minimal .hero {
+            padding: 4.5rem 3rem 4rem;
+            position: relative;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(30, 58, 95, 0.025), transparent 50%),
+                var(--surface);
+        }
+
+        .dir-minimal .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(15, 23, 42, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent 70%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent 70%);
+            pointer-events: none;
+        }
+
+        .dir-minimal .hero-inner {
+            position: relative;
+            max-width: 44rem;
+        }
+
+        .dir-minimal .eyebrow { margin-bottom: 1.25rem; display: block; }
+
+        .dir-minimal h1 {
+            font-size: clamp(2.25rem, 5vw, 3.75rem);
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .dir-minimal .lead {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            line-height: 1.55;
+            max-width: 36rem;
+        }
+
+        .dir-minimal .actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .dir-minimal .services {
+            padding: 2.5rem 3rem 3rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface-subtle);
+        }
+
+        .dir-minimal .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+            gap: 1rem;
+        }
+
+        /* ============================================================
+           Direction 2 — Split with Data Graphic
+           ============================================================ */
+        .dir-graphic .hero {
+            padding: 4rem 3rem;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        @media (max-width: 56rem) {
+            .dir-graphic .hero { grid-template-columns: 1fr; gap: 2rem; }
+        }
+
+        .dir-graphic h1 {
+            font-size: clamp(2rem, 4.5vw, 3.25rem);
+            line-height: 1.08;
+            letter-spacing: -0.025em;
+            font-weight: 600;
+            margin: 1rem 0 1.25rem;
+            color: var(--text);
+        }
+
+        .dir-graphic .lead {
+            font-size: 1.0625rem;
+            color: var(--text-muted);
+            margin-bottom: 1.75rem;
+            line-height: 1.55;
+        }
+
+        .dir-graphic .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+        .dashboard-preview {
+            background: var(--surface-subtle);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.875rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .dp-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .dp-card.wide { grid-column: 1 / -1; }
+
+        .dp-card .dp-label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-subtle);
+        }
+
+        .dp-card .dp-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        .dp-card .dp-delta {
+            font-size: 0.75rem;
+            color: #16a34a;
+            font-weight: 500;
+        }
+
+        .dp-bars { display: flex; align-items: flex-end; gap: 4px; height: 2.5rem; }
+        .dp-bars span {
+            flex: 1;
+            background: var(--accent);
+            border-radius: 2px 2px 0 0;
+            opacity: 0.85;
+        }
+        .dp-bars span:nth-child(1) { height: 35%; opacity: 0.4; }
+        .dp-bars span:nth-child(2) { height: 55%; opacity: 0.5; }
+        .dp-bars span:nth-child(3) { height: 45%; opacity: 0.55; }
+        .dp-bars span:nth-child(4) { height: 70%; opacity: 0.7; }
+        .dp-bars span:nth-child(5) { height: 60%; opacity: 0.75; }
+        .dp-bars span:nth-child(6) { height: 85%; opacity: 0.9; }
+        .dp-bars span:nth-child(7) { height: 95%; opacity: 1; }
+
+        .dp-sparkline { width: 100%; height: 2.5rem; }
+
+        .dir-graphic .services {
+            padding: 2.5rem 3rem 3rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .dir-graphic .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+            gap: 1rem;
+        }
+
+        /* ============================================================
+           Direction 3 — Bold Editorial
+           ============================================================ */
+        .dir-bold .hero {
+            padding: 5rem 3rem 4rem;
+            background: linear-gradient(180deg, #15293f 0%, #1e3a5f 100%);
+            color: #f5f5f5;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dir-bold .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(ellipse at top right, black, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at top right, black, transparent 70%);
+            pointer-events: none;
+        }
+
+        .dir-bold .hero-inner {
+            position: relative;
+            max-width: 50rem;
+        }
+
+        .dir-bold .eyebrow {
+            color: #93c5fd;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .dir-bold h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            line-height: 1;
+            letter-spacing: -0.035em;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+        }
+
+        .dir-bold .lead {
+            font-size: 1.25rem;
+            color: rgba(245, 245, 245, 0.8);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+            max-width: 36rem;
+        }
+
+        .dir-bold .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+        .dir-bold .cta.primary {
+            background: #ffffff;
+            color: var(--accent);
+        }
+
+        .dir-bold .cta.primary:hover { background: #e5e5e5; }
+
+        .dir-bold .cta.secondary {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+        }
+
+        .dir-bold .cta.secondary:hover {
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .dir-bold .services {
+            padding: 3rem;
+            background: var(--surface);
+        }
+
+        .dir-bold .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+            gap: 1rem;
+        }
+
+        /* ============================================================
+           Direction 4 — Editorial Split with Numbered List
+           ============================================================ */
+        .dir-editorial .hero {
+            padding: 4rem 3rem;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 4rem;
+            align-items: start;
+        }
+
+        @media (max-width: 56rem) {
+            .dir-editorial .hero { grid-template-columns: 1fr; gap: 2rem; }
+        }
+
+        .dir-editorial .eyebrow { display: block; margin-bottom: 1rem; }
+
+        .dir-editorial h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .dir-editorial .lead {
+            font-size: 1.0625rem;
+            color: var(--text-muted);
+            margin-bottom: 1.75rem;
+            line-height: 1.65;
+            max-width: 32rem;
+        }
+
+        .dir-editorial .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+        .dir-editorial .practice-list {
+            list-style: none;
+            display: grid;
+            gap: 1.25rem;
+            border-left: 2px solid var(--border);
+            padding-left: 1.5rem;
+        }
+
+        .dir-editorial .practice-list li { display: grid; gap: 0.25rem; }
+
+        .dir-editorial .practice-list .num {
+            font-family: ui-monospace, "SF Mono", Consolas, monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .dir-editorial .practice-list h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .dir-editorial .practice-list p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+        }
+
+        .dir-editorial .belt {
+            padding: 2rem 3rem;
+            background: var(--surface-subtle);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .dir-editorial .belt p {
+            font-size: 0.9375rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <h1>Homepage directions — Schuck Data</h1>
+            <p>Four design directions, same content in each. Each shows the hero plus a small secondary section so you can sense how the design extends down the page. All use the agreed palette (Deep Ink Blue, light mode) and Inter typography — the variable here is composition and visual character, not color or font.</p>
+        </header>
+
+        <!-- ============================================================
+             Direction 1: Refined Minimal
+             ============================================================ -->
+        <section class="direction dir-minimal">
+            <div class="direction-meta">
+                <span class="label">Direction 1</span>
+                <h2>Refined Minimal</h2>
+            </div>
+            <div class="direction-desc">
+                <strong>The current direction, but elevated.</strong> Stays calm and uncluttered, but adds composition: a subtle dot pattern fading into the page, asymmetric left-aligned hero, "currently available" status pill, two clear CTAs. Below the hero, a quiet services row in a soft-grey band so the visitor sees there's a real site to scroll. Reference: Linear, Vercel, Plausible. Lowest visual risk; highest restraint.
+            </div>
+            <div class="render">
+                <div class="hero">
+                    <div class="hero-inner">
+                        <span class="eyebrow">Schuck Data — Data consultancy</span>
+                        <h1>Data dashboards.<br>Data quality.<br>Data pipelines.</h1>
+                        <p class="lead">For teams whose numbers don't agree, whose dashboards are slow, or whose reporting can't keep up with the questions leadership is asking.</p>
+                        <div class="actions">
+                            <a class="cta primary" href="#">Start a conversation →</a>
+                            <a class="cta secondary" href="#">How we work</a>
+                        </div>
+                        <p style="margin-top: 1.5rem;"><span class="availability">Booking projects for Q3 2026</span></p>
+                    </div>
+                </div>
+                <div class="services">
+                    <div class="services-grid">
+                        <div class="service-card">
+                            <span class="num">01 · Dashboards</span>
+                            <h4>Reports leadership actually uses</h4>
+                            <p>Looker, Metabase, Tableau, custom. Built around the decisions you're trying to make — not just the data you happen to have.</p>
+                        </div>
+                        <div class="service-card">
+                            <span class="num">02 · Data quality</span>
+                            <h4>Numbers you can defend</h4>
+                            <p>Testing, monitoring, and documentation so your dashboards stop disagreeing and your data stops surprising you.</p>
+                        </div>
+                        <div class="service-card">
+                            <span class="num">03 · Pipelines</span>
+                            <h4>Plumbing that doesn't break</h4>
+                            <p>From scattered sources to a clean, queryable warehouse. dbt, Snowflake, BigQuery, Postgres — whatever fits the size of the problem.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             Direction 2: Split with Data Graphic
+             ============================================================ -->
+        <section class="direction dir-graphic">
+            <div class="direction-meta">
+                <span class="label">Direction 2</span>
+                <h2>Split with Data Graphic</h2>
+            </div>
+            <div class="direction-desc">
+                <strong>Two-column hero with a stylized dashboard on the right.</strong> The text side carries the message; the right side reinforces it visually with a mini-dashboard (KPI tile, bar chart, sparkline) rendered in the brand color. Costs nothing in performance (pure CSS, no images) but adds immediate visual context: visitors see what the firm produces, not just what it claims. Slightly higher visual commitment than Direction 1.
+            </div>
+            <div class="render">
+                <div class="hero">
+                    <div>
+                        <span class="eyebrow">Schuck Data — Data consultancy</span>
+                        <h1>Data dashboards.<br>Data quality.<br>Data pipelines.</h1>
+                        <p class="lead">For teams whose numbers don't agree, whose dashboards are slow, or whose reporting can't keep up with the questions leadership is asking.</p>
+                        <div class="actions">
+                            <a class="cta primary" href="#">Start a conversation →</a>
+                            <a class="cta secondary" href="#">How we work</a>
+                        </div>
+                    </div>
+                    <div class="dashboard-preview" aria-hidden="true">
+                        <div class="dp-card">
+                            <span class="dp-label">Monthly active</span>
+                            <span class="dp-value">42,318</span>
+                            <span class="dp-delta">▲ 12.4% MoM</span>
+                        </div>
+                        <div class="dp-card">
+                            <span class="dp-label">Pipeline health</span>
+                            <span class="dp-value">99.7%</span>
+                            <span class="dp-delta">All checks passing</span>
+                        </div>
+                        <div class="dp-card wide">
+                            <span class="dp-label">Sessions / week</span>
+                            <div class="dp-bars">
+                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        <div class="dp-card wide">
+                            <span class="dp-label">Revenue trend</span>
+                            <svg class="dp-sparkline" viewBox="0 0 240 40" preserveAspectRatio="none">
+                                <path d="M0,30 L20,28 L40,22 L60,25 L80,18 L100,20 L120,12 L140,15 L160,8 L180,11 L200,5 L220,7 L240,2"
+                                      fill="none" stroke="#1e3a5f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M0,30 L20,28 L40,22 L60,25 L80,18 L100,20 L120,12 L140,15 L160,8 L180,11 L200,5 L220,7 L240,2 L240,40 L0,40 Z"
+                                      fill="rgba(30, 58, 95, 0.1)"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="services">
+                    <div class="services-grid">
+                        <div class="service-card">
+                            <span class="num">01 · Dashboards</span>
+                            <h4>Reports leadership actually uses</h4>
+                            <p>Looker, Metabase, Tableau, custom. Built around the decisions you're trying to make.</p>
+                        </div>
+                        <div class="service-card">
+                            <span class="num">02 · Data quality</span>
+                            <h4>Numbers you can defend</h4>
+                            <p>Testing, monitoring, and documentation so your dashboards stop disagreeing.</p>
+                        </div>
+                        <div class="service-card">
+                            <span class="num">03 · Pipelines</span>
+                            <h4>Plumbing that doesn't break</h4>
+                            <p>From scattered sources to a clean, queryable warehouse. dbt, Snowflake, BigQuery, Postgres.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             Direction 3: Bold Editorial
+             ============================================================ -->
+        <section class="direction dir-bold">
+            <div class="direction-meta">
+                <span class="label">Direction 3</span>
+                <h2>Bold Editorial</h2>
+            </div>
+            <div class="direction-desc">
+                <strong>Full-bleed deep-navy hero with a subtle grid pattern fading out at top-right.</strong> Confident, brand-forward. The hero panel itself becomes the visual statement — large white type on saturated brand color reads as substantial and memorable. Lower-key services section in white below for contrast. Risk: needs strong content to live up to its own register; weak copy on a bold hero looks like a startup pretending.
+            </div>
+            <div class="render">
+                <div class="hero">
+                    <div class="hero-inner">
+                        <span class="eyebrow">Schuck Data — Data consultancy</span>
+                        <h1>Data dashboards.<br>Data quality.<br>Data pipelines.</h1>
+                        <p class="lead">For teams whose numbers don't agree, whose dashboards are slow, or whose reporting can't keep up with the questions leadership is asking.</p>
+                        <div class="actions">
+                            <a class="cta primary" href="#">Start a conversation →</a>
+                            <a class="cta secondary" href="#">How we work</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="services">
+                    <div class="services-grid">
+                        <div class="service-card">
+                            <span class="num">01 · Dashboards</span>
+                            <h4>Reports leadership actually uses</h4>
+                            <p>Looker, Metabase, Tableau, custom. Built around the decisions you're trying to make.</p>
+                        </div>
+                        <div class="service-card">
+                            <span class="num">02 · Data quality</span>
+                            <h4>Numbers you can defend</h4>
+                            <p>Testing, monitoring, and documentation so your dashboards stop disagreeing.</p>
+                        </div>
+                        <div class="service-card">
+                            <span class="num">03 · Pipelines</span>
+                            <h4>Plumbing that doesn't break</h4>
+                            <p>From scattered sources to a clean, queryable warehouse.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             Direction 4: Editorial Split with Numbered Practice
+             ============================================================ -->
+        <section class="direction dir-editorial">
+            <div class="direction-meta">
+                <span class="label">Direction 4</span>
+                <h2>Editorial Split with Numbered Practice</h2>
+            </div>
+            <div class="direction-desc">
+                <strong>Magazine-style two-column hero.</strong> Headline + lead on the left; the three practice areas listed inline on the right (numbered, with one-line descriptions). The page does more work above the fold without feeling crowded — visitors immediately see what you do and how it's organized. Belt section below with a quote or stat. Most "consulting firm" register of the four. Reference: McKinsey-quarterly, Stripe Press, Wise Systems.
+            </div>
+            <div class="render">
+                <div class="hero">
+                    <div>
+                        <span class="eyebrow">Schuck Data — Data consultancy</span>
+                        <h1>Reliable data.<br>Clearer decisions.</h1>
+                        <p class="lead">Schuck Data partners with operations, analytics, and leadership teams to design data systems that produce decision-grade information — and stay that way.</p>
+                        <div class="actions">
+                            <a class="cta primary" href="#">Start a conversation →</a>
+                            <a class="cta secondary" href="#">How we work</a>
+                        </div>
+                    </div>
+                    <ul class="practice-list">
+                        <li>
+                            <span class="num">01 — Practice</span>
+                            <h4>Data dashboards</h4>
+                            <p>Reports leadership actually uses, built around the decisions you're trying to make.</p>
+                        </li>
+                        <li>
+                            <span class="num">02 — Practice</span>
+                            <h4>Data quality</h4>
+                            <p>Testing, monitoring, and documentation so your numbers stop disagreeing.</p>
+                        </li>
+                        <li>
+                            <span class="num">03 — Practice</span>
+                            <h4>Data pipelines</h4>
+                            <p>Plumbing that doesn't break. From scattered sources to a clean warehouse.</p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="belt">
+                    <p>Currently booking engagements for Q3 2026.</p>
+                    <a class="cta secondary" href="#">Get in touch →</a>
+                </div>
+            </div>
+        </section>
+
+        <footer style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 1.5rem; line-height: 1.6;">
+            <p>Placeholder copy is illustrative — real positioning copy is a separate workshop. The intent here is to feel the <strong>visual character</strong> of each direction. Directions can be mixed (e.g., D1's restraint with D2's data graphic) — pick what resonates and we'll iterate.</p>
+        </footer>
+    </div>
+</body>
+</html>
