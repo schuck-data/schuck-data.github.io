@@ -4,6 +4,30 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ---
 
+## 2026-05-13 — Full overhaul: navy-everywhere backdrop, glass surfaces, rotating hero questions
+
+**Decision:** Replace the previous "grey page bg with white content tiles" architecture entirely. The whole site now sits on a single continuous deep-navy backdrop with a fading grid pattern overlay. Content surfaces (header, service cards) are glass-morphic — translucent white at low opacity with backdrop-blur — so the grid faintly shows through. The brand is the navy; the theme toggle now switches between "medium navy" (formerly light mode) and "deeper near-black navy" (formerly dark mode), but the aesthetic is consistent across both.
+
+**Hero centerpiece:** The H1 rotates through five attention-grabbing questions about data trust, freshness, accuracy, AI-readiness, and visualization quality. Each question is displayed for 4.5 seconds with a smooth 600ms opacity+translate fade transition. Auto-rotation pauses on hover, focus, and when the browser tab is hidden. Honors `prefers-reduced-motion` (shows only the first question, no rotation). All questions exist in the DOM as `<span>` children of the `<h1>` so screen readers and search engines see all of them; `aria-live="polite"` announces changes for screen reader users.
+
+**Why:** Previous "white tile on grey" architecture was reading as bloggy and quiet. The site owner explicitly asked for a "tech-experts" register, with a single continuous backdrop instead of stacked tiles. The rotating questions provide visual interest, kinetic energy, and immediately communicate the *kinds of problems* Schuck Data solves — turning what was a static brand statement into a sequence of probing questions the visitor can identify with.
+
+**Implementation notes:**
+- Body background: fixed-attachment linear gradient (navy) plus a faint radial accent glow in the top-right corner. A pseudo-element draws the 48×48px grid overlay, fixed to the viewport and masked with a `linear-gradient` so it fades out around 75% down the viewport.
+- `theme-color` meta tag set to match the deep navy so mobile browsers tint the URL bar appropriately.
+- Glass cards use `backdrop-filter: blur(10-12px) saturate(180%)` plus low-opacity white fills and borders. Hover state lifts the card 2px, lightens the surface, brightens the border, and reveals a subtle top-left radial highlight via `::after`.
+- CTAs adapted: primary is white-on-navy (highest contrast on the dark backdrop); secondary is outlined.
+- Theme toggle, services hover, smooth scroll, and reduced-motion all preserved from prior iteration.
+
+**Trade-offs:**
+- The light/dark toggle is less functionally distinct now (both modes are dark navy). Kept for user preference, but it's a "vibe" adjustment rather than a true light/dark flip.
+- Glass-morphism requires `backdrop-filter` browser support — fine in all modern browsers; older browsers fall back to the solid translucent fill (still legible).
+- Larger visual commitment than the previous tile-based design. Counterbalance: real positioning content workshop is now top priority.
+
+**Alternatives considered:** Keep tile architecture and just darken the bg (rejected — wouldn't have addressed the "bloggy" critique); remove the theme toggle entirely (kept for now since the user chose to add it earlier).
+
+---
+
 ## 2026-05-13 — Homepage design: "Bold Editorial" hero (Direction 3)
 
 **Decision:** The homepage uses a full-color deep-navy hero tile as the primary visual moment, followed by a white services tile below. The hero is theme-independent (always navy with white text) — a constant brand statement regardless of whether the rest of the page is in light or dark mode. Services section flips with the page theme.

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
     <meta name="description" content="{{ page.description | default: site.description }}">
+    <meta name="theme-color" content="#0F1B2D">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -33,6 +34,7 @@
     </div>
 
     <script>
+        // Theme toggle
         (function () {
             var btn = document.querySelector('.theme-toggle');
             if (!btn) return;
@@ -47,6 +49,73 @@
                 document.documentElement.setAttribute('data-theme', next);
                 try { localStorage.setItem('theme', next); } catch (e) { /* ignore */ }
             });
+        })();
+
+        // Rotating hero questions
+        (function () {
+            var questions = document.querySelectorAll('[data-question]');
+            if (questions.length < 2) return;
+
+            var INTERVAL = 4500; // ms per question
+            var idx = 0;
+            var timer = null;
+            var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+            function activate(i) {
+                questions.forEach(function (q, j) {
+                    if (j === i) {
+                        q.classList.add('is-visible');
+                        q.removeAttribute('aria-hidden');
+                    } else {
+                        q.classList.remove('is-visible');
+                        q.setAttribute('aria-hidden', 'true');
+                    }
+                });
+            }
+
+            function advance() {
+                idx = (idx + 1) % questions.length;
+                activate(idx);
+            }
+
+            function start() {
+                if (reducedMotion.matches) return;
+                if (timer) return;
+                timer = setInterval(advance, INTERVAL);
+            }
+
+            function stop() {
+                if (timer) { clearInterval(timer); timer = null; }
+            }
+
+            activate(0);
+            start();
+
+            var container = document.querySelector('.rotating-headline');
+            if (container) {
+                container.addEventListener('mouseenter', stop);
+                container.addEventListener('mouseleave', start);
+                container.addEventListener('focusin', stop);
+                container.addEventListener('focusout', start);
+            }
+
+            // Pause when tab is hidden to save resources
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) stop();
+                else start();
+            });
+
+            // Respond to reduced-motion changes mid-session
+            try {
+                reducedMotion.addEventListener('change', function () {
+                    if (reducedMotion.matches) {
+                        stop();
+                        activate(0);
+                    } else {
+                        start();
+                    }
+                });
+            } catch (e) { /* older browsers — ignore */ }
         })();
     </script>
 </body>

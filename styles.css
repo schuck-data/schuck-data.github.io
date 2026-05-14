@@ -1,100 +1,92 @@
 /* ---------------------------------------------------------
    Schuck Data — site styles
-   Palette: Deep Ink Blue (light) + Electric Cobalt (dark)
-   Layout: grey page bg with white content tiles
-   Hero: full-color "bold" navy tile (Direction 3)
-   See docs/decisions.md for rationale.
+   Layout: full-page navy backdrop with grid pattern.
+   Content sits on top as glass-morphic surfaces.
+   See docs/decisions.md for design rationale.
    --------------------------------------------------------- */
 
 :root {
-    /* Page-level surfaces & text (light mode default) */
-    --page-bg: #f4f4f5;
-    --surface: #ffffff;
-    --surface-elevated: #ffffff;
-    --surface-subtle: #fafafa;
-    --text: #0a0a0a;
-    --text-muted: #525252;
-    --text-subtle: #737373;
-    --accent: #1e3a5f;
-    --accent-strong: #15293f;
-    --accent-contrast: #ffffff;
-    --border: #e5e5e5;
-    --border-strong: #d4d4d4;
-    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
-    --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.05);
-    --shadow-lg: 0 1px 3px rgba(15, 23, 42, 0.06), 0 20px 40px rgba(15, 23, 42, 0.08);
+    /* Page backdrop (light mode = medium navy) */
+    --bg-from: #15293f;
+    --bg-to: #1e3a5f;
+    --bg-accent-glow: rgba(147, 197, 253, 0.10);
+    --grid-color: rgba(255, 255, 255, 0.06);
+    --grid-fade-from: 0.6;
 
-    /* Hero surfaces are theme-independent — the bold navy hero
-       is a constant brand statement regardless of page theme. */
-    --hero-bg-from: #15293f;
-    --hero-bg-to: #1e3a5f;
-    --hero-text: #ffffff;
-    --hero-text-muted: rgba(245, 245, 245, 0.82);
-    --hero-eyebrow: #93c5fd;
-    --hero-grid: rgba(255, 255, 255, 0.06);
+    /* Text on navy */
+    --text: #ffffff;
+    --text-strong: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.72);
+    --text-subtle: rgba(255, 255, 255, 0.55);
+    --text-faint: rgba(255, 255, 255, 0.4);
+
+    /* Accent */
+    --accent: #93c5fd;
+    --accent-hover: #bfdbfe;
+
+    /* Glass surfaces */
+    --surface: rgba(255, 255, 255, 0.04);
+    --surface-hover: rgba(255, 255, 255, 0.07);
+    --surface-strong: rgba(255, 255, 255, 0.08);
+    --border: rgba(255, 255, 255, 0.10);
+    --border-strong: rgba(255, 255, 255, 0.18);
+    --border-hover: rgba(255, 255, 255, 0.28);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* Dark mode via system preference (when no manual override) */
+/* Dark mode via system preference */
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --page-bg: #0a0c10;
-        --surface: #14171f;
-        --surface-elevated: #181c25;
-        --surface-subtle: #11141b;
-        --text: #e5e7eb;
-        --text-muted: #a1a1aa;
-        --text-subtle: #71717a;
+        --bg-from: #080d17;
+        --bg-to: #0f1b2d;
+        --bg-accent-glow: rgba(96, 165, 250, 0.10);
+        --grid-color: rgba(255, 255, 255, 0.04);
         --accent: #60a5fa;
-        --accent-strong: #93c5fd;
-        --accent-contrast: #0a0c10;
-        --border: #262a36;
-        --border-strong: #353a47;
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-        --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
-        --shadow-lg: 0 1px 3px rgba(0, 0, 0, 0.4), 0 20px 40px rgba(0, 0, 0, 0.5);
+        --accent-hover: #93c5fd;
+        --surface: rgba(255, 255, 255, 0.03);
+        --surface-hover: rgba(255, 255, 255, 0.06);
+        --surface-strong: rgba(255, 255, 255, 0.07);
+        --border: rgba(255, 255, 255, 0.08);
+        --border-strong: rgba(255, 255, 255, 0.14);
+        --border-hover: rgba(255, 255, 255, 0.24);
     }
 }
 
-/* Manual override: dark */
 :root[data-theme="dark"] {
-    --page-bg: #0a0c10;
-    --surface: #14171f;
-    --surface-elevated: #181c25;
-    --surface-subtle: #11141b;
-    --text: #e5e7eb;
-    --text-muted: #a1a1aa;
-    --text-subtle: #71717a;
+    --bg-from: #080d17;
+    --bg-to: #0f1b2d;
+    --bg-accent-glow: rgba(96, 165, 250, 0.10);
+    --grid-color: rgba(255, 255, 255, 0.04);
     --accent: #60a5fa;
-    --accent-strong: #93c5fd;
-    --accent-contrast: #0a0c10;
-    --border: #262a36;
-    --border-strong: #353a47;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 1px 3px rgba(0, 0, 0, 0.4), 0 20px 40px rgba(0, 0, 0, 0.5);
+    --accent-hover: #93c5fd;
+    --surface: rgba(255, 255, 255, 0.03);
+    --surface-hover: rgba(255, 255, 255, 0.06);
+    --surface-strong: rgba(255, 255, 255, 0.07);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --border-hover: rgba(255, 255, 255, 0.24);
 }
 
-/* Manual override: light (explicit, in case system is dark) */
 :root[data-theme="light"] {
-    --page-bg: #f4f4f5;
-    --surface: #ffffff;
-    --surface-elevated: #ffffff;
-    --surface-subtle: #fafafa;
-    --text: #0a0a0a;
-    --text-muted: #525252;
-    --text-subtle: #737373;
-    --accent: #1e3a5f;
-    --accent-strong: #15293f;
-    --accent-contrast: #ffffff;
-    --border: #e5e5e5;
-    --border-strong: #d4d4d4;
-    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
-    --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.05);
-    --shadow-lg: 0 1px 3px rgba(15, 23, 42, 0.06), 0 20px 40px rgba(15, 23, 42, 0.08);
+    --bg-from: #15293f;
+    --bg-to: #1e3a5f;
+    --bg-accent-glow: rgba(147, 197, 253, 0.10);
+    --grid-color: rgba(255, 255, 255, 0.06);
+    --accent: #93c5fd;
+    --accent-hover: #bfdbfe;
+    --surface: rgba(255, 255, 255, 0.04);
+    --surface-hover: rgba(255, 255, 255, 0.07);
+    --surface-strong: rgba(255, 255, 255, 0.08);
+    --border: rgba(255, 255, 255, 0.10);
+    --border-strong: rgba(255, 255, 255, 0.18);
+    --border-hover: rgba(255, 255, 255, 0.28);
 }
 
 /* ---------------------------------------------------------
-   Base reset & body
+   Reset & base
    --------------------------------------------------------- */
 
 * {
@@ -104,8 +96,40 @@
 }
 
 html {
-    color-scheme: light dark;
+    color-scheme: dark;
     scroll-behavior: smooth;
+}
+
+body {
+    position: relative;
+    isolation: isolate;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-feature-settings: "cv11", "ss01", "ss03";
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background:
+        radial-gradient(ellipse 60% 50% at 90% 0%, var(--bg-accent-glow), transparent 60%),
+        linear-gradient(165deg, var(--bg-from) 0%, var(--bg-to) 100%);
+    background-attachment: fixed;
+    transition: background-color 200ms ease;
+}
+
+/* Grid pattern overlay — fixed to viewport, fades out toward bottom */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 75%);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 75%);
+    pointer-events: none;
+    z-index: -1;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -118,27 +142,16 @@ html {
     }
 }
 
-body {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-feature-settings: "cv11", "ss01", "ss03";
-    color: var(--text);
-    background: var(--page-bg);
-    line-height: 1.5;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    transition: background-color 200ms ease, color 200ms ease;
-}
-
 a {
     color: var(--accent);
     text-decoration: underline;
     text-underline-offset: 0.2em;
     text-decoration-thickness: 1px;
-    transition: text-decoration-thickness 120ms ease;
+    transition: color 120ms ease, text-decoration-thickness 120ms ease;
 }
 
 a:hover {
+    color: var(--accent-hover);
     text-decoration-thickness: 2px;
 }
 
@@ -149,52 +162,54 @@ a:focus-visible {
 }
 
 /* ---------------------------------------------------------
-   Page layout — grey page bg, stacked content tiles
+   Page wrapper & main
    --------------------------------------------------------- */
 
 .page {
     max-width: 64rem;
     margin: 0 auto;
-    padding: 1rem 1rem 1.5rem;
+    padding: 1rem 1rem 2rem;
     display: grid;
-    gap: 1rem;
+    gap: 3rem;
     min-height: 100vh;
     grid-template-rows: auto 1fr auto;
 }
 
 @media (min-width: 48rem) {
     .page {
-        padding: 1.5rem 1.5rem 2rem;
-        gap: 1.25rem;
+        padding: 1.5rem 2rem 2.5rem;
+        gap: 4rem;
     }
 }
 
 .page-main {
     display: grid;
-    gap: 1rem;
-    align-content: start;
+    gap: 5rem;
+    align-content: center;
 }
 
 @media (min-width: 48rem) {
     .page-main {
-        gap: 1.25rem;
+        gap: 7rem;
     }
 }
 
 /* ---------------------------------------------------------
-   Site header — tile across the top
+   Site header — glass bar
    --------------------------------------------------------- */
 
 .site-header {
     background: var(--surface);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(180%);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: var(--shadow-sm);
-    padding: 0.875rem 1.25rem;
+    border-radius: 999px;
+    padding: 0.5rem 0.75rem 0.5rem 1.25rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+    box-shadow: var(--shadow-sm);
 }
 
 .site-logo {
@@ -204,13 +219,11 @@ a:focus-visible {
     color: var(--text);
     text-decoration: none;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     letter-spacing: -0.01em;
 }
 
-.site-logo:hover {
-    text-decoration: none;
-}
+.site-logo:hover { text-decoration: none; color: var(--text); }
 
 .site-logo:focus-visible {
     outline: 2px solid var(--accent);
@@ -227,12 +240,12 @@ a:focus-visible {
 }
 
 /* ---------------------------------------------------------
-   Theme toggle (in header)
+   Theme toggle
    --------------------------------------------------------- */
 
 .theme-toggle {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.25rem;
+    height: 2.25rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -242,33 +255,27 @@ a:focus-visible {
     color: var(--text-muted);
     cursor: pointer;
     padding: 0;
-    transition:
-        background-color 150ms ease,
-        color 150ms ease,
-        border-color 150ms ease,
-        transform 80ms ease;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, transform 80ms ease;
     flex-shrink: 0;
 }
 
 .theme-toggle:hover {
-    color: var(--accent-contrast);
-    background: var(--accent);
-    border-color: var(--accent);
+    background: #ffffff;
+    color: var(--bg-to);
+    border-color: #ffffff;
 }
 
 .theme-toggle:focus-visible {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+    border-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
 }
 
-.theme-toggle:active {
-    transform: scale(0.96);
-}
+.theme-toggle:active { transform: scale(0.96); }
 
 .theme-toggle svg {
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 1rem;
+    height: 1rem;
     display: block;
 }
 
@@ -284,23 +291,31 @@ a:focus-visible {
 }
 
 /* ---------------------------------------------------------
-   Reusable bits — eyebrow, CTAs, section heading
+   Reusable: eyebrow, CTAs, section heading
    --------------------------------------------------------- */
 
-.eyebrow {
+.hero-eyebrow,
+.section-eyebrow {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     color: var(--accent);
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.section-eyebrow {
+    margin-bottom: 0.5rem;
 }
 
 .cta {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 999px;
     font-size: 0.9375rem;
     font-weight: 500;
     text-decoration: none;
@@ -316,16 +331,19 @@ a:focus-visible {
 
 .cta:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
 }
 
 .cta.primary {
-    background: var(--accent);
-    color: var(--accent-contrast);
+    background: #ffffff;
+    color: var(--bg-to);
+    border-color: #ffffff;
 }
 
 .cta.primary:hover {
-    background: var(--accent-strong);
+    background: #e5e5e5;
+    border-color: #e5e5e5;
+    color: var(--bg-from);
 }
 
 .cta.secondary {
@@ -335,184 +353,167 @@ a:focus-visible {
 }
 
 .cta.secondary:hover {
-    color: var(--accent);
-    border-color: var(--accent);
+    background: var(--surface);
+    border-color: #ffffff;
+    color: var(--text);
 }
 
 .section-heading {
-    margin-bottom: 1.75rem;
-}
-
-.section-heading .section-eyebrow {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--accent);
-    margin-bottom: 0.5rem;
+    margin-bottom: 2.5rem;
+    max-width: 36rem;
 }
 
 .section-heading h2 {
-    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
     font-weight: 600;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     line-height: 1.15;
     color: var(--text);
 }
 
 /* ---------------------------------------------------------
-   Hero — "Bold Editorial" navy tile
-   Always navy regardless of light/dark page mode.
+   Hero — rotating headline as the centerpiece
    --------------------------------------------------------- */
 
-.hero--bold {
-    position: relative;
-    overflow: hidden;
-    border-radius: 14px;
-    padding: 3.5rem 1.75rem 3rem;
-    background: linear-gradient(165deg, var(--hero-bg-from) 0%, var(--hero-bg-to) 100%);
-    color: var(--hero-text);
-    box-shadow: var(--shadow-md);
-    isolation: isolate;
+.hero {
+    padding: 4rem 0 3rem;
+    max-width: 50rem;
 }
 
 @media (min-width: 48rem) {
-    .hero--bold {
-        padding: 5.5rem 3.5rem 5rem;
+    .hero {
+        padding: 6rem 0 4rem;
     }
 }
 
-.hero--bold::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-        linear-gradient(var(--hero-grid) 1px, transparent 1px),
-        linear-gradient(90deg, var(--hero-grid) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(ellipse 80% 70% at 90% 0%, black 0%, transparent 65%);
-    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 90% 0%, black 0%, transparent 65%);
-    pointer-events: none;
-    z-index: -1;
-}
+.hero-eyebrow { margin-bottom: 2rem; }
 
-.hero--bold .hero-inner {
-    position: relative;
-    max-width: 44rem;
-}
-
-.hero--bold .eyebrow {
-    color: var(--hero-eyebrow);
-    margin-bottom: 1.5rem;
-    display: block;
-}
-
-.hero--bold h1 {
-    font-size: clamp(2.25rem, 6vw, 4rem);
+.rotating-headline {
+    display: grid;
+    margin: 0 0 2rem;
+    font-size: clamp(2.25rem, 6.5vw, 4.5rem);
+    font-weight: 700;
     line-height: 1.04;
     letter-spacing: -0.035em;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-    color: var(--hero-text);
+    color: var(--text-strong);
+    /* Reserve enough height for the tallest question on small screens */
+    min-height: calc(1.04em * 3);
 }
 
-.hero--bold .lead {
-    font-size: clamp(1rem, 1.5vw, 1.1875rem);
-    color: var(--hero-text-muted);
-    margin-bottom: 2rem;
+@media (min-width: 48rem) {
+    .rotating-headline {
+        min-height: calc(1.04em * 2);
+    }
+}
+
+@media (min-width: 64rem) {
+    .rotating-headline {
+        min-height: calc(1.04em * 1.5);
+    }
+}
+
+.rotating-headline .question {
+    grid-area: 1 / 1;
+    opacity: 0;
+    transform: translateY(0.5rem);
+    transition: opacity 600ms cubic-bezier(0.4, 0, 0.2, 1), transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, transform;
+}
+
+.rotating-headline .question.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rotating-headline .question {
+        transition: none;
+    }
+}
+
+.hero-lead {
+    font-size: clamp(1rem, 1.6vw, 1.1875rem);
     line-height: 1.55;
+    color: var(--text-muted);
     max-width: 36rem;
+    margin-bottom: 2.5rem;
 }
 
-.hero--bold .actions {
+.hero-actions {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
 }
 
-.hero--bold .cta.primary {
-    background: #ffffff;
-    color: var(--hero-bg-to);
-    border-color: #ffffff;
-}
-
-.hero--bold .cta.primary:hover {
-    background: #f5f5f5;
-    color: var(--hero-bg-from);
-}
-
-.hero--bold .cta.secondary {
-    background: transparent;
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.35);
-}
-
-.hero--bold .cta.secondary:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: #ffffff;
-    color: #ffffff;
-}
-
-.hero--bold .cta:focus-visible {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45);
-}
-
 /* ---------------------------------------------------------
-   Services section — white tile with card grid
+   Services — glass cards on the navy
    --------------------------------------------------------- */
 
-.services-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: var(--shadow-sm);
-    padding: 2.5rem 1.75rem;
+.services {
     scroll-margin-top: 1.5rem;
-}
-
-@media (min-width: 48rem) {
-    .services-section {
-        padding: 3.5rem 3rem;
-    }
 }
 
 .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 48rem) {
+    .services-grid {
+        gap: 1.25rem;
+    }
 }
 
 .service-card {
-    padding: 1.5rem;
+    position: relative;
+    padding: 2rem 1.75rem 1.75rem;
     background: var(--surface);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+    border-radius: 14px;
+    transition: background-color 200ms ease, border-color 200ms ease, transform 200ms ease;
+    overflow: hidden;
+}
+
+.service-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.06), transparent 50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
 }
 
 .service-card:hover {
-    border-color: var(--accent);
+    background: var(--surface-hover);
+    border-color: var(--border-hover);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+}
+
+.service-card:hover::after {
+    opacity: 1;
 }
 
 .service-num {
     font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
     font-size: 0.75rem;
-    color: var(--accent);
     font-weight: 500;
-    margin-bottom: 0.875rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
     display: block;
-    letter-spacing: 0.02em;
 }
 
 .service-card h3 {
-    font-size: 1.0625rem;
+    font-size: 1.125rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
     letter-spacing: -0.01em;
-    color: var(--text);
-    line-height: 1.3;
+    margin-bottom: 0.625rem;
+    color: var(--text-strong);
+    line-height: 1.25;
 }
 
 .service-card p {
@@ -522,18 +523,20 @@ a:focus-visible {
 }
 
 /* ---------------------------------------------------------
-   Site footer — sits on the page bg, no tile
+   Footer — quiet, on the page bg
    --------------------------------------------------------- */
 
 .site-footer {
-    padding: 0.5rem 1.25rem;
+    padding: 1rem 0.25rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem 1.5rem;
     align-items: center;
     justify-content: space-between;
     font-size: 0.8125rem;
-    color: var(--text-subtle);
+    color: var(--text-faint);
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
 }
 
 .site-footer p {
@@ -541,7 +544,7 @@ a:focus-visible {
 }
 
 .site-footer a {
-    color: var(--text-subtle);
+    color: var(--text-faint);
     text-decoration: none;
 }
 
