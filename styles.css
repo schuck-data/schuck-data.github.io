@@ -1,15 +1,17 @@
 /* ---------------------------------------------------------
    Schuck Data — site styles
    Palette: Deep Ink Blue (light) + Electric Cobalt (dark)
-   Layout: grey page background with white content tiles
+   Layout: grey page bg with white content tiles
+   Hero: full-color "bold" navy tile (Direction 3)
    See docs/decisions.md for rationale.
    --------------------------------------------------------- */
 
 :root {
-    /* Light mode (default) */
+    /* Page-level surfaces & text (light mode default) */
     --page-bg: #f4f4f5;
     --surface: #ffffff;
     --surface-elevated: #ffffff;
+    --surface-subtle: #fafafa;
     --text: #0a0a0a;
     --text-muted: #525252;
     --text-subtle: #737373;
@@ -21,14 +23,24 @@
     --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
     --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.05);
     --shadow-lg: 0 1px 3px rgba(15, 23, 42, 0.06), 0 20px 40px rgba(15, 23, 42, 0.08);
+
+    /* Hero surfaces are theme-independent — the bold navy hero
+       is a constant brand statement regardless of page theme. */
+    --hero-bg-from: #15293f;
+    --hero-bg-to: #1e3a5f;
+    --hero-text: #ffffff;
+    --hero-text-muted: rgba(245, 245, 245, 0.82);
+    --hero-eyebrow: #93c5fd;
+    --hero-grid: rgba(255, 255, 255, 0.06);
 }
 
-/* Dark mode via system preference (no manual override set) */
+/* Dark mode via system preference (when no manual override) */
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
         --page-bg: #0a0c10;
         --surface: #14171f;
         --surface-elevated: #181c25;
+        --surface-subtle: #11141b;
         --text: #e5e7eb;
         --text-muted: #a1a1aa;
         --text-subtle: #71717a;
@@ -48,6 +60,7 @@
     --page-bg: #0a0c10;
     --surface: #14171f;
     --surface-elevated: #181c25;
+    --surface-subtle: #11141b;
     --text: #e5e7eb;
     --text-muted: #a1a1aa;
     --text-subtle: #71717a;
@@ -61,11 +74,12 @@
     --shadow-lg: 0 1px 3px rgba(0, 0, 0, 0.4), 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
-/* Manual override: light (explicit, when system is dark) */
+/* Manual override: light (explicit, in case system is dark) */
 :root[data-theme="light"] {
     --page-bg: #f4f4f5;
     --surface: #ffffff;
     --surface-elevated: #ffffff;
+    --surface-subtle: #fafafa;
     --text: #0a0a0a;
     --text-muted: #525252;
     --text-subtle: #737373;
@@ -80,7 +94,7 @@
 }
 
 /* ---------------------------------------------------------
-   Base
+   Base reset & body
    --------------------------------------------------------- */
 
 * {
@@ -91,6 +105,17 @@
 
 html {
     color-scheme: light dark;
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0ms !important;
+        animation-duration: 0ms !important;
+    }
 }
 
 body {
@@ -124,13 +149,13 @@ a:focus-visible {
 }
 
 /* ---------------------------------------------------------
-   Page layout — grey background, white content tiles
+   Page layout — grey page bg, stacked content tiles
    --------------------------------------------------------- */
 
 .page {
     max-width: 64rem;
     margin: 0 auto;
-    padding: 1.5rem 1rem 2rem;
+    padding: 1rem 1rem 1.5rem;
     display: grid;
     gap: 1rem;
     min-height: 100vh;
@@ -139,7 +164,19 @@ a:focus-visible {
 
 @media (min-width: 48rem) {
     .page {
-        padding: 2rem 1.5rem 2.5rem;
+        padding: 1.5rem 1.5rem 2rem;
+        gap: 1.25rem;
+    }
+}
+
+.page-main {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+}
+
+@media (min-width: 48rem) {
+    .page-main {
         gap: 1.25rem;
     }
 }
@@ -189,17 +226,13 @@ a:focus-visible {
     flex-shrink: 0;
 }
 
-.logo-text {
-    color: var(--text);
-}
-
 /* ---------------------------------------------------------
-   Theme toggle (now lives in the header)
+   Theme toggle (in header)
    --------------------------------------------------------- */
 
 .theme-toggle {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -251,66 +284,245 @@ a:focus-visible {
 }
 
 /* ---------------------------------------------------------
-   Main content tile
+   Reusable bits — eyebrow, CTAs, section heading
    --------------------------------------------------------- */
 
-.page-main {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: var(--shadow-md);
-    padding: 2.5rem 1.5rem;
-    display: grid;
-    place-items: center;
-    min-height: 24rem;
-}
-
-@media (min-width: 48rem) {
-    .page-main {
-        padding: 4rem 3rem;
-    }
-}
-
-/* ---------------------------------------------------------
-   Hero (the actual page content)
-   --------------------------------------------------------- */
-
-.hero {
-    max-width: 36rem;
-    text-align: center;
-}
-
-.hero .eyebrow {
+.eyebrow {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--accent);
-    margin-bottom: 0.875rem;
 }
 
-.hero h1 {
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 600;
-    letter-spacing: -0.025em;
-    line-height: 1.1;
-    color: var(--text);
-    margin-bottom: 1rem;
-}
-
-.hero .lead {
-    font-size: 1.0625rem;
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
-}
-
-.hero .contact-prompt {
+.cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
     font-size: 0.9375rem;
-    color: var(--text-muted);
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, transform 80ms ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.cta:hover { text-decoration: none; }
+
+.cta:active { transform: scale(0.98); }
+
+.cta:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.cta.primary {
+    background: var(--accent);
+    color: var(--accent-contrast);
+}
+
+.cta.primary:hover {
+    background: var(--accent-strong);
+}
+
+.cta.secondary {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border-strong);
+}
+
+.cta.secondary:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.section-heading {
+    margin-bottom: 1.75rem;
+}
+
+.section-heading .section-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+}
+
+.section-heading h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: var(--text);
 }
 
 /* ---------------------------------------------------------
-   Site footer — subtle, sits on the grey page bg (no tile)
+   Hero — "Bold Editorial" navy tile
+   Always navy regardless of light/dark page mode.
+   --------------------------------------------------------- */
+
+.hero--bold {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    padding: 3.5rem 1.75rem 3rem;
+    background: linear-gradient(165deg, var(--hero-bg-from) 0%, var(--hero-bg-to) 100%);
+    color: var(--hero-text);
+    box-shadow: var(--shadow-md);
+    isolation: isolate;
+}
+
+@media (min-width: 48rem) {
+    .hero--bold {
+        padding: 5.5rem 3.5rem 5rem;
+    }
+}
+
+.hero--bold::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(var(--hero-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--hero-grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 70% at 90% 0%, black 0%, transparent 65%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 90% 0%, black 0%, transparent 65%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.hero--bold .hero-inner {
+    position: relative;
+    max-width: 44rem;
+}
+
+.hero--bold .eyebrow {
+    color: var(--hero-eyebrow);
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.hero--bold h1 {
+    font-size: clamp(2.25rem, 6vw, 4rem);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--hero-text);
+}
+
+.hero--bold .lead {
+    font-size: clamp(1rem, 1.5vw, 1.1875rem);
+    color: var(--hero-text-muted);
+    margin-bottom: 2rem;
+    line-height: 1.55;
+    max-width: 36rem;
+}
+
+.hero--bold .actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.hero--bold .cta.primary {
+    background: #ffffff;
+    color: var(--hero-bg-to);
+    border-color: #ffffff;
+}
+
+.hero--bold .cta.primary:hover {
+    background: #f5f5f5;
+    color: var(--hero-bg-from);
+}
+
+.hero--bold .cta.secondary {
+    background: transparent;
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.hero--bold .cta.secondary:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+.hero--bold .cta:focus-visible {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45);
+}
+
+/* ---------------------------------------------------------
+   Services section — white tile with card grid
+   --------------------------------------------------------- */
+
+.services-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    padding: 2.5rem 1.75rem;
+    scroll-margin-top: 1.5rem;
+}
+
+@media (min-width: 48rem) {
+    .services-section {
+        padding: 3.5rem 3rem;
+    }
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.25rem;
+}
+
+.service-card {
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+
+.service-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.service-num {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 0.875rem;
+    display: block;
+    letter-spacing: 0.02em;
+}
+
+.service-card h3 {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    line-height: 1.3;
+}
+
+.service-card p {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+}
+
+/* ---------------------------------------------------------
+   Site footer — sits on the page bg, no tile
    --------------------------------------------------------- */
 
 .site-footer {
@@ -337,17 +549,4 @@ a:focus-visible {
     color: var(--accent);
     text-decoration: underline;
     text-underline-offset: 0.2em;
-}
-
-/* ---------------------------------------------------------
-   Accessibility — reduced motion
-   --------------------------------------------------------- */
-
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        transition-duration: 0ms !important;
-        animation-duration: 0ms !important;
-    }
 }

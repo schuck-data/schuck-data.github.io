@@ -4,6 +4,24 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ---
 
+## 2026-05-13 — Homepage design: "Bold Editorial" hero (Direction 3)
+
+**Decision:** The homepage uses a full-color deep-navy hero tile as the primary visual moment, followed by a white services tile below. The hero is theme-independent (always navy with white text) — a constant brand statement regardless of whether the rest of the page is in light or dark mode. Services section flips with the page theme.
+
+**Implementation:**
+- `<main>` is now a transparent section wrapper; individual page sections are their own tiles. Layout was refactored from "single content tile" to "stacked section tiles."
+- Hero tile: linear gradient from `#15293F` to `#1E3A5F`, with a faint white grid pattern overlaying the top-right corner that fades out via a radial mask. Headline is large (clamp 2.25-4rem), 700 weight, tight letter-spacing. Eyebrow in light-blue (`#93C5FD`). Primary CTA is white-on-navy; secondary is outlined-on-navy.
+- Services tile: standard white surface with three numbered cards in a responsive grid. Subtle hover state lifts cards and switches their border to the accent color.
+- CSS variables for hero colors are intentionally outside the light/dark switching block — the hero is always navy.
+
+**Why:** Of the four directions workshopped (Refined Minimal, Split with Data Graphic, Bold Editorial, Editorial Split), Direction 3 was the picked vibe. The bold hero gives the brand a memorable visual statement; the constant navy color across themes makes the site feel branded rather than "configurable." The risk — bold visuals demand strong content — is acknowledged: real positioning copy is the next priority, not deferred.
+
+**Alternatives considered:** Refined Minimal (rejected — too quiet for the intended brand register); Split with Data Graphic (close runner-up — could be a future homepage variation); Editorial Split (rejected — too magazine-formal for a small consultancy).
+
+**See:** `mockups/homepage-directions.html` retained in repo as the workshop reference.
+
+---
+
 ## 2026-05-13 — Jekyll for shared chrome across pages
 
 **Decision:** Use Jekyll (GitHub Pages' built-in static site engine) to share header/footer/layout across pages, rather than duplicating HTML or using runtime JavaScript includes.
