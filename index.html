@@ -154,8 +154,8 @@ hero_anim: true
         var since = (now - startTime - 10000) / 1000;
         if (since > 0) {
             A += 0.008;
-            var ease = Math.min(1, since / 8); ease = ease * ease * (3 - 2 * ease);
-            var cx = W * ((-0.12 + 0.86 * ease) + 0.05 * Math.sin(since * 0.16));
+            var p = Math.min(1, since / 28); var ease = p * p * (3 - 2 * p);
+            var cx = W * ((-0.14 + 0.88 * ease) + 0.05 * Math.sin(since * 0.16));
             var cy = H * (0.34 + 0.14 * Math.sin(since * 0.20 + 1));
             tess(cx, cy, Math.min(W, H) * 0.06);
         }

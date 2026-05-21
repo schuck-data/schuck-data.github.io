@@ -453,8 +453,8 @@ a:focus-visible {
    (behind the text) and let it live in the empty space on the right. */
 @media (min-width: 64rem) {
     .hero-anim {
-        -webkit-mask-image: linear-gradient(to right, transparent 46%, #000 80%);
-        mask-image: linear-gradient(to right, transparent 46%, #000 80%);
+        -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, #000 50%);
+        mask-image: linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, #000 50%);
     }
 }
 
