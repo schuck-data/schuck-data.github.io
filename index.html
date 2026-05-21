@@ -3,9 +3,8 @@ layout: default
 title: Schuck Data — Dashboards, data pipelines, data quality
 description: Schuck Data is a consultancy for teams who need their numbers to mean something — dashboards, data pipelines, and data quality.
 hide_header_logo: true
+hero_anim: true
 ---
-
-<canvas class="hero-anim" id="heroAnim" aria-hidden="true"></canvas>
 
 <section class="hero" aria-labelledby="hero-heading">
     <div class="hero-brandline">
@@ -102,7 +101,6 @@ hide_header_logo: true
     var canvas = document.getElementById('heroAnim');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
-    var wide = window.matchMedia('(min-width: 64rem)');
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     var W = 0, H = 0, raf = null, started = false, nodes = [], tt = 0, A = 0;
 
@@ -114,7 +112,7 @@ hide_header_logo: true
     }
     function initNodes() {
         nodes = [];
-        var n = Math.max(24, Math.min(70, Math.round(W * H / 22000))), i;
+        var n = Math.max(50, Math.min(220, Math.round(W * H / 8000))), i;
         for (i = 0; i < n; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 0.12, vy: (Math.random() - 0.5) * 0.12 });
     }
 
@@ -141,12 +139,12 @@ hide_header_logo: true
 
     function draw() {
         ctx.clearRect(0, 0, W, H);
-        var i, j, TH = 130, p, a, b;
+        var i, j, TH = Math.min(150, Math.max(90, Math.min(W, H) * 0.16)), p, a, b;
         for (i = 0; i < nodes.length; i++) { p = nodes[i]; p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1; }
         ctx.lineWidth = 0.7;
         for (i = 0; i < nodes.length; i++) for (j = i + 1; j < nodes.length; j++) {
             a = nodes[i]; b = nodes[j]; var dx = a.x - b.x, dy = a.y - b.y, d = Math.sqrt(dx * dx + dy * dy);
-            if (d < TH) { ctx.strokeStyle = 'rgba(147,197,253,' + ((1 - d / TH) * 0.22) + ')'; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+            if (d < TH) { ctx.strokeStyle = 'rgba(147,197,253,' + ((1 - d / TH) * 0.18) + ')'; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
         }
         ctx.fillStyle = 'rgba(191,219,254,0.45)';
         for (i = 0; i < nodes.length; i++) { p = nodes[i]; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, 7); ctx.fill(); }
@@ -158,18 +156,15 @@ hide_header_logo: true
     function loop() { raf = requestAnimationFrame(loop); draw(); }
     function pause() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
     function resume() { if (started && !reduce.matches && !raf && !document.hidden && window.scrollY <= window.innerHeight) loop(); }
-    function start() { if (started || !wide.matches) return; started = true; fit(); initNodes(); if (reduce.matches) draw(); else resume(); }
-    function stop() { started = false; pause(); ctx.clearRect(0, 0, W, H); }
+    function start() { if (started) return; started = true; fit(); initNodes(); if (reduce.matches) draw(); else resume(); }
 
     function onResize() {
-        if (!wide.matches) { stop(); return; }
         if (!started) { start(); return; }
         fit();
         if (reduce.matches) { pause(); draw(); }
     }
 
     window.addEventListener('resize', onResize);
-    if (wide.addEventListener) wide.addEventListener('change', onResize);
     document.addEventListener('visibilitychange', function () { if (document.hidden) pause(); else resume(); });
     window.addEventListener('scroll', function () { if (window.scrollY > window.innerHeight) pause(); else resume(); }, { passive: true });
 

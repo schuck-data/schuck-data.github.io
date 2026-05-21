@@ -431,8 +431,10 @@ a:focus-visible {
     text-wrap: balance;
 }
 
-/* Hero background animation — desktop only, sits behind content,
-   masked to pool in the upper-right space and fade out behind the text. */
+/* Hero background animation — a subtle full-bleed layer behind ALL content,
+   on every screen size. Fixed + behind content so it never affects layout;
+   low opacity (lower still on mobile) keeps text fully legible; a gentle
+   vertical fade keeps the lower page uncluttered. */
 .hero-anim {
     position: fixed;
     inset: 0;
@@ -440,14 +442,12 @@ a:focus-visible {
     height: 100%;
     z-index: -1;
     pointer-events: none;
-    display: none;
-    -webkit-mask-image: linear-gradient(to right, transparent 46%, #000 80%), linear-gradient(to bottom, #000 0%, #000 46%, transparent 74%);
-    mask-image: linear-gradient(to right, transparent 46%, #000 80%), linear-gradient(to bottom, #000 0%, #000 46%, transparent 74%);
-    -webkit-mask-composite: source-in;
-    mask-composite: intersect;
+    opacity: 0.9;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, rgba(0, 0, 0, 0.2) 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 58%, rgba(0, 0, 0, 0.2) 100%);
 }
-@media (min-width: 64rem) {
-    .hero-anim { display: block; }
+@media (max-width: 48rem) {
+    .hero-anim { opacity: 0.5; }
 }
 
 /* Credential chip */
