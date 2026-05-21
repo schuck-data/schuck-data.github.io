@@ -10,7 +10,11 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 **Interim contact:** menu options and the skip link point to `mailto:` links with a pre-filled subject, pending a Google Form that will pre-fill the selected service and ask a Time/Budget constraint.
 
-**Backstage:** a subtle centered em-dash below the footer links to `/backstage/`, a hub for non-client-facing tools — a navy-restyled QR generator at `/QR/`, the QR redirect library (`/QRlibrary/SVSD1`, `/SVSD2` meta-refresh files → the SVSD Facebook page/group), and a planned Artmath gallery.
+**Backstage:** a subtle centered em-dash below the footer links to `/BACKSTAGE/`, a hub for non-client-facing tools — a navy-restyled QR generator at `/QR/`, the QR redirect library (`/QRLIBRARY/SVSD1`, `/SVSD2` meta-refresh files → the SVSD Facebook page/group), and a planned Artmath gallery.
+
+**Paths are UPPERCASE:** all public routes use uppercase (`/QR/`, `/BACKSTAGE/`, `/QRLIBRARY/SVSD1`, `/SVSD2`). Rationale: GitHub Pages serves paths case-sensitively and offers no server-side redirect, so the site commits to one canonical case. Uppercase was chosen so the QR-encoded URLs (e.g. `HTTPS://SCHUCKDATA.COM/QRLIBRARY/SVSD1`) stay entirely within the QR *alphanumeric* charset (0-9 A-Z space $%*+-./:), which encodes more compactly than byte mode and yields a denser, more reliably scannable code. The folder renames (`backstage`→`BACKSTAGE`, `QRlibrary`→`QRLIBRARY`) must be done with `git mv` so Git records the case change for the Linux build server.
+
+**QR caption:** the QR generator now prints the exact encoded string along the bottom edge of every code (SVG and PNG), with extra bottom margin and a font size that auto-fits the width, so a printed code is self-labeling.
 
 **Why:** The owner wanted the page to meet visitors where they are by intent, with progressive disclosure, while preserving the established theme. Copy is sourced from the Specs document, not code-example placeholders.
 

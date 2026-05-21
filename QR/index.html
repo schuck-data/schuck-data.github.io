@@ -64,8 +64,8 @@ description: Generate and download QR codes entirely in your browser.
     .qr-row { display: flex; gap: 1rem; }
     .qr-row > div { flex: 1; }
     .qr-preview { padding: 1.75rem; display: flex; flex-direction: column; gap: 1.3rem; align-items: center; justify-content: center; }
-    .qr-card { background: #ffffff; padding: 18px; width: 100%; max-width: 300px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
-    .qr-card svg { width: 100%; height: 100%; display: block; }
+    .qr-card { background: #ffffff; padding: 18px; width: 100%; max-width: 300px; min-height: 240px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+    .qr-card svg { width: 100%; height: auto; display: block; }
     .qr-empty { color: #9aa3b2; font-size: 0.78rem; text-align: center; letter-spacing: 0.08em; text-transform: uppercase; }
     .qr-actions { display: flex; gap: 0.7rem; width: 100%; max-width: 300px; }
     .qr-actions button {
@@ -88,7 +88,7 @@ description: Generate and download QR codes entirely in your browser.
         <div class="qr-controls">
             <div>
                 <label for="data">Destination URL or text</label>
-                <textarea id="data" placeholder="https://schuckdata.com/QRlibrary/SVSD1" spellcheck="false"></textarea>
+                <textarea id="data" placeholder="HTTPS://SCHUCKDATA.COM/QRLIBRARY/SVSD1" spellcheck="false"></textarea>
             </div>
             <div>
                 <label>Error correction</label>
@@ -136,9 +136,34 @@ description: Generate and download QR codes entirely in your browser.
     var ecWrap = document.getElementById('ec');
     var ecLevel = 'H';
     var qr = null;
-    function buildSvg(qr, margin) {
+    var FONT_STACK = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+    var CHAR_W = 0.62; // monospace advance width as a fraction of font size
+    function escapeXml(s) {
+        return s.replace(/[&<>"']/g, function (ch) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[ch];
+        });
+    }
+    // Caption layout, all in QR "module" units so the SVG and PNG stay in sync.
+    function captionMetrics(width, label) {
+        var sidePad = 2;
+        var availW = Math.max(1, width - sidePad * 2);
+        var len = Math.max(1, label.length);
+        var maxFont = Math.max(2, width * 0.06);
+        var fontSize = Math.min(availW / (len * CHAR_W), maxFont);
+        var padTop = Math.max(1.5, width * 0.045);
+        var padBot = Math.max(1, width * 0.03);
+        return {
+            availW: availW,
+            fontSize: fontSize,
+            padTop: padTop,
+            padBot: padBot,
+            capH: padTop + fontSize + padBot,
+            textLen: Math.min(len * CHAR_W * fontSize, availW)
+        };
+    }
+    function buildSvg(qr, margin, label) {
         var n = qr.getModuleCount();
-        var total = n + margin * 2;
+        var width = n + margin * 2;
         var rects = '';
         for (var r = 0; r < n; r++) {
             for (var c = 0; c < n; c++) {
@@ -147,9 +172,22 @@ description: Generate and download QR codes entirely in your browser.
                 }
             }
         }
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + total + ' ' + total +
-            '" shape-rendering="crispEdges"><rect width="' + total + '" height="' + total +
-            '" fill="#ffffff"/><g fill="#000000">' + rects + '</g></svg>';
+        var caption = '';
+        var capH = 0;
+        if (label) {
+            var m = captionMetrics(width, label);
+            capH = m.capH;
+            var baseline = width + m.padTop + m.fontSize * 0.82;
+            caption = '<text x="' + (width / 2) + '" y="' + baseline +
+                '" text-anchor="middle" fill="#000000" font-family="' + FONT_STACK +
+                '" font-size="' + m.fontSize + '" textLength="' + m.textLen +
+                '" lengthAdjust="spacingAndGlyphs">' + escapeXml(label) + '</text>';
+        }
+        var height = width + capH;
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + width + ' ' + height +
+            '"><rect width="' + width + '" height="' + height +
+            '" fill="#ffffff"/><g fill="#000000" shape-rendering="crispEdges">' + rects + '</g>' +
+            caption + '</svg>';
     }
     function generate() {
         var text = dataEl.value.trim();
@@ -170,7 +208,7 @@ description: Generate and download QR codes entirely in your browser.
             svgBtn.disabled = pngBtn.disabled = true;
             return;
         }
-        card.innerHTML = buildSvg(qr, margin);
+        card.innerHTML = buildSvg(qr, margin, text);
         svgBtn.disabled = pngBtn.disabled = false;
     }
     function download(name, href) {
@@ -188,7 +226,7 @@ description: Generate and download QR codes entirely in your browser.
     svgBtn.addEventListener('click', function () {
         if (!qr) return;
         var margin = Math.max(0, parseInt(marginEl.value, 10) || 0);
-        var svg = buildSvg(qr, margin);
+        var svg = buildSvg(qr, margin, dataEl.value.trim());
         var blob = new Blob([svg], { type: 'image/svg+xml' });
         var url = URL.createObjectURL(blob);
         download(fileBase() + '.svg', url);
@@ -196,17 +234,22 @@ description: Generate and download QR codes entirely in your browser.
     });
     pngBtn.addEventListener('click', function () {
         if (!qr) return;
+        var label = dataEl.value.trim();
         var margin = Math.max(0, parseInt(marginEl.value, 10) || 0);
         var target = Math.max(128, Math.min(4096, parseInt(pngSizeEl.value, 10) || 1024));
         var n = qr.getModuleCount();
-        var total = n + margin * 2;
-        var cell = Math.max(1, Math.floor(target / total));
-        var dim = cell * total;
+        var width = n + margin * 2;
+        var m = label ? captionMetrics(width, label) : { capH: 0, fontSize: 0, padTop: 0, availW: width };
+        var height = width + m.capH;
+        var cell = Math.max(1, Math.floor(target / width));
+        var cw = width * cell;
+        var ch = Math.round(height * cell);
         var cv = document.createElement('canvas');
-        cv.width = cv.height = dim;
+        cv.width = cw;
+        cv.height = ch;
         var ctx = cv.getContext('2d');
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, dim, dim);
+        ctx.fillRect(0, 0, cw, ch);
         ctx.fillStyle = '#000000';
         for (var r = 0; r < n; r++) {
             for (var c = 0; c < n; c++) {
@@ -214,6 +257,21 @@ description: Generate and download QR codes entirely in your browser.
                     ctx.fillRect((c + margin) * cell, (r + margin) * cell, cell, cell);
                 }
             }
+        }
+        if (label) {
+            var fontPx = m.fontSize * cell;
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'alphabetic';
+            ctx.font = fontPx + 'px ' + FONT_STACK;
+            var availPx = m.availW * cell;
+            var measured = ctx.measureText(label).width;
+            if (measured > availPx) {
+                fontPx *= availPx / measured;
+                ctx.font = fontPx + 'px ' + FONT_STACK;
+            }
+            var baselinePx = (width + m.padTop) * cell + fontPx * 0.82;
+            ctx.fillText(label, cw / 2, baselinePx);
         }
         download(fileBase() + '.png', cv.toDataURL('image/png'));
     });
