@@ -4,6 +4,20 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ---
 
+## 2026-05-21 — Landing redesign: rotating taglines, two-branch menu, logo, backstage
+
+**Decision:** Reworked the homepage into an intent-based funnel while keeping the original navy/grid/glass theme and Inter type. The hero's five rotating questions were replaced by three rotating taglines (Get to the core of your data → Clean insights from messy information → Automation. Analytics. Answers.) using a lateral slide + fade with a 4.5s hold. Below the hero, a "We'll meet you where you are" section presents two expanding glass cards — Catching Up and Getting Ahead — each revealing three service options on first click. Option copy is verbatim from the Specs document. A "Skip the Menu, Talk to a Person" link is the escape hatch. Added a credential line ("Founded by a former U.S. Census Bureau statistician") with an Old Glory red/blue checkmark, the white logo lockup in the header (replacing the placeholder mark + text), and a footer copyright of "© 2026 Schuck Data — a DS89 Holdco LLC company".
+
+**Interim contact:** menu options and the skip link point to `mailto:` links with a pre-filled subject, pending a Google Form that will pre-fill the selected service and ask a Time/Budget constraint.
+
+**Backstage:** a subtle centered em-dash below the footer links to `/backstage/`, a hub for non-client-facing tools — a navy-restyled QR generator at `/QR/`, the QR redirect library (`/QRlibrary/SVSD1`, `/SVSD2` meta-refresh files → the SVSD Facebook page/group), and a planned Artmath gallery.
+
+**Why:** The owner wanted the page to meet visitors where they are by intent, with progressive disclosure, while preserving the established theme. Copy is sourced from the Specs document, not code-example placeholders.
+
+**Open:** Google Form wiring; Artmath gallery (needs the betterward.com/pnm reference + art assets); static QR images for the SVSD paths (generate via the new /QR tool — no QR library available in the build sandbox).
+
+---
+
 ## 2026-05-13 — Full overhaul: navy-everywhere backdrop, glass surfaces, rotating hero questions
 
 **Decision:** Replace the previous "grey page bg with white content tiles" architecture entirely. The whole site now sits on a single continuous deep-navy backdrop with a fading grid pattern overlay. Content surfaces (header, service cards) are glass-morphic — translucent white at low opacity with backdrop-blur — so the grid faintly shows through. The brand is the navy; the theme toggle now switches between "medium navy" (formerly light mode) and "deeper near-black navy" (formerly dark mode), but the aesthetic is consistent across both.

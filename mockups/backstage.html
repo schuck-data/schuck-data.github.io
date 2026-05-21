@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backstage — Schuck Data</title>
+    <meta name="description" content="Tools, libraries, and experiments.">
+    <meta name="theme-color" content="#0F1B2D">
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme');
+                if (saved === 'light' || saved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .site-logo img { height: 2rem; width: auto; display: block; }
+        a.service-card { display: block; text-decoration: none; color: inherit; }
+        a.service-card:hover { text-decoration: none; }
+        .backstage-intro { color: var(--text-muted); max-width: 42rem; margin-top: 0.5rem; font-size: 0.9375rem; }
+        .back-to-site { margin-top: 2.5rem; }
+        .back-to-site a { color: var(--text-muted); text-decoration: none; font-size: 0.9375rem; }
+        .back-to-site a:hover { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="site-header">
+            <a class="site-logo" href="index.html" aria-label="Schuck Data — home">
+                <img src="../images/schuck-data-white.png" alt="Schuck Data">
+            </a>
+            <button type="button" class="theme-toggle" aria-label="Toggle light and dark mode" title="Toggle light and dark mode">
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/>
+                    <path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/>
+                </svg>
+            </button>
+        </header>
+
+        <main class="page-main">
+            <section class="services">
+                <header class="section-heading">
+                    <p class="section-eyebrow">Backstage</p>
+                    <h2>Tools, libraries &amp; experiments</h2>
+                    <p class="backstage-intro">The working areas of the site — useful utilities and projects that aren't part of the main client-facing pages.</p>
+                </header>
+
+                <div class="services-grid">
+                    <a class="service-card" href="#">
+                        <span class="service-num" aria-hidden="true">01</span>
+                        <h3>QR Generator</h3>
+                        <p>Generate and download QR codes (SVG or PNG) entirely in your browser. No data leaves the page.</p>
+                    </a>
+                    <a class="service-card" href="#">
+                        <span class="service-num" aria-hidden="true">02</span>
+                        <h3>QR Redirect Library</h3>
+                        <p>Short, editable redirects behind printed QR codes — repoint a code later by editing one file.</p>
+                    </a>
+                    <a class="service-card" href="#">
+                        <span class="service-num" aria-hidden="true">03</span>
+                        <h3>Artmath Gallery</h3>
+                        <p>Mathematically themed art made by associates of Schuck Data.</p>
+                    </a>
+                </div>
+
+                <p class="back-to-site"><a href="index.html">← Back to the main site</a></p>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <p class="copyright">© 2026 Schuck Data — a DS89 Holdco LLC company</p>
+            <p class="contact"><a href="mailto:dakota@schuckdata.com">dakota@schuckdata.com</a></p>
+        </footer>
+    </div>
+
+    <script>
+        (function () {
+            var btn = document.querySelector('.theme-toggle');
+            if (!btn) return;
+            var mql = window.matchMedia('(prefers-color-scheme: dark)');
+            function currentTheme() {
+                var override = document.documentElement.getAttribute('data-theme');
+                if (override === 'light' || override === 'dark') return override;
+                return mql.matches ? 'dark' : 'light';
+            }
+            btn.addEventListener('click', function () {
+                var next = currentTheme() === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem('theme', next); } catch (e) {}
+            });
+        })();
+    </script>
+</body>
+</html>

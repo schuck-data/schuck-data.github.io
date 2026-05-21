@@ -553,3 +553,120 @@ a:focus-visible {
     text-decoration: underline;
     text-underline-offset: 0.2em;
 }
+
+/* ---------------------------------------------------------
+   Redesign additions — credential, two-branch menu,
+   lateral rotating tagline, backstage entry, compaction.
+   --------------------------------------------------------- */
+
+/* Header logo image */
+.site-logo img { height: 2rem; width: auto; display: block; }
+
+/* Credential chip */
+.credential {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem 0.5rem 0.6rem;
+    background: var(--surface);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+.credential b { color: var(--text-strong); font-weight: 600; }
+.credential svg { width: 1.5rem; height: 1.5rem; flex-shrink: 0; display: block; }
+
+/* Two-branch expanding menu */
+.paths { display: grid; grid-template-columns: 1fr; gap: 1rem; align-items: start; }
+@media (min-width: 48rem) { .paths { grid-template-columns: 1fr 1fr; gap: 1.25rem; } }
+.path-card {
+    background: var(--surface);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: background-color 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+.path-card:not(.open):hover { background: var(--surface-hover); border-color: var(--border-hover); transform: translateY(-2px); }
+.path-card.open { background: var(--surface-hover); border-color: var(--border-hover); }
+.path-head {
+    display: block; width: 100%; text-align: left;
+    background: none; border: none; font: inherit; color: var(--text);
+    cursor: pointer; padding: 1.4rem 1.5rem 1.3rem;
+}
+.path-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 14px; }
+.path-title { font-size: 1.375rem; font-weight: 600; letter-spacing: -0.015em; color: var(--text-strong); display: block; line-height: 1.2; margin-bottom: 0.4rem; }
+.path-blurb { display: block; color: var(--text-muted); font-size: 0.9rem; line-height: 1.45; margin: 0 0 1rem; }
+.path-toggle {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 0.8125rem; letter-spacing: 0.04em; color: var(--accent);
+    display: inline-flex; align-items: center; gap: 0.45rem;
+}
+.path-chev { display: inline-block; transition: transform 300ms ease; }
+.path-card.open .path-chev { transform: rotate(180deg); }
+.path-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 360ms cubic-bezier(0.22, 0.61, 0.36, 1); }
+.path-card.open .path-body { grid-template-rows: 1fr; }
+.path-body-inner { overflow: hidden; min-height: 0; }
+.opt-list { padding: 0 1.5rem 1.25rem; opacity: 0; transform: translateY(6px); transition: opacity 300ms ease 40ms, transform 300ms ease 40ms; }
+.path-card.open .opt-list { opacity: 1; transform: none; }
+.opt {
+    display: grid; grid-template-columns: 1.25rem 1fr auto; gap: 0.85rem; align-items: center;
+    padding: 0.85rem 0; border-top: 1px solid var(--border);
+    text-decoration: none; color: var(--text); transition: padding-left 160ms ease;
+}
+.opt:hover { padding-left: 0.4rem; text-decoration: none; }
+.oletter { font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace; font-size: 0.8125rem; color: var(--accent); }
+.otitle { font-size: 1rem; font-weight: 500; color: var(--text-strong); line-height: 1.3; }
+.oarrow { color: var(--accent); transition: transform 160ms ease; }
+.opt:hover .oarrow { transform: translateX(4px); }
+.skip-line { text-align: center; margin-top: 1.25rem; }
+.skip-line a { color: var(--text-muted); font-size: 0.9375rem; text-decoration: none; border-bottom: 1px solid var(--border-strong); padding-bottom: 2px; }
+.skip-line a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* Section lead under a heading */
+.section-lead { font-size: 0.9375rem; color: var(--text-muted); line-height: 1.5; max-width: 42rem; margin-top: 0.5rem; }
+
+/* Backstage entry — subtle centered em dash below the footer */
+.backstage-link { text-align: center; margin-top: 0.25rem; }
+.backstage-link a { color: var(--text-faint); text-decoration: none; font-size: 1rem; opacity: 0.55; transition: opacity 150ms ease, color 150ms ease; }
+.backstage-link a:hover { opacity: 1; color: var(--accent); }
+
+/* Card grid items that are links (backstage hub) */
+a.service-card { display: block; text-decoration: none; color: inherit; }
+a.service-card:hover { text-decoration: none; }
+
+/* Lateral slide + fade for the rotating tagline (hold handled in JS) */
+.rotating-headline {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    margin-bottom: 1.1rem;
+    min-height: calc(1.15em * 2);
+    overflow-x: clip;
+}
+@media (min-width: 48rem) { .rotating-headline { min-height: calc(1.15em * 1.4); } }
+@media (min-width: 64rem) { .rotating-headline { min-height: calc(1.15em * 1.2); } }
+.rotating-headline .question {
+    opacity: 0;
+    transform: translateX(2.5rem);
+    transition: opacity 600ms ease, transform 760ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.rotating-headline .question.is-visible { opacity: 1; transform: translateX(0); }
+.rotating-headline .question.is-leaving { opacity: 0; transform: translateX(-2.5rem); }
+@media (prefers-reduced-motion: reduce) {
+    .rotating-headline .question,
+    .rotating-headline .question.is-leaving { transform: none; }
+}
+
+/* Above-the-fold compaction */
+.page { gap: 1.25rem; padding-top: 0.75rem; padding-bottom: 1rem; }
+.page-main { gap: 1.75rem; align-content: start; }
+@media (min-width: 48rem) { .page { gap: 1.5rem; } .page-main { gap: 2.25rem; } }
+.hero { padding: 1.25rem 0 0; }
+@media (min-width: 48rem) { .hero { padding: 1.75rem 0 0; } }
+.hero-eyebrow { margin-bottom: 0.85rem; }
+.hero-lead { margin-bottom: 1.1rem; }
+.section-heading { margin-bottom: 1.1rem; }
+.section-heading h2 { font-size: clamp(1.25rem, 2.6vw, 1.75rem); }
