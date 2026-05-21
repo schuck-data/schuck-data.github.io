@@ -449,6 +449,14 @@ a:focus-visible {
 @media (max-width: 48rem) {
     .hero-anim { opacity: 0.5; }
 }
+/* On desktop the hero text is left-aligned, so fade the layer out on the left
+   (behind the text) and let it live in the empty space on the right. */
+@media (min-width: 64rem) {
+    .hero-anim {
+        -webkit-mask-image: linear-gradient(to right, transparent 46%, #000 80%);
+        mask-image: linear-gradient(to right, transparent 46%, #000 80%);
+    }
+}
 
 /* Credential chip */
 .credential {
