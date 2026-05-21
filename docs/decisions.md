@@ -4,6 +4,47 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ---
 
+> **Note on this log — read first.** This file was started by **previous builders** of the site. The dated entries below are a point-in-time historical record of decisions and their rationale. **They are NOT current instructions, and much of the older content is out of date.** Read them as "why we got here," not "how things are now." For what is actually true today, see **Current State** directly below. Convention going forward: when a decision changes, add a new dated entry at the top and mark the superseded entry — don't rewrite history.
+
+---
+
+## Current State (kept up to date)
+
+*Last updated: 2026-05-21*
+
+- **Hosting:** GitHub Pages from the `schuck-data.github.io` repo; custom domain `schuckdata.com` via Namecheap DNS. Auto-deploys on push to `main`.
+- **Engine:** Jekyll — shared `_layouts/default.html` with `_includes/header.html` and `_includes/footer.html`.
+- **Theme:** A single fixed **medium-navy** presentation (faint grid overlay + glass-morphic surfaces). **No light/dark toggle** — it was removed 2026-05-21.
+- **Type:** Inter (Google Fonts), with monospace accents for eyebrows/labels.
+- **Public pages:** `/` (home), `/ABOUT/`, `/FOUNDER/`, `/SERVICES/`, `/WORK/` (case-study stub), `/CONTACT/`. Header nav: About · Services · Work · Contact. Routes are UPPERCASE by convention.
+- **Home hero:** large white logo, a fixed keyword H1 ("Data consultancy for teams who need clear, clean, and actionable data."), a rotating tagline sub-line, and the Census-Bureau credential. The two-branch expanding menu (Catching Up / Getting Ahead) remains, but every option and the skip link now point to `/CONTACT/`.
+- **Contact:** an interim "under construction" page offering direct email / call / text. A proper inquiry form is the planned replacement.
+- **Content:** About / Founder / Services / Work prose is placeholder lorem ipsum except confirmed facts (founder Dakota Schuck = former U.S. Census Bureau statistician, 2014–2019). No political content.
+- **Brand assets:** SD monogram favicon (`favicon.svg` + `favicon-32/16.png` + `apple-touch-icon.png` + `site.webmanifest`) and `og-image.png` for link previews. Logos in `/images/` (white version used on navy).
+- **Backstage:** `/BACKSTAGE/`, `/QR/`, and `/QRLIBRARY/*` are kept out of search via per-page `noindex` (deliberately NOT a robots `Disallow`, which would both list the paths and block crawlers from reading the noindex). They stay reachable by direct URL; the footer em-dash link is `rel="nofollow"`.
+- **Mockups:** `/mockups/*` are retained in the repo as workshop reference but excluded from the Jekyll build (no longer published).
+
+---
+
+## 2026-05-21 — Site expansion: single navy, fixed H1 + tagline, multi-page, interim contact, favicon, backstage noindex, cleanup
+
+**Decision:** A round of changes following a fresh design review.
+
+- **Removed the light/dark theme toggle** and locked the site to one **medium-navy** palette. The toggle only switched between two navies (not a true light mode), so the sun/moon icon over-promised. Deleted the toggle button, both theme scripts, and all `[data-theme]` / `prefers-color-scheme` CSS branches.
+- **Hero rework for SEO + clarity:** the rotating taglines were demoted off the `<h1>` (they were evocative but keyword-empty). The H1 is now a single, stable, keyword-bearing line — "Data consultancy for teams who need clear, clean, and actionable data." The three taglines now animate as a sub-line beneath it (same slide+fade JS; the element kept the class `rotating-headline` but is a `<p>`, not the `<h1>`).
+- **Logo usage:** the header wordmark was rendering at ~32px (too small for a wide lockup). Enlarged it, and added the white logo as a large brand moment in the hero. On the homepage the header wordmark is hidden (`hide_header_logo`) so the hero logo isn't duplicated directly above it; the header there is centered nav.
+- **Navigation + pages:** added header nav and scaffolded `/ABOUT/`, `/FOUNDER/`, `/SERVICES/`, `/WORK/`. Content is placeholder lorem except confirmed facts.
+- **Interim contact:** built `/CONTACT/` (under construction; direct email/call/text) and repointed all six menu options + the skip link to it, replacing the `mailto:` links. The expanding two-branch menu was kept; the a/b/c option lettering was removed.
+- **Favicon + meta:** created an SD monogram favicon set + `og-image.png`, and added favicon links, canonical, and Open Graph / Twitter tags to the shared head. Corrected `theme-color` to the medium navy.
+- **Backstage discoverability:** `noindex` on BACKSTAGE/QR, `rel="nofollow"` on the footer link, and a permissive `robots.txt` that intentionally does not enumerate the backstage paths.
+- **Cleanup:** removed dead CSS (`.cta*`, `.logo-mark`, `.hero-actions`), consolidated the duplicated/overridden `.page`, `.page-main`, `.hero`, and `.rotating-headline` rules into single canonical definitions (deleting the old "compaction" override block), and excluded `/mockups/` from the build (`styles.css` 673 → 583 lines).
+
+**Why:** The review found the design container was strong but the site was thin (little content, mailto-only conversion), the toggle was confusing, the H1 wasn't doing SEO work, the logo was underused, and the CSS had accumulated three redesigns' worth of overrides.
+
+**Open:** real copy for About/Founder/Services/Work; case studies; the inquiry form to replace the interim contact page; confirm/verify rendered spacing and logo sizing on the deployed site.
+
+---
+
 ## 2026-05-21 — Landing redesign: rotating taglines, two-branch menu, logo, backstage
 
 **Decision:** Reworked the homepage into an intent-based funnel while keeping the original navy/grid/glass theme and Inter type. The hero's five rotating questions were replaced by three rotating taglines (Get to the core of your data → Clean insights from messy information → Automation. Analytics. Answers.) using a lateral slide + fade with a 4.5s hold. Below the hero, a "We'll meet you where you are" section presents two expanding glass cards — Catching Up and Getting Ahead — each revealing three service options on first click. Option copy is verbatim from the Specs document. A "Skip the Menu, Talk to a Person" link is the escape hatch. Added a credential line ("Founded by a former U.S. Census Bureau statistician") with an Old Glory red/blue checkmark, the white logo lockup in the header (replacing the placeholder mark + text), and a footer copyright of "© 2026 Schuck Data — a DS89 Holdco LLC company".
@@ -23,6 +64,8 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 ---
 
 ## 2026-05-13 — Full overhaul: navy-everywhere backdrop, glass surfaces, rotating hero questions
+
+> **Status:** Partially superseded (2026-05-21). The navy backdrop, grid, and glass surfaces are still current; the light/dark toggle was removed and the rotating questions were moved off the `<h1>` into a sub-line.
 
 **Decision:** Replace the previous "grey page bg with white content tiles" architecture entirely. The whole site now sits on a single continuous deep-navy backdrop with a fading grid pattern overlay. Content surfaces (header, service cards) are glass-morphic — translucent white at low opacity with backdrop-blur — so the grid faintly shows through. The brand is the navy; the theme toggle now switches between "medium navy" (formerly light mode) and "deeper near-black navy" (formerly dark mode), but the aesthetic is consistent across both.
 
@@ -47,6 +90,8 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 ---
 
 ## 2026-05-13 — Homepage design: "Bold Editorial" hero (Direction 3)
+
+> **Status:** Superseded. The tile-based hero/services architecture described here was replaced by the navy overhaul and the 2026-05-21 hero rework.
 
 **Decision:** The homepage uses a full-color deep-navy hero tile as the primary visual moment, followed by a white services tile below. The hero is theme-independent (always navy with white text) — a constant brand statement regardless of whether the rest of the page is in light or dark mode. Services section flips with the page theme.
 
@@ -88,6 +133,8 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ## 2026-05-13 — Layout pattern: grey page background with white content tiles
 
+> **Status:** Superseded. The grey-background / white-tile pattern was fully replaced by the single navy backdrop with glass surfaces.
+
 **Decision:** Page background is a neutral light grey (`#F4F4F5`) in light mode and near-black (`#0A0C10`) in dark mode. The header and main content sit inside white (or dark-elevated) rounded "tiles" with subtle borders and shadow. Footer sits directly on the page background without a tile.
 
 **Why:** This pattern reads as "calm, structured, modern" — used by Linear, Vercel, Stripe Dashboard, Cal.com. Tiles give content visible boundaries without heavy hairlines, and the grey background prevents the page from feeling like an unstructured wall of text. Aligns with the design references workshopped earlier (Linear / Vercel / Plausible).
@@ -95,6 +142,8 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 ---
 
 ## 2026-05-13 — Dark mode palette switched to Electric Cobalt
+
+> **Status:** Superseded (2026-05-21). There is no longer a separate dark mode — the site uses a single medium-navy palette.
 
 **Decision:** Light mode keeps the Deep Ink Blue palette (accent `#1E3A5F` on white). Dark mode swaps to Electric Cobalt values: background `#0A0C10`, surface `#14171F`, accent `#60A5FA`.
 
@@ -123,6 +172,8 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ## 2026-05-13 — Theme toggle (manual override of system preference)
 
+> **Status:** Superseded (2026-05-21). The theme toggle was removed; the site is a single fixed navy theme.
+
 **Decision:** Add a small fixed-position toggle button (top-right) that lets users manually switch between light and dark mode. Default behavior still respects the OS `prefers-color-scheme`; clicking the toggle saves an explicit override to `localStorage`.
 
 **Why:** Some users prefer to lock the site to a specific mode independent of their system setting (e.g., reading in a dark office during daytime). Toggle gives that control without sacrificing the smart default.
@@ -138,6 +189,8 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 ---
 
 ## 2026-05-13 — Color palette: Deep Ink Blue, with light + dark mode support
+
+> **Status:** Partially superseded (2026-05-21). The Deep Ink Blue family remains the brand, but light/dark mode support was dropped in favor of a single medium-navy presentation.
 
 **Decision:** Adopt the "Deep Ink Blue" palette from the color workshop. Site supports both light and dark mode via `prefers-color-scheme`, with light as the primary brand presentation (used for screenshots, social previews, marketing materials).
 
@@ -168,6 +221,8 @@ All combinations exceed WCAG 2.0 AAA contrast (the highest tier).
 ---
 
 ## 2026-05-13 — Hand-written HTML & CSS, no framework
+
+> **Status:** Partially superseded. Still hand-written HTML/CSS with no build step locally, but Jekyll (next entry) was adopted for shared header/footer/layout.
 
 **Decision:** Build the site as plain HTML and CSS files with no build step, no JavaScript framework, no static site generator.
 

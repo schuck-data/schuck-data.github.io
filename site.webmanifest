@@ -1,0 +1,11 @@
+{
+  "name": "Schuck Data",
+  "short_name": "Schuck Data",
+  "icons": [
+    { "src": "/favicon-32.png", "type": "image/png", "sizes": "32x32" },
+    { "src": "/apple-touch-icon.png", "type": "image/png", "sizes": "180x180" }
+  ],
+  "theme_color": "#15293f",
+  "background_color": "#15293f",
+  "display": "standalone"
+}
