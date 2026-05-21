@@ -426,8 +426,9 @@ a:focus-visible {
     line-height: 1.08;
     letter-spacing: -0.03em;
     color: var(--text-strong);
-    max-width: 22ch;
+    max-width: 28ch;
     margin: 0 0 1rem;
+    text-wrap: balance;
 }
 
 /* Credential chip */
@@ -498,6 +499,9 @@ a:focus-visible {
 
 /* Section lead under a heading */
 .section-lead { font-size: 0.9375rem; color: var(--text-muted); line-height: 1.5; max-width: 42rem; margin-top: 0.5rem; }
+
+/* Branches heading: a touch smaller / less prominent than a default section heading */
+.branches-section .section-heading h2 { font-size: clamp(1.05rem, 2.2vw, 1.4rem); }
 
 /* ---------------------------------------------------------
    Contact page — direct methods (interim, pre-form)
