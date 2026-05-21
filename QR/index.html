@@ -60,6 +60,7 @@ description: Generate and download QR codes entirely in your browser.
     .qr-seg button:last-child { border-right: none; }
     .qr-seg button:hover { color: var(--text); }
     .qr-seg button.on { background: var(--accent); color: var(--bg-to); font-weight: 500; }
+    .qr-seg--two { grid-template-columns: repeat(2, 1fr); }
     .qr-hint { font-size: 0.72rem; color: var(--text-subtle); margin-top: 0.5rem; line-height: 1.5; }
     .qr-row { display: flex; gap: 1rem; }
     .qr-row > div { flex: 1; }
@@ -100,6 +101,14 @@ description: Generate and download QR codes entirely in your browser.
                 </div>
                 <p class="qr-hint">Higher levels survive more scuffing on a printed code. H is the safe default for signage.</p>
             </div>
+            <div>
+                <label>URL caption</label>
+                <div class="qr-seg qr-seg--two" id="cap">
+                    <button data-cap="on" class="on">On</button>
+                    <button data-cap="off">Off</button>
+                </div>
+                <p class="qr-hint">Print the destination text along the bottom edge of the code.</p>
+            </div>
             <div class="qr-row">
                 <div>
                     <label for="margin">Quiet zone</label>
@@ -134,7 +143,9 @@ description: Generate and download QR codes entirely in your browser.
     var svgBtn = document.getElementById('svg');
     var pngBtn = document.getElementById('pngBtn');
     var ecWrap = document.getElementById('ec');
+    var capWrap = document.getElementById('cap');
     var ecLevel = 'H';
+    var showCaption = true;
     var qr = null;
     var FONT_STACK = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
     var CHAR_W = 0.62; // monospace advance width as a fraction of font size
@@ -208,7 +219,7 @@ description: Generate and download QR codes entirely in your browser.
             svgBtn.disabled = pngBtn.disabled = true;
             return;
         }
-        card.innerHTML = buildSvg(qr, margin, text);
+        card.innerHTML = buildSvg(qr, margin, showCaption ? text : '');
         svgBtn.disabled = pngBtn.disabled = false;
     }
     function download(name, href) {
@@ -226,7 +237,7 @@ description: Generate and download QR codes entirely in your browser.
     svgBtn.addEventListener('click', function () {
         if (!qr) return;
         var margin = Math.max(0, parseInt(marginEl.value, 10) || 0);
-        var svg = buildSvg(qr, margin, dataEl.value.trim());
+        var svg = buildSvg(qr, margin, showCaption ? dataEl.value.trim() : '');
         var blob = new Blob([svg], { type: 'image/svg+xml' });
         var url = URL.createObjectURL(blob);
         download(fileBase() + '.svg', url);
@@ -234,7 +245,7 @@ description: Generate and download QR codes entirely in your browser.
     });
     pngBtn.addEventListener('click', function () {
         if (!qr) return;
-        var label = dataEl.value.trim();
+        var label = showCaption ? dataEl.value.trim() : '';
         var margin = Math.max(0, parseInt(marginEl.value, 10) || 0);
         var target = Math.max(128, Math.min(4096, parseInt(pngSizeEl.value, 10) || 1024));
         var n = qr.getModuleCount();
@@ -280,6 +291,13 @@ description: Generate and download QR codes entirely in your browser.
         if (!btn) return;
         ecLevel = btn.getAttribute('data-ec');
         [].forEach.call(ecWrap.children, function (b) { b.classList.toggle('on', b === btn); });
+        generate();
+    });
+    capWrap.addEventListener('click', function (e) {
+        var btn = e.target.closest('button');
+        if (!btn) return;
+        showCaption = btn.getAttribute('data-cap') === 'on';
+        [].forEach.call(capWrap.children, function (b) { b.classList.toggle('on', b === btn); });
         generate();
     });
     dataEl.addEventListener('input', generate);
