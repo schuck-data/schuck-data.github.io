@@ -35,9 +35,9 @@
 </head>
 <body>
     {% if page.hero_anim %}<canvas class="hero-anim" id="heroAnim" aria-hidden="true"></canvas>{% endif %}
-    <div class="page">
-        {% include header.html %}
+    {% include header.html %}
 
+    <div class="page">
         <main class="page-main">
             {{ content }}
         </main>

@@ -1,15 +1,17 @@
 <header class="site-header{% if page.hide_header_logo %} no-logo{% endif %}">
-    {% unless page.hide_header_logo %}
-    <a class="site-logo" href="/" aria-label="Schuck Data — home">
-        <img src="/images/schuck-data-white.png" alt="Schuck Data">
-    </a>
-    {% endunless %}
+    <div class="site-header-inner">
+        {% unless page.hide_header_logo %}
+        <a class="site-logo" href="/" aria-label="Schuck Data — home">
+            <img src="/images/schuck-data-white-crop.png" alt="Schuck Data">
+        </a>
+        {% endunless %}
 
-    <nav class="site-nav" aria-label="Primary">
-        <a href="/ABOUT/"{% if page.nav == 'about' %} aria-current="page"{% endif %}>About</a>
-        <a href="/SERVICES/"{% if page.nav == 'services' %} aria-current="page"{% endif %}>Services</a>
-        <a href="/WORK/"{% if page.nav == 'work' %} aria-current="page"{% endif %}>Work</a>
-        <a href="/CAREERS/"{% if page.nav == 'careers' %} aria-current="page"{% endif %}>Careers</a>
-        <a href="/CONTACT/"{% if page.nav == 'contact' %} aria-current="page"{% endif %}>Contact</a>
-    </nav>
+        <nav class="site-nav" aria-label="Primary">
+            <a href="/ABOUT/"{% if page.nav == 'about' %} aria-current="page"{% endif %}>About</a>
+            <a href="/SERVICES/"{% if page.nav == 'services' %} aria-current="page"{% endif %}>Services</a>
+            <a href="/WORK/"{% if page.nav == 'work' %} aria-current="page"{% endif %}>Work</a>
+            <a href="/CAREERS/"{% if page.nav == 'careers' %} aria-current="page"{% endif %}>Careers</a>
+            <a href="/CONTACT/"{% if page.nav == 'contact' %} aria-current="page"{% endif %}>Contact</a>
+        </nav>
+    </div>
 </header>

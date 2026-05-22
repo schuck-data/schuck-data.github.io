@@ -63,6 +63,8 @@ body {
     color: var(--text);
     line-height: 1.5;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background:
@@ -122,12 +124,13 @@ a:focus-visible {
 
 .page {
     max-width: 64rem;
+    width: 100%;
     margin: 0 auto;
     padding: 0.75rem 1rem 1rem;
     display: grid;
     gap: 1.25rem;
-    min-height: 100vh;
-    grid-template-rows: auto 1fr auto;
+    flex: 1;
+    grid-template-rows: 1fr auto;
 }
 
 @media (min-width: 48rem) {
@@ -157,14 +160,20 @@ a:focus-visible {
     background: var(--surface);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     backdrop-filter: blur(12px) saturate(180%);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.5rem 0.75rem 0.5rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+.site-header-inner {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 0.3rem 1rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    box-shadow: var(--shadow-sm);
+}
+@media (min-width: 48rem) {
+    .site-header-inner { padding: 0.3rem 2rem; }
 }
 
 .site-logo {
@@ -188,7 +197,7 @@ a:focus-visible {
 
 /* When the wordmark is hidden (homepage — the hero carries the brand),
    the header is just centered navigation. */
-.site-header.no-logo { justify-content: center; }
+.site-header.no-logo .site-header-inner { justify-content: center; }
 
 /* ---------------------------------------------------------
    Site navigation
@@ -398,9 +407,9 @@ a:focus-visible {
    lateral rotating tagline, backstage entry, compaction.
    --------------------------------------------------------- */
 
-/* Header logo image */
+/* Header logo image — tightly-cropped wordmark, sized to fill the bar */
 .site-logo img { height: 2.6rem; width: auto; display: block; }
-@media (min-width: 48rem) { .site-logo img { height: 3rem; } }
+@media (min-width: 48rem) { .site-logo img { height: 3.2rem; } }
 
 
 /* Fixed, keyword-bearing headline */
