@@ -134,7 +134,14 @@ noindex: true
     <div class="qr-foot">No data leaves this page. Use SVG for print (scales to any size); PNG for quick sharing.</div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<!-- Third-party library, loaded from cdnjs (kept external on purpose — self-hosting would
+     bundle MIT-licensed code into this All-Rights-Reserved repo). To finish Subresource
+     Integrity, add an integrity="sha384-…" attribute below using the hash from cdnjs:
+     page  https://cdnjs.com/libraries/qrcode-generator/1.4.4  ("</> " → "Copy Script tag")
+     or API https://api.cdnjs.com/libraries/qrcode-generator/1.4.4?fields=sri
+     (Couldn't auto-generate it in the build sandbox — npm registry + outbound fetch are blocked.) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 (function () {
     var dataEl = document.getElementById('data');

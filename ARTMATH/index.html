@@ -42,22 +42,25 @@ function setup(canvas){
   function fit(){ var dpr = Math.min(window.devicePixelRatio || 1, 2); o.W = canvas.clientWidth; o.H = canvas.clientHeight; canvas.width = o.W * dpr; canvas.height = o.H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
   fit(); window.addEventListener('resize', fit); return o;
 }
+// Each builder sets up its state once and returns a step(t) function that draws ONE frame.
+// A single controller (bottom) schedules frames only when a canvas is on-screen, the tab is
+// visible, and the user hasn't requested reduced motion — so nothing loops needlessly
+// (better for accessibility, battery/CPU, and endpoint heuristics that watch for runaway canvas work).
 function livingGrid(id){
   var o = setup(document.getElementById(id));
-  (function frame(t){
+  return function(t){
     var ctx = o.ctx, W = o.W, H = o.H, tt = t * 0.001, gap = 24, x, y;
     ctx.clearRect(0, 0, W, H);
     for(x = gap/2; x < W; x += gap){ for(y = gap/2; y < H; y += gap){
       var d = Math.hypot(x - W*0.65, y - H*0.5), v = 0.5 + 0.5*Math.sin(tt*1.5 - d*0.035);
       ctx.beginPath(); ctx.arc(x, y, 0.6 + v*1.9, 0, 7); ctx.fillStyle = 'rgba(147,197,253,' + (0.06 + v*0.28) + ')'; ctx.fill();
     }}
-    requestAnimationFrame(frame);
-  })(0);
+  };
 }
 function regression(id){
   var o = setup(document.getElementById(id)), N = 32, pts = [], i;
   for(i=0;i<N;i++) pts.push({ x: Math.random(), y: 0.5 + (Math.random()-0.5)*0.7, vx: (Math.random()-0.5)*0.0009, vy: (Math.random()-0.5)*0.0009 });
-  (function frame(){
+  return function(){
     var ctx = o.ctx, W = o.W, H = o.H, p, sx=0, sy=0, sxx=0, sxy=0;
     ctx.clearRect(0,0,W,H);
     for(i=0;i<N;i++){ p=pts[i]; p.x+=p.vx; p.y+=p.vy; if(p.x<0.05||p.x>0.95)p.vx*=-1; if(p.y<0.08||p.y>0.92)p.vy*=-1; sx+=p.x; sy+=p.y; sxx+=p.x*p.x; sxy+=p.x*p.y; }
@@ -65,35 +68,33 @@ function regression(id){
     ctx.strokeStyle='rgba(147,197,253,0.6)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(x0*W,(1-y0)*H); ctx.lineTo(x1*W,(1-y1)*H); ctx.stroke();
     ctx.fillStyle='rgba(191,219,254,0.75)';
     for(i=0;i<N;i++){ p=pts[i]; ctx.beginPath(); ctx.arc(p.x*W,(1-p.y)*H,2,0,7); ctx.fill(); }
-    requestAnimationFrame(frame);
-  })();
+  };
 }
 function harmonograph(id){
   var o = setup(document.getElementById(id)), ph = 0;
-  (function frame(){
+  return function(){
     var ctx = o.ctx, W = o.W, H = o.H; ph += 0.006; ctx.clearRect(0,0,W,H);
     var a = 3 + Math.sin(ph*0.3), b = 2 + Math.cos(ph*0.23), cx = W/2, cy = H/2, R = Math.min(W,H)*0.40, steps = 520, i, t, dmp;
     ctx.strokeStyle='rgba(147,197,253,0.5)'; ctx.lineWidth=1.25; ctx.beginPath();
     for(i=0;i<=steps;i++){ t = i/steps*Math.PI*2*3; dmp = Math.exp(-0.10*t); var x = cx + R*Math.sin(a*t+ph)*dmp, y = cy + R*Math.sin(b*t+ph*0.5)*dmp; if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }
-    ctx.stroke(); requestAnimationFrame(frame);
-  })();
+    ctx.stroke();
+  };
 }
 function flowField(id){
   var o = setup(document.getElementById(id)), P = 160, ps = [], i, t = 0;
   function reset(p){ p.x = Math.random()*o.W; p.y = Math.random()*o.H; p.life = 30 + Math.random()*130; }
   for(i=0;i<P;i++){ var p={}; reset(p); ps.push(p); }
-  (function frame(){
+  return function(){
     var ctx = o.ctx, W = o.W, H = o.H, k; t += 0.004;
     ctx.fillStyle='rgba(21,40,62,0.10)'; ctx.fillRect(0,0,W,H);
     ctx.strokeStyle='rgba(147,197,253,0.34)'; ctx.lineWidth=1;
     for(k=0;k<P;k++){ var q=ps[k]; var ang=(Math.sin(q.x*0.012)+Math.cos(q.y*0.013)+Math.sin((q.x+q.y)*0.006+t))*Math.PI; var nx=q.x+Math.cos(ang)*1.3, ny=q.y+Math.sin(ang)*1.3; ctx.beginPath(); ctx.moveTo(q.x,q.y); ctx.lineTo(nx,ny); ctx.stroke(); q.x=nx; q.y=ny; q.life--; if(q.life<0||q.x<0||q.x>W||q.y<0||q.y>H)reset(q); }
-    requestAnimationFrame(frame);
-  })();
+  };
 }
 function network(id){
   var o = setup(document.getElementById(id)), N = 42, ns = [], i;
   for(i=0;i<N;i++) ns.push({ x: Math.random(), y: Math.random(), vx: (Math.random()-0.5)*0.0010, vy: (Math.random()-0.5)*0.0010 });
-  (function frame(){
+  return function(){
     var ctx = o.ctx, W = o.W, H = o.H, j, a, b, TH = 95;
     ctx.clearRect(0,0,W,H);
     for(i=0;i<N;i++){ a=ns[i]; a.x+=a.vx; a.y+=a.vy; if(a.x<0||a.x>1)a.vx*=-1; if(a.y<0||a.y>1)a.vy*=-1; }
@@ -101,15 +102,14 @@ function network(id){
     for(i=0;i<N;i++) for(j=i+1;j<N;j++){ a=ns[i]; b=ns[j]; var dx=(a.x-b.x)*W, dy=(a.y-b.y)*H, d=Math.hypot(dx,dy); if(d<TH){ ctx.strokeStyle='rgba(147,197,253,'+((1-d/TH)*0.38)+')'; ctx.beginPath(); ctx.moveTo(a.x*W,a.y*H); ctx.lineTo(b.x*W,b.y*H); ctx.stroke(); } }
     ctx.fillStyle='rgba(191,219,254,0.8)';
     for(i=0;i<N;i++){ a=ns[i]; ctx.beginPath(); ctx.arc(a.x*W,a.y*H,1.6,0,7); ctx.fill(); }
-    requestAnimationFrame(frame);
-  })();
+  };
 }
 function tesseract(id){
   var o = setup(document.getElementById(id)), V = [], E = [], i, j, k;
   for(i=0;i<16;i++) V.push([(i&1)?1:-1,(i&2)?1:-1,(i&4)?1:-1,(i&8)?1:-1]);
   for(i=0;i<16;i++) for(j=i+1;j<16;j++){ var diff=0; for(k=0;k<4;k++) if(V[i][k]!==V[j][k])diff++; if(diff===1)E.push([i,j]); }
   var A = 0;
-  (function frame(){
+  return function(){
     var ctx = o.ctx, W = o.W, H = o.H; A += 0.009; ctx.clearRect(0,0,W,H);
     var c1=Math.cos(A), s1=Math.sin(A), c2=Math.cos(A*0.6), s2=Math.sin(A*0.6), scale=Math.min(W,H)*0.72, proj=[];
     for(i=0;i<16;i++){ var x=V[i][0],y=V[i][1],z=V[i][2],w=V[i][3]; var nx=x*c1-w*s1,nw=x*s1+w*c1; x=nx; w=nw; var ny=y*c2-z*s2,nz=y*s2+z*c2; y=ny; z=nz; var k4=1/(2.8-w); x*=k4; y*=k4; z*=k4; var k3=1/(3.2-z); proj.push([W/2+x*k3*scale, H/2+y*k3*scale]); }
@@ -117,10 +117,57 @@ function tesseract(id){
     for(i=0;i<E.length;i++){ var e=E[i]; ctx.beginPath(); ctx.moveTo(proj[e[0]][0],proj[e[0]][1]); ctx.lineTo(proj[e[1]][0],proj[e[1]][1]); ctx.stroke(); }
     ctx.fillStyle='rgba(191,219,254,0.7)';
     for(i=0;i<16;i++){ ctx.beginPath(); ctx.arc(proj[i][0],proj[i][1],1.6,0,7); ctx.fill(); }
-    requestAnimationFrame(frame);
-  })();
+  };
 }
 window.addEventListener('load', function(){
-  livingGrid('c1'); regression('c2'); harmonograph('c3'); flowField('c4'); network('c5'); tesseract('c6');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var defs = [['c1', livingGrid], ['c2', regression], ['c3', harmonograph], ['c4', flowField], ['c5', network], ['c6', tesseract]];
+  var items = defs.map(function(d){
+    return { canvas: document.getElementById(d[0]), step: d[1](d[0]), raf: null, visible: false };
+  });
+  function now(){ return (window.performance && performance.now) ? performance.now() : Date.now(); }
+  items.forEach(function(it){
+    it.loop = function(t){ it.step(t || now()); it.raf = requestAnimationFrame(it.loop); };
+  });
+  function canRun(it){ return it.visible && !reduce.matches && !document.hidden; }
+  function start(it){ if(it.raf || !canRun(it)) return; it.raf = requestAnimationFrame(it.loop); }
+  function stop(it){ if(it.raf){ cancelAnimationFrame(it.raf); it.raf = null; } }
+  function warm(it, n){ for(var k=0;k<n;k++) it.step(k * 16.7); }   // run n frames to settle into a populated still image
+
+  if (reduce.matches){
+    // Reduced motion: paint one settled still frame per piece, then leave them be (no loop).
+    var paintStatic = function(){ for(var n=0;n<items.length;n++) warm(items[n], 120); };
+    paintStatic();
+    window.addEventListener('resize', paintStatic);
+    return;
+  }
+
+  // Animate only what's on screen; pause off-screen and when the tab is hidden.
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        for(var n=0;n<items.length;n++){
+          if(items[n].canvas === e.target){
+            items[n].visible = e.isIntersecting;
+            if(items[n].visible) start(items[n]); else stop(items[n]);
+            break;
+          }
+        }
+      });
+    }, { threshold: 0.01 });
+    items.forEach(function(it){ io.observe(it.canvas); });
+  } else {
+    items.forEach(function(it){ it.visible = true; start(it); });
+  }
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden) items.forEach(function(it){ stop(it); });
+    else items.forEach(function(it){ start(it); });
+  });
+  try {
+    reduce.addEventListener('change', function(){
+      if(reduce.matches){ items.forEach(function(it){ stop(it); warm(it, 1); }); }
+      else items.forEach(function(it){ start(it); });
+    });
+  } catch(e){}
 });
 </script>
