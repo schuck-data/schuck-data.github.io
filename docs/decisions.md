@@ -10,7 +10,7 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ## Current State (kept up to date)
 
-*Last updated: 2026-05-21*
+*Last updated: 2026-05-26*
 
 - **Hosting:** GitHub Pages from the `schuck-data.github.io` repo; custom domain `schuckdata.com` via Namecheap DNS. Auto-deploys on push to `main`.
 - **Engine:** Jekyll — shared `_layouts/default.html` with `_includes/header.html` and `_includes/footer.html`.
@@ -18,11 +18,26 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 - **Type:** Inter (Google Fonts), with monospace accents for eyebrows/labels.
 - **Public pages:** `/` (home), `/ABOUT/`, `/FOUNDER/`, `/SERVICES/`, `/WORK/` (case-study stub), `/CAREERS/`, `/CONTACT/`. Header nav: About · Services · Work · Careers · Contact. Routes are UPPERCASE by convention.
 - **Home hero:** the brand wordmark lives in the header nav bar (all pages, incl. home — no separate hero logo). The hero leads with a mono eyebrow ("Dashboards. Automation. Analytics."), the H1 "Data consultancy that makes sense.", a rotating tagline sub-line, and the Census-Bureau credential. Below it, the "What's your current need?" section has two expanding cards — "Something needs fixing." / "Looking to get ahead." — whose every option and the skip link point to `/CONTACT/`. (Social card title is set separately via `social_title`.)
-- **Contact:** an interim "under construction" page offering direct email / call / text. A proper inquiry form is the planned replacement.
+- **Contact / Careers:** both pages lead with a Google Form CTA (link-out) and keep direct email/call/text as a fallback (Forms can be blocked on gov networks). Form URLs are placeholders pending the real forms — see `docs/forms-setup.md`.
 - **Content:** About / Founder / Services / Work prose is placeholder lorem ipsum except confirmed facts (founder Dakota Schuck = former U.S. Census Bureau statistician, 2014–2019). No political content.
-- **Brand assets:** SD monogram favicon (`favicon.svg` + `favicon-32/16.png` + `apple-touch-icon.png` + `site.webmanifest`) and `og-image.png` for link previews. Logos in `/images/` (white version used on navy).
+- **Brand assets:** SD monogram favicon (`favicon.svg` + `favicon-32/16.png` + `apple-touch-icon.png` + `site.webmanifest`) and `og-image.png` for link previews. Logos in `/images/` (white version used on navy; the white variants were regenerated from the black master on 2026-05-26).
+- **Licensing:** whole-site **All Rights Reserved** (see root `LICENSE`); the name/logo are trademarks and `/ARTMATH/` is reserved. Not open-source.
 - **Backstage:** `/BACKSTAGE/`, `/QR/`, and `/QRLIBRARY/*` are kept out of search via per-page `noindex` (deliberately NOT a robots `Disallow`, which would both list the paths and block crawlers from reading the noindex). They stay reachable by direct URL; the footer em-dash link is `rel="nofollow"`.
 - **Mockups:** `/mockups/*` are retained in the repo as workshop reference but excluded from the Jekyll build (no longer published).
+
+---
+
+## 2026-05-26 — White logo fix, whole-site All Rights Reserved, contrast AA fixes, Google Form paths
+
+**Decision:** A working session covering five items (full write-ups added under `docs/`).
+
+- **White logo regenerated from the black master.** The shipped `schuck-data-white*.png` were a slightly *eroded* derivative of the current black logo — the thin connecting lines of the chart motif had been dropped, so it read as loose dots rather than a connected trend line. Regenerated all three white variants directly from `schuck-data-black.png` (recolor RGB→white, keep the master's alpha exactly). Alpha is now pixel-identical to the black master; the connected rising-chart is restored.
+- **Licensing → whole-site All Rights Reserved.** Replaced the repo-wide MIT license (which would have granted anyone the right to copy/sell the logo and the Artmath artwork) with a single All-Rights-Reserved notice that also names the "Schuck Data" name/logo as trademarks and the `/ARTMATH/` artwork as reserved. Owner of record: Schuck Data (DS89 Holdco LLC), matching the footer. The considered alternative (keep code MIT, carve out only brand + art) and rationale are in `docs/licensing-recommendation.md`. Whole-site ARR was chosen as the simpler, safer option — no bundled third-party code to conflict with (QR lib + Inter font load from CDNs at runtime).
+- **Contrast AA fixes (Section 508).** From `docs/contrast-audit.md`: `--text-faint` 0.40→0.62 and `--text-subtle` 0.55→0.65 (both now ≥4.5:1 on the worst-case navy; hierarchy below `--text-muted` 0.72 preserved), and the QR placeholder `.qr-empty` `#9aa3b2`→`#767676` (4.54:1 on white). Opaque text, muted text, the accent, and the focus ring already passed AA.
+- **Client & subcontractor paths.** Contact and Careers now lead with a Google Form CTA (link-out), with direct email/call/text kept as a fallback — the fallback matters because Google Forms is blocked on some government networks. Form URLs are placeholders (`REPLACE-WITH-…`) pending the real forms; field specs in `docs/forms-setup.md`.
+- **Grayware (analysis only — no code changed).** `docs/grayware-review.md` ranks the likely web-filter triggers (most probably a new/uncategorized domain plus the QR `QRLIBRARY` meta-refresh redirects to Facebook; secondarily the perpetual `requestAnimationFrame` canvas animations and the no-SRI CDN script) and includes a vendor re-categorization checklist.
+
+**Open:** create the two Google Forms and replace the placeholder URLs; decide whether to implement the grayware code mitigations (SRI on the QR CDN script; a meta CSP; gating the Artmath canvases on `prefers-reduced-motion` + visibility; a visible interstitial instead of the instant Facebook meta-refresh). Note: a corrupted `.git/index` was observed this session — rebuild it on the host with `git reset` (working-tree files are intact).
 
 ---
 

@@ -26,7 +26,7 @@ schuckdata/
 ├── styles.css          # All site styles
 ├── CNAME               # Custom domain for GitHub Pages
 ├── README.md           # This file
-├── LICENSE             # MIT
+├── LICENSE             # All rights reserved (see License section)
 ├── .gitignore
 ├── docs/
 │   └── decisions.md    # Running log of design/architecture decisions
@@ -70,6 +70,10 @@ These five domains are owned and redirect 301 → `schuckdata.com` via Namecheap
 ## Design
 
 See [`docs/decisions.md`](docs/decisions.md) for the running log of design and architecture decisions and their rationale.
+
+## License
+
+© 2026 Schuck Data (DS89 Holdco LLC). **All rights reserved** — see [`LICENSE`](LICENSE). The entire repository, including the source code, the "Schuck Data" name and logo (trademarks), and the original artwork in `/ARTMATH/`, is proprietary. The repo is public only so the site can be served from GitHub Pages; publishing it grants no reuse rights. For permission, contact dakota@schuckdata.com.
 
 ## Contact
 
