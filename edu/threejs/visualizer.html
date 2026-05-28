@@ -100,30 +100,43 @@
   .preset.active { border-color:var(--param); color:var(--param); background:rgba(255,209,102,0.07); }
 
   #code-block {
-    padding:14px 16px 16px; font-size:11.5px; line-height:2;
+    padding:14px 16px 16px; font-size:11.5px; line-height:2.2;
     color:rgba(255,255,255,0.28); background:var(--code-bg);
     overflow:auto; white-space:pre; flex:1 1 auto; min-height:0;
   }
   #reset-row { padding:8px 16px 14px; background:var(--code-bg); flex-shrink:0; }
-  #reset-btn {
+  #reset-row button {
     font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.08em;
     padding:5px 12px; border:1px solid rgba(255,255,255,0.14);
     background:none; color:var(--dim); cursor:pointer; border-radius:2px;
     transition:all 0.15s; text-transform:uppercase;
   }
-  #reset-btn:hover { border-color:rgba(255,255,255,0.35); color:#fff; }
+  #reset-row button:hover { border-color:rgba(255,255,255,0.35); color:#fff; }
 
   .param {
     color:var(--param); background:rgba(255,209,102,0.08);
     border:none; border-bottom:1px solid rgba(255,209,102,0.35);
     font-family:'Courier New',monospace; font-size:11.5px; outline:none;
     padding:0 2px; width:auto; min-width:20px; text-align:center;
-    transition:background 0.15s, border-color 0.15s;
+    transition:background 0.15s, border-color 0.15s; vertical-align:middle;
   }
   .param:focus { background:rgba(255,209,102,0.18); border-bottom-color:var(--param); }
-  .comment { color:rgba(255,255,255,0.16); }
-  .kw { color:rgba(180,180,255,0.4); }
-  .fn { color:rgba(150,220,255,0.38); }
+
+  /* inline stepper (▲▼) injected next to each editable number */
+  .num { display:inline-flex; align-items:center; vertical-align:middle; }
+  .spin { display:inline-flex; flex-direction:column; margin-left:3px; }
+  .spin button {
+    font-family:'Courier New',monospace; font-size:7px; line-height:1;
+    width:14px; height:9px; padding:0; margin:0;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,209,102,0.08); color:var(--param);
+    border:1px solid rgba(255,209,102,0.3); cursor:pointer; user-select:none;
+    transition:background 0.12s;
+  }
+  .spin button:hover { background:rgba(255,209,102,0.28); }
+  .spin button:active { background:rgba(255,209,102,0.45); }
+  .spin .up { border-radius:2px 2px 0 0; border-bottom:none; }
+  .spin .dn { border-radius:0 0 2px 2px; }
 
   /* ── Wide / landscape: dock the panel to the right ── */
   @media (min-width: 820px) and (min-aspect-ratio: 1/1) {
@@ -134,10 +147,8 @@
       height:100%;
     }
     #panel-toggle { border-bottom:1px solid var(--border); }
-    /* On desktop the panel is open by default and fills its column height */
     #panel-body { max-height:none; flex:1 1 auto; }
     #panel-body:not(.open) { max-height:0; flex:0 0 auto; }
-    #toggle-arrow.docked { transform: rotate(-90deg); }
   }
 </style>
 </head>
@@ -183,7 +194,7 @@ renderer.<span class="fn">setSize</span>( <input class="param" id="p-rw" value="
 camera.<span class="fn">position</span>.set( <input class="param" id="p-cx" value="0" size="2">, <input class="param" id="p-cy" value="0" size="2">, <input class="param" id="p-cz" value="5" size="3"> );
 camera.<span class="fn">lookAt</span>( <input class="param" id="p-lx" value="0" size="2">, <input class="param" id="p-ly" value="0" size="2">, <input class="param" id="p-lz" value="0" size="2"> );
 </div>
-      <div id="reset-row"><button id="reset-btn">↺ reset defaults</button></div>
+      <div id="reset-row"><button id="reset-btn">↺ reset defaults</button> <button id="frame-btn">⊕ frame view</button></div>
     </div>
   </div>
 </div>
@@ -201,6 +212,8 @@ renderer.setClearColor(0x0b0b0f, 1);
 const viewport = document.getElementById('viewport');
 viewport.appendChild(renderer.domElement);
 
+// The OBSERVER camera — the external vantage point we watch the model from.
+// It is completely independent of the simulated camera defined in the code panel.
 const viewCam = new THREE.PerspectiveCamera(45, 1, 0.001, 100000);
 const scene = new THREE.Scene();
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
@@ -221,17 +234,14 @@ function resizeRenderer() {
 
 // ── Defaults + param reading ───────────────────────────────────────────────
 const DEFAULTS = { rw:1920, rh:1080, fov:75, near:0.1, far:1000, cx:0, cy:0, cz:5, lx:0, ly:0, lz:0 };
-function getP(id){ return parseFloat(document.getElementById(id).value); }
 function getParams(){
   const p = {};
   for (const k of Object.keys(DEFAULTS)){
-    const id = 'p-' + k;
-    const el = document.getElementById(id);
+    const el = document.getElementById('p-' + k);
     let v = el ? parseFloat(el.value) : NaN;
     if (!isFinite(v)) v = DEFAULTS[k];
     p[k] = v;
   }
-  // guard against degenerate values
   p.rw = Math.max(1, p.rw); p.rh = Math.max(1, p.rh);
   p.fov = Math.min(179, Math.max(1, p.fov));
   p.near = Math.max(0.0001, p.near);
@@ -302,7 +312,7 @@ function addLabel(text, pos, color, h){
   g.add(s);
 }
 
-// ── Orbit state ────────────────────────────────────────────────────────────
+// ── Observer orbit state ─────────────────────────────────────────────────────
 let orbitTarget = new THREE.Vector3(0,0,0);
 let orbitRadius = 30;
 let spherical = { theta: 0.62, phi: 1.05 };
@@ -316,8 +326,6 @@ function updateViewCam(){
 }
 
 // ── Build scene from params ─────────────────────────────────────────────────
-let lastFrameDist = null; // remember to keep orbit stable across rebuilds
-
 function buildScene(reframe=false){
   while (g.children.length) { const c = g.children[0]; g.remove(c); c.geometry?.dispose?.(); }
 
@@ -341,11 +349,9 @@ function buildScene(reframe=false){
   const fwd   = new THREE.Vector3(-e[8], -e[9], -e[10]).normalize(); // viewing direction
 
   // Distance from camera to the focal (view) plane = distance to lookAt target.
-  // If lookAt == position, fall back to a sensible default so the math is stable.
   let D = C.distanceTo(L);
   if (D < 1e-4) D = 1;
 
-  // Frustum half-extents at any distance d in front of the camera.
   const halfH = d => Math.tan(fovRad / 2) * d;
   const halfW = d => halfH(d) * aspect;
 
@@ -357,7 +363,6 @@ function buildScene(reframe=false){
   // sits a real distance behind it instead of flush against it.
   const hwD = halfW(D), hhD = halfH(D);
 
-  // Corner builder in camera-local space → world.
   const cornersAt = d => {
     const hw = halfW(d), hh = halfH(d);
     return [
@@ -368,19 +373,16 @@ function buildScene(reframe=false){
     ].map(v => v.applyMatrix4(M));
   };
 
-  const screenCorners = cornersAt(D);            // BL, BR, TR, TL  (in tj sign terms)
+  const screenCorners = cornersAt(D);
   const nearCorners   = cornersAt(p.near);
-  const capFar        = Math.min(p.far, D * 3.2); // cap the far plane so it stays in view
+  const capFar        = Math.min(p.far, D * 3.2);
   const farCorners    = cornersAt(capFar);
 
-  // Convenience corner vectors of the screen (camera-space sign: x∈[-hw,hw], y∈[-hh,hh])
   const sBL = screenCorners[0], sBR = screenCorners[1], sTR = screenCorners[2], sTL = screenCorners[3];
 
-  // Characteristic length for sizing helpers / camera body / labels.
   const S = Math.max(2 * hwD, 2 * hhD, D);
 
   // ── View plane (the screen) ───────────────────────────────────────────────
-  // Fill (semi-transparent) via two triangles.
   const planeGeo = new THREE.BufferGeometry();
   planeGeo.setAttribute('position', new THREE.Float32BufferAttribute([
     sBL.x,sBL.y,sBL.z,  sBR.x,sBR.y,sBR.z,  sTR.x,sTR.y,sTR.z,
@@ -402,28 +404,28 @@ function buildScene(reframe=false){
     g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([c,d]), gridMat));
   }
 
-  const lblH = S * 0.05;          // base world label height
+  const lblH = S * 0.05;
   const corner = (sx, sy) => L.clone()
       .add(right.clone().multiplyScalar(sx * hwD))
       .add(up.clone().multiplyScalar(sy * hhD));
 
-  // ── BROWSER coordinate ruling (pixels): origin at TOP-LEFT, +X right, +Y down ─
+  // ── BROWSER coordinate ruling (pixels): origin TOP-LEFT, +X right, +Y down ──
   const browserExt = 0.14;
   g.add(arrow(corner(-1,1).clone().add(right.clone().multiplyScalar(-browserExt*hwD)),
               corner( 1,1).clone().add(right.clone().multiplyScalar( browserExt*hwD)),
-              0xe05555, S, 0.95));                                   // browser +X (top edge)
+              0xe05555, S, 0.95));
   g.add(arrow(corner(-1,1).clone().add(up.clone().multiplyScalar( browserExt*hhD)),
               corner(-1,-1).clone().add(up.clone().multiplyScalar(-browserExt*hhD)),
-              0x4ec97a, S, 0.95));                                   // browser +Y (left edge, downward)
+              0x4ec97a, S, 0.95));
   g.add(sphere(corner(-1,1), S*0.018, 0xffffff));
   addLabel('(0,0) px', corner(-1,1).clone().add(right.clone().multiplyScalar(-0.18*hwD)).add(up.clone().multiplyScalar(0.16*hhD)), 'rgba(255,255,255,0.7)', lblH*0.85);
   addLabel('+X px', corner(1,1).clone().add(right.clone().multiplyScalar(0.22*hwD)), '#e05555', lblH*0.85);
   addLabel('+Y px ↓', corner(-1,-1).clone().add(up.clone().multiplyScalar(-0.22*hhD)), '#4ec97a', lblH*0.85);
 
-  // ── THREE.JS coordinate ruling (units): origin at CENTER, +X right, +Y up ─────
-  g.add(arrow(corner(-1.18,0), corner(1.18,0), 0x9d7fff, S, 0.85));  // tj +X through center
-  g.add(arrow(corner(0,-1.18), corner(0,1.18), 0x6fffa8, S, 0.85));  // tj +Y through center
-  g.add(sphere(L, S*0.02, 0x9d7fff, 0.95));                          // tj origin
+  // ── THREE.JS coordinate ruling (units): origin CENTER, +X right, +Y up ──────
+  g.add(arrow(corner(-1.18,0), corner(1.18,0), 0x9d7fff, S, 0.85));
+  g.add(arrow(corner(0,-1.18), corner(0,1.18), 0x6fffa8, S, 0.85));
+  g.add(sphere(L, S*0.02, 0x9d7fff, 0.95));
   addLabel('(0,0,0)', L.clone().add(right.clone().multiplyScalar(0.16*hwD)).add(up.clone().multiplyScalar(0.13*hhD)), 'rgba(157,127,255,0.85)', lblH*0.8);
   addLabel('+X', corner(1.18,0).clone().add(right.clone().multiplyScalar(0.12*hwD)), 'rgba(157,127,255,0.9)', lblH*0.85);
   addLabel('+Y', corner(0,1.18).clone().add(up.clone().multiplyScalar(0.10*hhD)), 'rgba(111,255,168,0.9)', lblH*0.85);
@@ -431,10 +433,10 @@ function buildScene(reframe=false){
   // Corner juxtaposition: same point, two coordinate systems (the key lesson).
   const fmt = n => (Math.round(n*100)/100).toString();
   const cornerInfo = [
-    { p:corner(-1, 1), px:`(0, 0)`,            tj:`(${fmt(-hwD)}, ${fmt(hhD)})` },
-    { p:corner( 1, 1), px:`(${p.rw}, 0)`,      tj:`(${fmt(hwD)}, ${fmt(hhD)})` },
-    { p:corner( 1,-1), px:`(${p.rw}, ${p.rh})`,tj:`(${fmt(hwD)}, ${fmt(-hhD)})` },
-    { p:corner(-1,-1), px:`(0, ${p.rh})`,      tj:`(${fmt(-hwD)}, ${fmt(-hhD)})` },
+    { p:corner(-1, 1), px:`(0, 0)`,             tj:`(${fmt(-hwD)}, ${fmt(hhD)})` },
+    { p:corner( 1, 1), px:`(${p.rw}, 0)`,       tj:`(${fmt(hwD)}, ${fmt(hhD)})` },
+    { p:corner( 1,-1), px:`(${p.rw}, ${p.rh})`, tj:`(${fmt(hwD)}, ${fmt(-hhD)})` },
+    { p:corner(-1,-1), px:`(0, ${p.rh})`,       tj:`(${fmt(-hwD)}, ${fmt(-hhD)})` },
   ];
   cornerInfo.forEach(ci => {
     addLabel(ci.px + '\n' + ci.tj,
@@ -443,7 +445,7 @@ function buildScene(reframe=false){
   });
 
   // ── Z AXIS (three.js +Z toward viewer) from screen center ─────────────────
-  const zEnd = L.clone().add(fwd.clone().multiplyScalar(-S*0.9)); // +Z is opposite viewing dir
+  const zEnd = L.clone().add(fwd.clone().multiplyScalar(-S*0.9));
   g.add(arrow(L.clone().add(fwd.clone().multiplyScalar(S*0.12)), zEnd, 0x4a9edd, S, 0.9));
   addLabel('+Z\n(toward viewer)', zEnd.clone().add(up.clone().multiplyScalar(0.12*hhD)), '#4a9edd', lblH*0.8);
 
@@ -466,8 +468,6 @@ function buildScene(reframe=false){
     C.clone().add(up.clone().multiplyScalar(b*2.4)), '#f0a030', lblH*0.78);
 
   // ── FRUSTUM ───────────────────────────────────────────────────────────────
-  // near plane (bright), far plane (dim, dashed), and the four edge-rays that
-  // run camera → near corner → SCREEN corner → far corner (collinear by design).
   g.add(rectLoop(nearCorners, 0xf0a030, 0.75));
   g.add(rectLoop(farCorners, 0xf0a030, 0.22, true));
   for (let i=0;i<4;i++){
@@ -484,19 +484,18 @@ function buildScene(reframe=false){
     L.clone().add(up.clone().multiplyScalar(-0.16*hhD)).add(right.clone().multiplyScalar(0.05*hwD)),
     'rgba(240,160,48,0.7)', lblH*0.66);
 
-  // ── Frame the orbit camera (only on first build / reframe / big scale change) ─
-  const sceneCenter = C.clone().add(L).multiplyScalar(0.5);
-  if (reframe || lastFrameDist === null || Math.abs(S - lastFrameDist) / Math.max(S,lastFrameDist) > 0.6){
-    orbitTarget.copy(sceneCenter);
+  // ── Frame the OBSERVER camera ONLY on initial load / explicit reframe. ──────
+  // Editing the code must move the SIMULATED (orange) camera within the model —
+  // it must NEVER disturb the observer's external viewpoint. So on edits we leave
+  // orbitTarget / orbitRadius / angle exactly as the user left them.
+  if (reframe){
+    orbitTarget.copy(C.clone().add(L).multiplyScalar(0.5));
     orbitRadius = Math.max(S * 1.9, D * 2.2);
-    lastFrameDist = S;
-  } else {
-    orbitTarget.copy(sceneCenter); // keep angle/zoom, just recenter
+    updateViewCam();
   }
-  updateViewCam();
 }
 
-// ── Pointer / touch controls ────────────────────────────────────────────────
+// ── Observer controls (pointer / touch) ──────────────────────────────────────
 let dragging=false, prevX=0, prevY=0, prevPinch=null;
 const el = renderer.domElement;
 el.addEventListener('mousedown', e=>{ dragging=true; prevX=e.clientX; prevY=e.clientY; });
@@ -541,10 +540,9 @@ document.querySelectorAll('.param').forEach(input=>{
   autosize(input);
   input.addEventListener('input', ()=>{
     autosize(input);
-    // keep the two copies of width / height in sync (renderer.setSize ↔ aspect)
     const mirror = { 'p-rw':'p-rw2','p-rw2':'p-rw','p-rh':'p-rh2','p-rh2':'p-rh' }[input.id];
     if(mirror){ const m=document.getElementById(mirror); m.value=input.value; autosize(m); }
-    buildScene(false);
+    buildScene(false);   // move the simulated camera; never the observer
   });
   input.addEventListener('keydown', e=>{ if(e.key==='Enter') input.blur(); });
 });
@@ -553,7 +551,7 @@ document.querySelectorAll('.preset').forEach(btn=>{
     document.querySelectorAll('.preset').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     syncSize(btn.dataset.w, btn.dataset.h);
-    buildScene(true);
+    buildScene(false);
   });
 });
 document.getElementById('reset-btn').addEventListener('click', ()=>{
@@ -563,17 +561,55 @@ document.getElementById('reset-btn').addEventListener('click', ()=>{
   document.getElementById('p-rw2').value=DEFAULTS.rw; autosize(document.getElementById('p-rw2'));
   document.getElementById('p-rh2').value=DEFAULTS.rh; autosize(document.getElementById('p-rh2'));
   document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active', b.dataset.w==String(DEFAULTS.rw)&&b.dataset.h==String(DEFAULTS.rh)));
-  buildScene(true);
+  buildScene(false);
 });
+// The ONLY control that moves the observer's viewpoint:
+document.getElementById('frame-btn').addEventListener('click', ()=> buildScene(true));
+
+// ── Click steppers (▲▼) on every editable number; typing still works ─────────
+const STEP = { 'p-rw':10,'p-rh':10,'p-rw2':10,'p-rh2':10,'p-fov':1,'p-near':0.05,
+               'p-far':10,'p-cx':0.5,'p-cy':0.5,'p-cz':0.5,'p-lx':0.5,'p-ly':0.5,'p-lz':0.5 };
+const MINV = { 'p-rw':1,'p-rh':1,'p-rw2':1,'p-rh2':1,'p-fov':1,'p-near':0.01,'p-far':0.02 };
+function applyStep(input, dir){
+  const step = STEP[input.id] || 1;
+  let v = parseFloat(input.value);
+  if(!isFinite(v)) v = DEFAULTS[input.id.slice(2)] ?? 0;
+  v += dir * step;
+  if(input.id in MINV) v = Math.max(MINV[input.id], v);
+  if(input.id === 'p-fov') v = Math.min(179, v);
+  const dec = (String(step).split('.')[1] || '').length;
+  v = parseFloat(v.toFixed(dec));
+  input.value = v;
+  autosize(input);
+  input.dispatchEvent(new Event('input', { bubbles:true })); // mirrors + rebuilds
+}
+function attachStepper(input){
+  const wrap = document.createElement('span'); wrap.className = 'num';
+  input.parentNode.insertBefore(wrap, input);
+  wrap.appendChild(input);
+  const spin = document.createElement('span'); spin.className = 'spin';
+  const up = document.createElement('button'); up.type='button'; up.className='up'; up.tabIndex=-1; up.textContent='▲';
+  const dn = document.createElement('button'); dn.type='button'; dn.className='dn'; dn.tabIndex=-1; dn.textContent='▼';
+  spin.appendChild(up); spin.appendChild(dn); wrap.appendChild(spin);
+  const hold = (btn, dir) => {
+    let to, iv;
+    const start = ev => { ev.preventDefault(); applyStep(input, dir);
+      to = setTimeout(()=>{ iv = setInterval(()=>applyStep(input, dir), 80); }, 360); };
+    const stop = () => { clearTimeout(to); clearInterval(iv); };
+    btn.addEventListener('mousedown', start);
+    btn.addEventListener('touchstart', start, { passive:false });
+    ['mouseup','mouseleave','touchend','touchcancel'].forEach(evn => btn.addEventListener(evn, stop));
+  };
+  hold(up, 1); hold(dn, -1);
+}
+document.querySelectorAll('.param').forEach(attachStepper);
 
 // ── Panel toggle ──────────────────────────────────────────────────────────────
 const panelBody = document.getElementById('panel-body');
 const toggleArrow = document.getElementById('toggle-arrow');
 function isDocked(){ return window.matchMedia('(min-width: 820px) and (min-aspect-ratio: 1/1)').matches; }
 function syncArrow(open){
-  toggleArrow.classList.toggle('docked', isDocked());
-  if(isDocked()){ toggleArrow.innerHTML = open ? '&#9650;' : '&#9650;'; }
-  else { toggleArrow.innerHTML = open ? '&#9650;' : '&#9660;'; }
+  toggleArrow.innerHTML = (open || isDocked()) ? '&#9650;' : '&#9660;';
 }
 document.getElementById('panel-toggle').addEventListener('click', ()=>{
   const open = panelBody.classList.toggle('open');
@@ -587,7 +623,7 @@ const ro = new ResizeObserver(()=> resizeRenderer());
 ro.observe(viewport);
 window.addEventListener('resize', ()=>{ resizeRenderer(); syncArrow(panelBody.classList.contains('open')); });
 resizeRenderer();
-buildScene(true);
+buildScene(true);   // frame the observer once on load
 (function animate(){ requestAnimationFrame(animate); renderer.render(scene, viewCam); })();
 </script>
 </body>
