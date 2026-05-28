@@ -10,34 +10,23 @@
     --surface:   #111118;
     --border:    rgba(255,255,255,0.07);
     --dim:       rgba(255,255,255,0.22);
-    --accent-x:  #e05555;
-    --accent-y:  #4ec97a;
-    --accent-z:  #4a9edd;
-    --accent-tj: #9d7fff;
-    --accent-tj2:#6fffa8;
     --accent-cam:#f0a030;
     --param:     #ffd166;
     --code-bg:   #0d0d15;
+    --teapot:    #63d6c0;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { width:100%; height:100%; }
-  body {
-    background: var(--bg);
-    overflow: hidden;
-    font-family: 'Courier New', monospace;
-    color: #ccc;
-  }
+  body { background:var(--bg); overflow:hidden; font-family:'Courier New', monospace; color:#ccc; }
 
-  /* App shell: column by default (mobile / portrait), row on wide landscape */
-  #app { width:100vw; height:100vh; height:100dvh; display:flex; flex-direction:column; }
+  #app { width:100%; height:100%; display:flex; flex-direction:column; }
   #viewport { flex:1 1 auto; position:relative; overflow:hidden; min-height:0; min-width:0; touch-action:none; }
   #viewport canvas { display:block; position:absolute; top:0; left:0; touch-action:none; }
 
   #legend {
     position:absolute; top:12px; left:12px;
     font-size:9.5px; letter-spacing:0.06em; line-height:1.9;
-    pointer-events:none; z-index:5;
-    background: rgba(11,11,15,0.45); padding:6px 8px; border-radius:4px;
+    pointer-events:none; z-index:5; background:rgba(11,11,15,0.45); padding:6px 8px; border-radius:4px;
   }
   .leg { display:flex; align-items:center; gap:6px; }
   .ldot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
@@ -57,17 +46,13 @@
     color:var(--dim); font-family:'Courier New',monospace;
     font-size:10px; letter-spacing:0.12em; text-transform:uppercase;
     padding:9px 16px; cursor:pointer; text-align:left;
-    display:flex; justify-content:space-between; align-items:center;
-    transition:color 0.2s; flex-shrink:0;
+    display:flex; justify-content:space-between; align-items:center; transition:color 0.2s; flex-shrink:0;
   }
   #panel-toggle:hover { color:rgba(255,255,255,0.5); }
   #panel-body { max-height:0; overflow:hidden; transition:max-height 0.3s ease; display:flex; flex-direction:column; min-height:0; }
   #panel-body.open { max-height:62vh; }
 
-  #presets {
-    display:flex; gap:6px; padding:10px 16px 6px; flex-wrap:wrap;
-    border-bottom:1px solid var(--border); flex-shrink:0;
-  }
+  #presets { display:flex; gap:6px; padding:10px 16px 6px; flex-wrap:wrap; border-bottom:1px solid var(--border); flex-shrink:0; }
   .preset {
     font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.07em;
     padding:4px 10px; border:1px solid rgba(255,255,255,0.12);
@@ -77,29 +62,35 @@
   .preset.active { border-color:var(--param); color:var(--param); background:rgba(255,209,102,0.07); }
 
   #code-block {
-    padding:14px 16px 16px; font-size:11.5px; line-height:2.4;
-    color:rgba(255,255,255,0.28); background:var(--code-bg);
+    padding:16px; font-size:12px; line-height:2.4;
+    color:rgba(220,225,255,0.55); background:var(--code-bg);
     overflow:auto; white-space:pre; flex:1 1 auto; min-height:0;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.18) var(--code-bg);
   }
-  #reset-row { padding:8px 16px 14px; background:var(--code-bg); flex-shrink:0; }
+  #code-block::-webkit-scrollbar { width:10px; height:10px; }
+  #code-block::-webkit-scrollbar-track { background:var(--code-bg); }
+  #code-block::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.14); border-radius:5px; border:2px solid var(--code-bg); }
+  #code-block::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,0.26); }
+  .kw { color:rgba(150,170,255,0.7); }
+  .fn { color:rgba(120,210,255,0.75); }
+
+  #reset-row { padding:10px 16px 14px; background:var(--code-bg); flex-shrink:0; display:flex; gap:8px; }
   #reset-row button {
     font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.08em;
-    padding:5px 12px; border:1px solid rgba(255,255,255,0.14);
-    background:none; color:var(--dim); cursor:pointer; border-radius:2px;
-    transition:all 0.15s; text-transform:uppercase;
+    padding:6px 12px; border:1px solid rgba(255,255,255,0.14);
+    background:none; color:var(--dim); cursor:pointer; border-radius:2px; transition:all 0.15s; text-transform:uppercase;
   }
   #reset-row button:hover { border-color:rgba(255,255,255,0.35); color:#fff; }
 
+  /* fixed-width value boxes so the steppers never shift when digits change */
   .param {
     color:var(--param); background:rgba(255,209,102,0.08);
     border:none; border-bottom:1px solid rgba(255,209,102,0.35);
-    font-family:'Courier New',monospace; font-size:11.5px; outline:none;
-    padding:0 2px; width:auto; min-width:20px; text-align:center;
-    transition:background 0.15s, border-color 0.15s; vertical-align:middle;
+    font-family:'Courier New',monospace; font-size:12px; outline:none;
+    width:52px; padding:1px 2px; text-align:center; vertical-align:middle;
+    transition:background 0.15s, border-color 0.15s;
   }
   .param:focus { background:rgba(255,209,102,0.18); border-bottom-color:var(--param); }
-
-  /* inline stepper (▲▼) injected next to each editable number */
   .num { display:inline-flex; align-items:center; vertical-align:middle; }
   .spin { display:inline-flex; flex-direction:column; margin-left:3px; }
   .spin button {
@@ -107,8 +98,7 @@
     width:17px; height:12px; padding:0; margin:0;
     display:flex; align-items:center; justify-content:center;
     background:rgba(255,209,102,0.12); color:var(--param);
-    border:1px solid rgba(255,209,102,0.4); cursor:pointer; user-select:none;
-    transition:background 0.12s;
+    border:1px solid rgba(255,209,102,0.4); cursor:pointer; user-select:none; transition:background 0.12s;
   }
   .spin button:hover { background:rgba(255,209,102,0.32); }
   .spin button:active { background:rgba(255,209,102,0.5); }
@@ -129,12 +119,13 @@
   <div id="viewport">
     <div id="legend">
       <div class="leg"><div class="ldot" style="background:#fff"></div><span style="opacity:.5">browser (0,0) — top-left</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--accent-x)"></div><span style="opacity:.6">browser X → (pixels)</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--accent-y)"></div><span style="opacity:.6">browser Y ↓ (pixels)</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--accent-tj)"></div><span style="opacity:.55">three.js X → (units)</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--accent-tj2)"></div><span style="opacity:.55">three.js Y ↑ (units)</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--accent-z)"></div><span style="opacity:.6">three.js Z ↗ (toward viewer)</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--accent-cam)"></div><span style="opacity:.6">camera + frustum (view volume)</span></div>
+      <div class="leg"><div class="ldot" style="background:#e05555"></div><span style="opacity:.6">browser X → (pixels)</span></div>
+      <div class="leg"><div class="ldot" style="background:#4ec97a"></div><span style="opacity:.6">browser Y ↓ (pixels)</span></div>
+      <div class="leg"><div class="ldot" style="background:#9d7fff"></div><span style="opacity:.55">three.js X → (units)</span></div>
+      <div class="leg"><div class="ldot" style="background:#6fffa8"></div><span style="opacity:.55">three.js Y ↑ (units)</span></div>
+      <div class="leg"><div class="ldot" style="background:#4a9edd"></div><span style="opacity:.6">three.js Z ↗ (toward viewer)</span></div>
+      <div class="leg"><div class="ldot" style="background:#f0a030"></div><span style="opacity:.6">camera + frustum</span></div>
+      <div class="leg"><div class="ldot" style="background:#63d6c0"></div><span style="opacity:.6">teapot + its projection</span></div>
     </div>
     <div id="hint">drag · rotate<br>scroll/pinch · zoom</div>
   </div>
@@ -152,19 +143,17 @@
         <button class="preset" data-w="1000" data-h="1000">1:1</button>
         <button class="preset" data-w="2560" data-h="1080">21:9</button>
       </div>
-      <div id="code-block"><span class="comment">// renderer &mdash; sets the canvas pixel size (drives aspect)</span>
-<span class="kw">const</span> renderer = <span class="kw">new</span> <span class="fn">THREE.WebGLRenderer</span>();
-renderer.<span class="fn">setSize</span>( <input class="param" id="p-rw" value="1920" size="4">, <input class="param" id="p-rh" value="1080" size="4"> );
+      <div id="code-block"><span class="kw">const</span> renderer = <span class="kw">new</span> <span class="fn">THREE.WebGLRenderer</span>();
+renderer.<span class="fn">setSize</span>( <input class="param" id="p-rw" value="1920">, <input class="param" id="p-rh" value="1080"> );
 
-<span class="comment">// camera &mdash; PerspectiveCamera( fov, aspect, near, far )</span>
 <span class="kw">const</span> camera = <span class="kw">new</span> <span class="fn">THREE.PerspectiveCamera</span>(
-  <input class="param" id="p-fov" value="75" size="3">,                 <span class="comment">// fov (vertical, degrees)</span>
-  <input class="param" id="p-rw2" value="1920" size="4"> / <input class="param" id="p-rh2" value="1080" size="4">,  <span class="comment">// aspect = width / height</span>
-  <input class="param" id="p-near" value="0.1" size="4">,              <span class="comment">// near plane</span>
-  <input class="param" id="p-far" value="1000" size="5">             <span class="comment">// far plane</span>
+  <input class="param" id="p-fov" value="75">,
+  <input class="param" id="p-rw2" value="1920"> / <input class="param" id="p-rh2" value="1080">,
+  <input class="param" id="p-near" value="0.1">,
+  <input class="param" id="p-far" value="1000">
 );
-camera.<span class="fn">position</span>.set( <input class="param" id="p-cx" value="0" size="2">, <input class="param" id="p-cy" value="0" size="2">, <input class="param" id="p-cz" value="5" size="3"> );
-camera.<span class="fn">lookAt</span>( <input class="param" id="p-lx" value="0" size="2">, <input class="param" id="p-ly" value="0" size="2">, <input class="param" id="p-lz" value="0" size="2"> );
+camera.<span class="fn">position</span>.set( <input class="param" id="p-cx" value="0">, <input class="param" id="p-cy" value="0">, <input class="param" id="p-cz" value="5"> );
+camera.<span class="fn">lookAt</span>( <input class="param" id="p-lx" value="0">, <input class="param" id="p-ly" value="0">, <input class="param" id="p-lz" value="0"> );
 </div>
       <div id="reset-row"><button id="reset-btn">↺ reset defaults</button> <button id="frame-btn">⊕ frame view</button></div>
     </div>
@@ -184,14 +173,11 @@ renderer.setClearColor(0x0b0b0f, 1);
 const viewport = document.getElementById('viewport');
 viewport.appendChild(renderer.domElement);
 
-// OBSERVER camera — the external vantage we watch the model from. Fully
-// independent of the simulated camera defined in the code panel.
 const viewCam = new THREE.PerspectiveCamera(45, 1, 0.001, 100000);
 const scene = new THREE.Scene();
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-const dl = new THREE.DirectionalLight(0xffffff, 0.7);
-dl.position.set(5, 8, 6);
-scene.add(dl);
+const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(5, 8, 6); scene.add(dl);
+const dl2 = new THREE.DirectionalLight(0xffffff, 0.35); dl2.position.set(-4, 2, -6); scene.add(dl2);
 const g = new THREE.Group();
 scene.add(g);
 
@@ -199,8 +185,7 @@ function resizeRenderer(){
   const w = viewport.clientWidth, h = viewport.clientHeight;
   if (w === 0 || h === 0) return;
   renderer.setSize(w, h);
-  viewCam.aspect = w / h;
-  viewCam.updateProjectionMatrix();
+  viewCam.aspect = w / h; viewCam.updateProjectionMatrix();
 }
 
 // ── Defaults + params ────────────────────────────────────────────────────────
@@ -220,95 +205,91 @@ function getParams(){
   return p;
 }
 
-// The screen is a FIXED reference rectangle in the world (the "monitor"). Its
-// size never changes with camera distance or fov — only with aspect ratio — so
-// editing the camera moves the camera against a stable stage. Its half-height is
-// chosen so the DEFAULT camera (z=5, fov=75) frames it exactly.
-const SCREEN_HH = Math.tan(75 * Math.PI / 180 / 2) * 5;   // ≈ 3.8366 world units
+// Fixed reference screen — sized so the DEFAULT camera frames it exactly.
+const SCREEN_HH = Math.tan(75 * Math.PI / 180 / 2) * 5;   // ≈ 3.8366
+
+// ── Utah teapot (loaded defensively; the tool still works if the CDN fails) ──
+const teapotMatrix = new THREE.Matrix4().compose(
+  new THREE.Vector3(0, -0.4, -4),                                   // far side of the screen
+  new THREE.Quaternion().setFromEuler(new THREE.Euler(0.15, -0.6, 0)),
+  new THREE.Vector3(1, 1, 1)
+);
+let teapotGeo = null, teapotWorld = [];
+try {
+  const { TeapotGeometry } = await import('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/geometries/TeapotGeometry.js');
+  teapotGeo = new TeapotGeometry(1.5, 6);
+  const tp = teapotGeo.getAttribute('position');
+  for (let i = 0; i < tp.count; i++)
+    teapotWorld.push(new THREE.Vector3().fromBufferAttribute(tp, i).applyMatrix4(teapotMatrix));
+} catch (e) { console.warn('TeapotGeometry unavailable:', e); }
 
 // ── Mesh helpers ─────────────────────────────────────────────────────────────
 function basicMat(color, opacity=1){ return new THREE.MeshBasicMaterial({ color, transparent:opacity<1, opacity, side:THREE.DoubleSide }); }
 function lineMat(color, opacity=1, dashed=false){
-  return dashed
-    ? new THREE.LineDashedMaterial({ color, transparent:true, opacity, dashSize:0.18, gapSize:0.12 })
-    : new THREE.LineBasicMaterial({ color, transparent:opacity<1, opacity });
+  return dashed ? new THREE.LineDashedMaterial({ color, transparent:true, opacity, dashSize:0.18, gapSize:0.12 })
+                : new THREE.LineBasicMaterial({ color, transparent:opacity<1, opacity });
 }
 function line(pts, color, opacity=1, dashed=false){
   const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat(color, opacity, dashed));
   if (dashed) l.computeLineDistances();
   return l;
 }
-function rectLoop(corners, color, opacity=1, dashed=false){ return line([...corners, corners[0]], color, opacity, dashed); }
-function sphere(pos, r, color, opacity=1){
-  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 16), basicMat(color, opacity));
-  m.position.copy(pos); return m;
-}
+function rectLoop(c, color, opacity=1, dashed=false){ return line([...c, c[0]], color, opacity, dashed); }
+function sphere(pos, r, color, opacity=1){ const m=new THREE.Mesh(new THREE.SphereGeometry(r,16,16), basicMat(color,opacity)); m.position.copy(pos); return m; }
 function arrow(from, to, color, S, opacity=1){
-  const grp = new THREE.Group();
-  const m = basicMat(color, opacity);
-  const dir = to.clone().sub(from).normalize();
-  const len = from.distanceTo(to);
-  const headLen = Math.min(S*0.05, len*0.32);
-  const r = S*0.006;
-  const sl = Math.max(0.0001, len - headLen);
+  const grp = new THREE.Group(); const m = basicMat(color, opacity);
+  const dir = to.clone().sub(from).normalize(); const len = from.distanceTo(to);
+  const headLen = Math.min(S*0.05, len*0.32); const r = S*0.006; const sl = Math.max(0.0001, len - headLen);
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(r, r, sl, 10), m);
   shaft.position.copy(from.clone().add(dir.clone().multiplyScalar(sl/2)));
-  shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
-  grp.add(shaft);
+  shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir); grp.add(shaft);
   const cone = new THREE.Mesh(new THREE.ConeGeometry(r*2.6, headLen, 14), m);
   cone.position.copy(to.clone().sub(dir.clone().multiplyScalar(headLen/2)));
-  cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
-  grp.add(cone);
+  cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir); grp.add(cone);
   return grp;
 }
 function label(text, color, h){
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = 160;
-  const ctx = c.getContext('2d');
-  ctx.font = 'bold 50px Courier New';
-  ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const c = document.createElement('canvas'); c.width=512; c.height=160;
+  const ctx = c.getContext('2d'); ctx.font='bold 50px Courier New';
+  ctx.fillStyle=color; ctx.textAlign='center'; ctx.textBaseline='middle';
   const lines = text.split('\n');
-  lines.forEach((t,i)=> ctx.fillText(t, 256, 80 + (i - (lines.length-1)/2) * 58));
-  const tex = new THREE.CanvasTexture(c); tex.anisotropy = 4;
+  lines.forEach((t,i)=> ctx.fillText(t, 256, 80 + (i-(lines.length-1)/2)*58));
+  const tex = new THREE.CanvasTexture(c); tex.anisotropy=4;
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false }));
-  sp.scale.set(h * (512/160), h, 1);
-  return sp;
+  sp.scale.set(h*(512/160), h, 1); return sp;
 }
-function addLabel(text, pos, color, h){ const s = label(text, color, h); s.position.copy(pos); g.add(s); }
+function addLabel(text, pos, color, h){ const s=label(text,color,h); s.position.copy(pos); g.add(s); }
 
-// ── Observer orbit ────────────────────────────────────────────────────────────
-// Target is the fixed screen centre (origin). It never moves, so editing the
-// code never disturbs the observer's framing.
+// ── Observer orbit (target fixed at the screen centre) ───────────────────────
 const orbitTarget = new THREE.Vector3(0,0,0);
 let orbitRadius = 28;
 let spherical = { theta: 0.62, phi: 1.05 };
 function updateViewCam(){
   viewCam.position.set(
-    orbitTarget.x + orbitRadius * Math.sin(spherical.phi) * Math.sin(spherical.theta),
-    orbitTarget.y + orbitRadius * Math.cos(spherical.phi),
-    orbitTarget.z + orbitRadius * Math.sin(spherical.phi) * Math.cos(spherical.theta)
+    orbitTarget.x + orbitRadius*Math.sin(spherical.phi)*Math.sin(spherical.theta),
+    orbitTarget.y + orbitRadius*Math.cos(spherical.phi),
+    orbitTarget.z + orbitRadius*Math.sin(spherical.phi)*Math.cos(spherical.theta)
   );
   viewCam.lookAt(orbitTarget);
 }
 
 // ── Build scene ────────────────────────────────────────────────────────────────
 function buildScene(reframe=false){
-  while (g.children.length){ const c = g.children[0]; g.remove(c); c.geometry?.dispose?.(); }
+  while (g.children.length){
+    const c = g.children[0]; g.remove(c);
+    if (c.geometry && c.geometry !== teapotGeo) c.geometry.dispose();
+    const mats = Array.isArray(c.material) ? c.material : (c.material ? [c.material] : []);
+    mats.forEach(m => { m.map?.dispose?.(); m.dispose?.(); });
+  }
 
   const p = getParams();
   const aspect = p.rw / p.rh;
   const fovRad = p.fov * Math.PI / 180;
 
-  // FIXED screen, world-aligned in the XY plane at the origin.
   const hhS = SCREEN_HH, hwS = SCREEN_HH * aspect;
-  const right = new THREE.Vector3(1,0,0);
-  const up    = new THREE.Vector3(0,1,0);
-  const toViewer = new THREE.Vector3(0,0,1);          // three.js +Z points at the viewer
+  const right = new THREE.Vector3(1,0,0), up = new THREE.Vector3(0,1,0);
   const corner = (sx, sy) => new THREE.Vector3(sx*hwS, sy*hhS, 0);
   const screenCorners = [corner(-1,-1), corner(1,-1), corner(1,1), corner(-1,1)];
-
-  // Helper scale — fixed (depends only on aspect), so nothing rescales when the
-  // camera moves.
   const S = Math.max(2*hwS, 2*hhS, 8);
   const lblH = S * 0.05;
 
@@ -316,42 +297,37 @@ function buildScene(reframe=false){
   const C = new THREE.Vector3(p.cx, p.cy, p.cz);
   const L = new THREE.Vector3(p.lx, p.ly, p.lz);
   const simCam = new THREE.PerspectiveCamera(p.fov, aspect, p.near, p.far);
-  simCam.position.copy(C); simCam.lookAt(L); simCam.updateMatrixWorld(true);
-  const M = simCam.matrixWorld;
-  const ce = M.elements;
+  simCam.position.copy(C); simCam.lookAt(L);
+  simCam.updateMatrixWorld(true); simCam.updateProjectionMatrix();
+  const M = simCam.matrixWorld; const ce = M.elements;
   const camFwd = new THREE.Vector3(-ce[8], -ce[9], -ce[10]).normalize();
   let D = C.distanceTo(L); if (D < 1e-4) D = 1;
 
-  // Frustum corners at distance d in front of the camera → world space.
   const halfH = d => Math.tan(fovRad/2) * d;
   const halfW = d => halfH(d) * aspect;
   const cornersAt = d => {
     const hw = halfW(d), hh = halfH(d);
-    return [
-      new THREE.Vector3(-hw,-hh,-d), new THREE.Vector3(hw,-hh,-d),
-      new THREE.Vector3(hw,hh,-d),   new THREE.Vector3(-hw,hh,-d),
-    ].map(v => v.applyMatrix4(M));
+    return [ new THREE.Vector3(-hw,-hh,-d), new THREE.Vector3(hw,-hh,-d),
+             new THREE.Vector3(hw,hh,-d),  new THREE.Vector3(-hw,hh,-d) ].map(v => v.applyMatrix4(M));
   };
 
-  // ── The screen (fixed) ──────────────────────────────────────────────────────
-  const pg = new THREE.BufferGeometry();
+  // ── Screen (fixed) ──────────────────────────────────────────────────────────
   const [bl,br,tr,tl] = screenCorners;
+  const pg = new THREE.BufferGeometry();
   pg.setAttribute('position', new THREE.Float32BufferAttribute([
     bl.x,bl.y,bl.z, br.x,br.y,br.z, tr.x,tr.y,tr.z,
-    bl.x,bl.y,bl.z, tr.x,tr.y,tr.z, tl.x,tl.y,tl.z,
-  ], 3));
-  g.add(new THREE.Mesh(pg, basicMat(0x13132a, 0.55)));
+    bl.x,bl.y,bl.z, tr.x,tr.y,tr.z, tl.x,tl.y,tl.z ], 3));
+  g.add(new THREE.Mesh(pg, basicMat(0x13132a, 0.5)));
   g.add(rectLoop(screenCorners, 0x3a3a66, 0.95));
-
-  const gridMat = new THREE.LineBasicMaterial({ color:0x24244a, transparent:true, opacity:0.55 });
+  const gridMat = new THREE.LineBasicMaterial({ color:0x24244a, transparent:true, opacity:0.5 });
   for (let i=1;i<10;i++){
-    const x = -hwS + 2*hwS*(i/10);
+    const x=-hwS+2*hwS*(i/10);
     g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,-hhS,0), new THREE.Vector3(x,hhS,0)]), gridMat));
-    const y = -hhS + 2*hhS*(i/10);
+    const y=-hhS+2*hhS*(i/10);
     g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-hwS,y,0), new THREE.Vector3(hwS,y,0)]), gridMat));
   }
 
-  // ── Browser pixel ruling: origin TOP-LEFT, +X right, +Y down ─────────────────
+  // ── Browser pixel ruling ──────────────────────────────────────────────────────
   g.add(arrow(corner(-1.14,1), corner(1.14,1), 0xe05555, S, 0.95));
   g.add(arrow(corner(-1,1.14), corner(-1,-1.14), 0x4ec97a, S, 0.95));
   g.add(sphere(corner(-1,1), S*0.02, 0xffffff));
@@ -359,26 +335,25 @@ function buildScene(reframe=false){
   addLabel('+X px', corner(1.14,1).clone().add(right.clone().multiplyScalar(0.12*hwS)), '#e05555', lblH*0.85);
   addLabel('+Y px ↓', corner(-1,-1.14).clone().add(up.clone().multiplyScalar(-0.10*hhS)), '#4ec97a', lblH*0.85);
 
-  // ── three.js unit ruling: origin CENTRE, +X right, +Y up ─────────────────────
+  // ── three.js unit ruling ──────────────────────────────────────────────────────
   g.add(arrow(corner(-1.18,0), corner(1.18,0), 0x9d7fff, S, 0.85));
   g.add(arrow(corner(0,-1.18), corner(0,1.18), 0x6fffa8, S, 0.85));
   g.add(sphere(new THREE.Vector3(0,0,0), S*0.022, 0x9d7fff, 0.95));
-  addLabel('(0,0,0)', new THREE.Vector3(0,0,0).add(right.clone().multiplyScalar(0.16*hwS)).add(up.clone().multiplyScalar(0.12*hhS)), 'rgba(157,127,255,0.9)', lblH*0.8);
+  addLabel('(0,0,0)', new THREE.Vector3(0.16*hwS, 0.12*hhS, 0), 'rgba(157,127,255,0.9)', lblH*0.8);
   addLabel('+X', corner(1.18,0).clone().add(right.clone().multiplyScalar(0.12*hwS)), 'rgba(157,127,255,0.9)', lblH*0.85);
   addLabel('+Y', corner(0,1.18).clone().add(up.clone().multiplyScalar(0.10*hhS)), 'rgba(111,255,168,0.9)', lblH*0.85);
 
-  // Same corner, both coordinate systems — the key lesson.
   const fmt = n => (Math.round(n*100)/100).toString();
   [
     { p:corner(-1, 1), px:`(0, 0)`,             tj:`(${fmt(-hwS)}, ${fmt(hhS)})` },
     { p:corner( 1, 1), px:`(${p.rw}, 0)`,       tj:`(${fmt(hwS)}, ${fmt(hhS)})` },
     { p:corner( 1,-1), px:`(${p.rw}, ${p.rh})`, tj:`(${fmt(hwS)}, ${fmt(-hhS)})` },
     { p:corner(-1,-1), px:`(0, ${p.rh})`,       tj:`(${fmt(-hwS)}, ${fmt(-hhS)})` },
-  ].forEach(ci => addLabel(ci.px + '\n' + ci.tj, ci.p.clone().add(toViewer.clone().multiplyScalar(0.0001)), 'rgba(255,255,255,0.5)', lblH*0.6));
+  ].forEach(ci => addLabel(ci.px + '\n' + ci.tj, ci.p.clone().setZ(0.001), 'rgba(255,255,255,0.5)', lblH*0.58));
 
-  // ── three.js +Z axis (toward viewer) ─────────────────────────────────────────
+  // ── three.js +Z axis ──────────────────────────────────────────────────────────
   g.add(arrow(new THREE.Vector3(0,0,-S*0.12), new THREE.Vector3(0,0,S*0.9), 0x4a9edd, S, 0.9));
-  addLabel('+Z\n(toward viewer)', new THREE.Vector3(0,0,S*0.9).add(up.clone().multiplyScalar(0.12*hhS)), '#4a9edd', lblH*0.78);
+  addLabel('+Z\n(toward viewer)', new THREE.Vector3(0, 0.12*hhS, S*0.9), '#4a9edd', lblH*0.78);
 
   // ── Simulated camera body ─────────────────────────────────────────────────────
   const camGrp = new THREE.Group(); camGrp.position.copy(C);
@@ -387,30 +362,50 @@ function buildScene(reframe=false){
   camGrp.add(new THREE.Mesh(new THREE.BoxGeometry(b*1.5, b, b*0.85), bodyMat));
   const lens = new THREE.Mesh(new THREE.CylinderGeometry(b*0.3, b*0.34, b*0.6, 16), new THREE.MeshLambertMaterial({ color:0x1a2980 }));
   lens.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), camFwd);
-  lens.position.copy(camFwd.clone().multiplyScalar(b*0.5));
-  camGrp.add(lens);
-  const vf = new THREE.Mesh(new THREE.BoxGeometry(b*0.4, b*0.35, b*0.3), bodyMat);
-  vf.position.set(0, b*0.62, 0);
-  camGrp.add(vf);
+  lens.position.copy(camFwd.clone().multiplyScalar(b*0.5)); camGrp.add(lens);
+  const vf = new THREE.Mesh(new THREE.BoxGeometry(b*0.4, b*0.35, b*0.3), bodyMat); vf.position.set(0, b*0.62, 0); camGrp.add(vf);
   g.add(camGrp);
-  addLabel(`camera\nposition (${fmt(p.cx)}, ${fmt(p.cy)}, ${fmt(p.cz)})`, C.clone().add(up.clone().multiplyScalar(b*2.6)), '#f0a030', lblH*0.78);
+  addLabel(`camera (${fmt(p.cx)}, ${fmt(p.cy)}, ${fmt(p.cz)})`, C.clone().add(up.clone().multiplyScalar(b*2.6)), '#f0a030', lblH*0.78);
 
-  // ── Frustum (the camera's actual view volume) ────────────────────────────────
+  // ── Frustum ─────────────────────────────────────────────────────────────────
   const nearCorners = cornersAt(p.near);
   const capFar = Math.min(p.far, D * 3.2);
   const farCorners = cornersAt(capFar);
   g.add(rectLoop(nearCorners, 0xf0a030, 0.8));
   g.add(rectLoop(farCorners, 0xf0a030, 0.22, true));
   for (let i=0;i<4;i++) g.add(line([C, farCorners[i]], 0xf0a030, 0.22));
-  addLabel('near', nearCorners[2].clone().add(up.clone().multiplyScalar(0.05*hhS)), 'rgba(240,160,48,0.7)', lblH*0.6);
-  addLabel(capFar < p.far ? `far (${fmt(p.far)}, clipped)` : 'far', farCorners[2].clone().add(up.clone().multiplyScalar(0.04*hhS)), 'rgba(240,160,48,0.45)', lblH*0.6);
-
-  // line of sight + lookAt target
+  addLabel('near', nearCorners[2].clone().add(up.clone().multiplyScalar(0.05*hhS)), 'rgba(240,160,48,0.7)', lblH*0.58);
+  addLabel(capFar < p.far ? `far (${fmt(p.far)}, clipped)` : 'far', farCorners[2].clone().add(up.clone().multiplyScalar(0.04*hhS)), 'rgba(240,160,48,0.45)', lblH*0.58);
   g.add(line([C, L], 0xf0a030, 0.55, true));
   g.add(sphere(L, S*0.014, 0xf0a030, 0.7));
-  addLabel(`lookAt (${fmt(p.lx)}, ${fmt(p.ly)}, ${fmt(p.lz)})`, L.clone().add(up.clone().multiplyScalar(-0.16*hhS)).add(right.clone().multiplyScalar(0.06*hwS)), 'rgba(240,160,48,0.7)', lblH*0.64);
+  addLabel(`lookAt (${fmt(p.lx)}, ${fmt(p.ly)}, ${fmt(p.lz)})`, L.clone().add(up.clone().multiplyScalar(-0.16*hhS)).add(right.clone().multiplyScalar(0.06*hwS)), 'rgba(240,160,48,0.7)', lblH*0.62);
 
-  // ── Reframe the observer ONLY on load or the explicit "frame view" button. ────
+  // ── Utah teapot + its perspective projection onto the screen ─────────────────
+  if (teapotGeo){
+    // 3D teapot on the far side of the screen
+    const teapot = new THREE.Mesh(teapotGeo, new THREE.MeshLambertMaterial({ color:0x63d6c0, transparent:true, opacity:0.9 }));
+    teapot.applyMatrix4(teapotMatrix);
+    g.add(teapot);
+    const tCentre = new THREE.Vector3(0,-0.4,-4);
+    addLabel('teapot (3D)', tCentre.clone().add(up.clone().multiplyScalar(1.8)), '#63d6c0', lblH*0.7);
+
+    // Project every vertex through the camera, land it on the screen plane (z≈0).
+    const projGeo = teapotGeo.clone();
+    const pp = projGeo.getAttribute('position');
+    for (let i=0;i<teapotWorld.length;i++){
+      const n = teapotWorld[i].clone().project(simCam);              // → NDC
+      const x = THREE.MathUtils.clamp(n.x, -1.6, 1.6) * hwS;          // NDC → screen rect
+      const y = THREE.MathUtils.clamp(n.y, -1.6, 1.6) * hhS;
+      pp.setXYZ(i, x, y, 0.02);                                       // sit just in front of the screen
+    }
+    pp.needsUpdate = true;
+    projGeo.deleteAttribute('normal');
+    g.add(new THREE.Mesh(projGeo, new THREE.MeshBasicMaterial({ color:0x63d6c0, transparent:true, opacity:0.18, side:THREE.DoubleSide, depthTest:false, depthWrite:false })));
+    g.add(new THREE.Mesh(projGeo, new THREE.MeshBasicMaterial({ color:0x9affe8, wireframe:true, transparent:true, opacity:0.45, depthTest:false })));
+    addLabel('projection\n(what the camera sees)', new THREE.Vector3(0, -hhS*0.62, 0.05), 'rgba(154,255,232,0.75)', lblH*0.6);
+  }
+
+  // ── Reframe observer only on load / explicit button ──────────────────────────
   if (reframe){
     orbitRadius = Math.max(S * 1.9, C.length() * 1.45, D * 1.45);
     updateViewCam();
@@ -425,11 +420,11 @@ window.addEventListener('mouseup', ()=> dragging=false);
 window.addEventListener('mousemove', e=>{
   if(!dragging) return;
   spherical.theta -= (e.clientX-prevX)*0.006;
-  spherical.phi = Math.max(0.05, Math.min(Math.PI-0.05, spherical.phi - (e.clientY-prevY)*0.006)); // drag down → tilt down
+  spherical.phi = Math.max(0.05, Math.min(Math.PI-0.05, spherical.phi - (e.clientY-prevY)*0.006));
   prevX=e.clientX; prevY=e.clientY; updateViewCam();
 });
 el.addEventListener('wheel', e=>{
-  e.preventDefault();   // zoom the model without scrolling the host page
+  e.preventDefault();
   orbitRadius = Math.max(0.5, Math.min(100000, orbitRadius*(1+e.deltaY*0.001)));
   updateViewCam();
 }, { passive:false });
@@ -453,17 +448,12 @@ el.addEventListener('touchmove', e=>{
 el.addEventListener('touchend', ()=>{ dragging=false; prevPinch=null; }, { passive:false });
 
 // ── Param wiring ─────────────────────────────────────────────────────────────
-function autosize(elm){ elm.size = Math.max(2, String(elm.value).length + 1); }
-function syncSize(w,h){
-  [['p-rw',w],['p-rw2',w],['p-rh',h],['p-rh2',h]].forEach(([id,v])=>{ const x=document.getElementById(id); if(x){ x.value=v; autosize(x); } });
-}
+function syncSize(w,h){ [['p-rw',w],['p-rw2',w],['p-rh',h],['p-rh2',h]].forEach(([id,v])=>{ const x=document.getElementById(id); if(x) x.value=v; }); }
 document.querySelectorAll('.param').forEach(input=>{
-  autosize(input);
   input.addEventListener('input', ()=>{
-    autosize(input);
     const mirror = { 'p-rw':'p-rw2','p-rw2':'p-rw','p-rh':'p-rh2','p-rh2':'p-rh' }[input.id];
-    if(mirror){ const m=document.getElementById(mirror); m.value=input.value; autosize(m); }
-    buildScene(false);   // move the simulated camera only; observer stays put
+    if(mirror) document.getElementById(mirror).value = input.value;
+    buildScene(false);
   });
   input.addEventListener('keydown', e=>{ if(e.key==='Enter') input.blur(); });
 });
@@ -476,33 +466,30 @@ document.querySelectorAll('.preset').forEach(btn=>{
   });
 });
 document.getElementById('reset-btn').addEventListener('click', ()=>{
-  for(const k of Object.keys(DEFAULTS)){ const x=document.getElementById('p-'+k); if(x){ x.value=DEFAULTS[k]; autosize(x); } }
-  document.getElementById('p-rw2').value=DEFAULTS.rw; autosize(document.getElementById('p-rw2'));
-  document.getElementById('p-rh2').value=DEFAULTS.rh; autosize(document.getElementById('p-rh2'));
+  for(const k of Object.keys(DEFAULTS)){ const x=document.getElementById('p-'+k); if(x) x.value=DEFAULTS[k]; }
+  document.getElementById('p-rw2').value=DEFAULTS.rw; document.getElementById('p-rh2').value=DEFAULTS.rh;
   document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active', b.dataset.w==String(DEFAULTS.rw)&&b.dataset.h==String(DEFAULTS.rh)));
   buildScene(false);
 });
-document.getElementById('frame-btn').addEventListener('click', ()=> buildScene(true)); // only control that moves the view
+document.getElementById('frame-btn').addEventListener('click', ()=> buildScene(true));
 
 // ── Click steppers (▲▼); typing still works ─────────────────────────────────
 const STEP = { 'p-rw':10,'p-rh':10,'p-rw2':10,'p-rh2':10,'p-fov':1,'p-near':0.05,'p-far':10,'p-cx':0.5,'p-cy':0.5,'p-cz':0.5,'p-lx':0.5,'p-ly':0.5,'p-lz':0.5 };
 const MINV = { 'p-rw':1,'p-rh':1,'p-rw2':1,'p-rh2':1,'p-fov':1,'p-near':0.01,'p-far':0.02 };
 function applyStep(input, dir){
   const step = STEP[input.id] || 1;
-  let v = parseFloat(input.value);
-  if(!isFinite(v)) v = DEFAULTS[input.id.slice(2)] ?? 0;
+  let v = parseFloat(input.value); if(!isFinite(v)) v = DEFAULTS[input.id.slice(2)] ?? 0;
   v += dir * step;
   if(input.id in MINV) v = Math.max(MINV[input.id], v);
   if(input.id === 'p-fov') v = Math.min(179, v);
   const dec = (String(step).split('.')[1] || '').length;
   v = parseFloat(v.toFixed(dec));
-  input.value = v; autosize(input);
+  input.value = v;
   input.dispatchEvent(new Event('input', { bubbles:true }));
 }
 function attachStepper(input){
   const wrap = document.createElement('span'); wrap.className = 'num';
-  input.parentNode.insertBefore(wrap, input);
-  wrap.appendChild(input);
+  input.parentNode.insertBefore(wrap, input); wrap.appendChild(input);
   const spin = document.createElement('span'); spin.className = 'spin';
   const up = document.createElement('button'); up.type='button'; up.className='up'; up.tabIndex=-1; up.textContent='▲';
   const dn = document.createElement('button'); dn.type='button'; dn.className='dn'; dn.tabIndex=-1; dn.textContent='▼';
@@ -525,15 +512,12 @@ const toggleArrow = document.getElementById('toggle-arrow');
 function isDocked(){ return window.matchMedia('(min-width: 820px) and (min-aspect-ratio: 1/1)').matches; }
 function syncArrow(open){ toggleArrow.innerHTML = (open || isDocked()) ? '&#9650;' : '&#9660;'; }
 document.getElementById('panel-toggle').addEventListener('click', ()=>{
-  const open = panelBody.classList.toggle('open');
-  syncArrow(open);
-  setTimeout(resizeRenderer, 320);
+  const open = panelBody.classList.toggle('open'); syncArrow(open); setTimeout(resizeRenderer, 320);
 });
 syncArrow(true);
 
 // ── Init ────────────────────────────────────────────────────────────────────
-const ro = new ResizeObserver(()=> resizeRenderer());
-ro.observe(viewport);
+const ro = new ResizeObserver(()=> resizeRenderer()); ro.observe(viewport);
 window.addEventListener('resize', ()=>{ resizeRenderer(); syncArrow(panelBody.classList.contains('open')); });
 resizeRenderer();
 buildScene(true);

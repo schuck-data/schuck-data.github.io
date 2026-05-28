@@ -32,6 +32,15 @@ noindex: true
     @media (max-width: 48rem) {
         .tj-embed iframe { height: 78vh; min-height: 420px; }
     }
+    .tj-params { margin: 0.5rem 0 0; }
+    .tj-params dt {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 0.9rem; color: var(--text); margin-top: 1rem;
+    }
+    .tj-params dd {
+        margin: 0.2rem 0 0; color: var(--text-muted);
+        line-height: 1.6; max-width: 42rem;
+    }
 </style>
 
 <section class="hero" aria-labelledby="tj-heading">
@@ -55,4 +64,23 @@ noindex: true
     <p>The blue <strong>screen</strong> sits fixed at the origin — think of it as the monitor, a stable reference you orbit around. The orange shape is the camera's <strong>frustum</strong>: its actual view volume, drawn from the camera body out through the near and far planes. At the default settings the frustum's edges pass exactly through the screen's corners, which is what "correctly framed" looks like. Editing the camera moves the camera against that fixed stage — it never moves your vantage point.</p>
     <p>The screen carries two coordinate systems at once. In <strong>browser pixels</strong> the origin is the top-left corner, X runs right and Y runs <em>down</em>, ending at the <code>renderer.setSize</code> dimensions. In <strong>three.js units</strong> the origin is the center, X runs right and Y runs <em>up</em>. Reading the same corner in both systems is the whole point: it shows the conversion the renderer does on every frame.</p>
     <p>Try pushing <code>fov</code> up and watch the frustum widen past the screen; pull the camera's <code>z</code> back and watch the frustum's reach change while the screen stays put; swap the aspect-ratio presets and watch the screen reshape. Use <strong>⊕ frame view</strong> to recenter your vantage if the camera wanders out of sight.</p>
+    <p>The teal <strong>teapot</strong> sits on the far side of the screen. Its flattened teal copy on the screen itself is the genuine perspective projection of every teapot vertex through the camera — i.e. the 2D image the camera actually produces. Move the camera and the projection stretches, shifts, and scales exactly as the rendered frame would.</p>
+</section>
+
+<section class="content-section" aria-label="What each number means">
+    <h2>What each number means</h2>
+    <dl class="tj-params">
+        <dt><code>renderer.setSize(width, height)</code></dt>
+        <dd>The canvas size in pixels. Only the <em>ratio</em> matters here — it drives the aspect, which sets the screen's shape.</dd>
+        <dt><code>fov</code></dt>
+        <dd>Vertical field of view, in degrees. Larger means a wider frustum and more of the scene squeezed into the frame.</dd>
+        <dt><code>aspect</code></dt>
+        <dd>Width ÷ height. Stretches the frustum horizontally so the image isn't distorted on a non-square canvas.</dd>
+        <dt><code>near</code> / <code>far</code></dt>
+        <dd>The closest and farthest distances the camera renders. Anything nearer than <code>near</code> or beyond <code>far</code> is clipped.</dd>
+        <dt><code>camera.position.set(x, y, z)</code></dt>
+        <dd>Where the camera sits in three.js world units. <code>+z</code> is toward the viewer, so the default <code>(0, 0, 5)</code> sits in front of the screen looking back at it.</dd>
+        <dt><code>camera.lookAt(x, y, z)</code></dt>
+        <dd>The point the camera aims at. The dashed line of sight runs from the camera to this target.</dd>
+    </dl>
 </section>
