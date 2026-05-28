@@ -1,0 +1,58 @@
+---
+layout: default
+title: Three.js Camera & Frustum Visualizer — Schuck Data
+description: An interactive tool for seeing how three.js code — camera position, field of view, aspect, near/far — shapes the view frustum and maps 3D space onto the 2D canvas.
+social_title: How three.js code moves the camera
+noindex: true
+---
+
+<style>
+    .tj-embed {
+        margin: 1.5rem 0 0.75rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #0b0b0f;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    }
+    .tj-embed iframe {
+        display: block;
+        width: 100%;
+        height: min(80vh, 760px);
+        min-height: 480px;
+        border: 0;
+    }
+    .tj-cap {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+        max-width: 44rem;
+        margin-bottom: 2.5rem;
+    }
+    @media (max-width: 48rem) {
+        .tj-embed iframe { height: 78vh; min-height: 420px; }
+    }
+</style>
+
+<section class="hero" aria-labelledby="tj-heading">
+    <p class="hero-eyebrow">Edu · Three.js</p>
+    <h1 id="tj-heading" class="hero-h1">See how the code moves the camera.</h1>
+    <p class="hero-lead">A <code>PerspectiveCamera</code> is just six numbers — field of view, aspect, near, far, position, and where it looks. This tool draws all of them at once so you can watch the view frustum open up, intersect the screen, and decide what your canvas actually shows.</p>
+</section>
+
+<section aria-label="Interactive visualizer">
+    <div class="tj-embed">
+        <iframe src="/edu/threejs/visualizer.html"
+                title="Three.js camera and frustum visualizer"
+                loading="lazy"
+                allowfullscreen></iframe>
+    </div>
+    <p class="tj-cap">Edit any yellow value in the <strong>scene setup</strong> panel and the model updates live. Drag to orbit, scroll or pinch to zoom. On a phone the code panel sits below the view; on a wide screen it docks to the side.</p>
+</section>
+
+<section class="content-section" aria-label="How to read it">
+    <h2>How to read it</h2>
+    <p>The orange <strong>view plane</strong> is the cross-section of the camera's frustum at the focal distance — in other words, it <em>is</em> the canvas you'd see. Its size in world units is set entirely by the field of view, the aspect ratio, and how far the camera sits from what it's looking at. The four frustum edge-rays pass exactly through its corners.</p>
+    <p>The same rectangle carries two coordinate systems at once. In <strong>browser pixels</strong> the origin is the top-left corner, X runs right and Y runs <em>down</em>, ending at the <code>renderer.setSize</code> dimensions. In <strong>three.js units</strong> the origin is the center, X runs right and Y runs <em>up</em>. Reading the same corner in both systems is the whole point: it shows you the conversion the renderer does on every frame.</p>
+    <p>Try pushing <code>fov</code> up and watch the frustum widen and the plane grow; pull the camera's <code>z</code> back and watch how much more of the scene fits; swap the aspect-ratio presets and watch the canvas reshape.</p>
+</section>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Three.js Camera & Frustum Visualizer</title>
+<style>
+  :root {
+    --bg:        #0b0b0f;
+    --surface:   #111118;
+    --border:    rgba(255,255,255,0.07);
+    --dim:       rgba(255,255,255,0.22);
+    --accent-x:  #e05555;
+    --accent-y:  #4ec97a;
+    --accent-z:  #4a9edd;
+    --accent-tj: #9d7fff;
+    --accent-tj2:#6fffa8;
+    --accent-cam:#f0a030;
+    --param:     #ffd166;
+    --code-bg:   #0d0d15;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; }
+  body {
+    background: var(--bg);
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    color: #ccc;
+  }
+
+  /* ── App shell: column by default (mobile / portrait), row on wide landscape ── */
+  #app {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  #viewport {
+    flex: 1 1 auto;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    min-width: 0;
+  }
+  #viewport canvas { display:block; position:absolute; top:0; left:0; }
+
+  /* ── Overlays ── */
+  #legend {
+    position:absolute; top:12px; left:12px;
+    font-size:9.5px; letter-spacing:0.06em; line-height:1.9;
+    pointer-events:none; z-index:5;
+    background: rgba(11,11,15,0.45); padding:6px 8px; border-radius:4px;
+  }
+  .leg { display:flex; align-items:center; gap:6px; }
+  .ldot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  #hint {
+    position:absolute; top:12px; right:12px;
+    font-size:9px; opacity:0.28; letter-spacing:0.08em; text-transform:uppercase;
+    pointer-events:none; text-align:right; line-height:1.9; z-index:5;
+  }
+
+  /* ── Code panel ── */
+  #panel-wrap {
+    position:relative; z-index:20;
+    background: var(--surface);
+    border-top:1px solid var(--border);
+    flex-shrink:0;
+    display:flex; flex-direction:column;
+  }
+  #panel-toggle {
+    width:100%; background:none; border:none;
+    border-bottom:1px solid var(--border);
+    color:var(--dim); font-family:'Courier New',monospace;
+    font-size:10px; letter-spacing:0.12em; text-transform:uppercase;
+    padding:9px 16px; cursor:pointer; text-align:left;
+    display:flex; justify-content:space-between; align-items:center;
+    transition:color 0.2s; flex-shrink:0;
+  }
+  #panel-toggle:hover { color:rgba(255,255,255,0.5); }
+  #toggle-arrow { transition:transform 0.25s; }
+  #panel-body {
+    max-height:0; overflow:hidden;
+    transition:max-height 0.3s ease;
+    display:flex; flex-direction:column; min-height:0;
+  }
+  #panel-body.open { max-height:60vh; }
+
+  #presets {
+    display:flex; gap:6px; padding:10px 16px 6px; flex-wrap:wrap;
+    border-bottom:1px solid var(--border); flex-shrink:0;
+  }
+  .preset {
+    font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.07em;
+    padding:4px 10px; border:1px solid rgba(255,255,255,0.12);
+    background:none; color:var(--dim); cursor:pointer; border-radius:2px;
+    transition:all 0.15s;
+  }
+  .preset:hover { border-color:rgba(255,255,255,0.3); color:#fff; }
+  .preset.active { border-color:var(--param); color:var(--param); background:rgba(255,209,102,0.07); }
+
+  #code-block {
+    padding:14px 16px 16px; font-size:11.5px; line-height:2;
+    color:rgba(255,255,255,0.28); background:var(--code-bg);
+    overflow:auto; white-space:pre; flex:1 1 auto; min-height:0;
+  }
+  #reset-row { padding:8px 16px 14px; background:var(--code-bg); flex-shrink:0; }
+  #reset-btn {
+    font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.08em;
+    padding:5px 12px; border:1px solid rgba(255,255,255,0.14);
+    background:none; color:var(--dim); cursor:pointer; border-radius:2px;
+    transition:all 0.15s; text-transform:uppercase;
+  }
+  #reset-btn:hover { border-color:rgba(255,255,255,0.35); color:#fff; }
+
+  .param {
+    color:var(--param); background:rgba(255,209,102,0.08);
+    border:none; border-bottom:1px solid rgba(255,209,102,0.35);
+    font-family:'Courier New',monospace; font-size:11.5px; outline:none;
+    padding:0 2px; width:auto; min-width:20px; text-align:center;
+    transition:background 0.15s, border-color 0.15s;
+  }
+  .param:focus { background:rgba(255,209,102,0.18); border-bottom-color:var(--param); }
+  .comment { color:rgba(255,255,255,0.16); }
+  .kw { color:rgba(180,180,255,0.4); }
+  .fn { color:rgba(150,220,255,0.38); }
+
+  /* ── Wide / landscape: dock the panel to the right ── */
+  @media (min-width: 820px) and (min-aspect-ratio: 1/1) {
+    #app { flex-direction: row; }
+    #panel-wrap {
+      width: 400px; flex-shrink:0;
+      border-top:none; border-left:1px solid var(--border);
+      height:100%;
+    }
+    #panel-toggle { border-bottom:1px solid var(--border); }
+    /* On desktop the panel is open by default and fills its column height */
+    #panel-body { max-height:none; flex:1 1 auto; }
+    #panel-body:not(.open) { max-height:0; flex:0 0 auto; }
+    #toggle-arrow.docked { transform: rotate(-90deg); }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="viewport">
+    <div id="legend">
+      <div class="leg"><div class="ldot" style="background:#fff"></div><span style="opacity:.5">browser (0,0) — top-left</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--accent-x)"></div><span style="opacity:.6">browser X → (pixels)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--accent-y)"></div><span style="opacity:.6">browser Y ↓ (pixels)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--accent-tj)"></div><span style="opacity:.55">three.js X → (units, from center)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--accent-tj2)"></div><span style="opacity:.55">three.js Y ↑ (units, from center)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--accent-z)"></div><span style="opacity:.6">three.js Z ↗ (toward viewer)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--accent-cam)"></div><span style="opacity:.6">camera + frustum + view plane</span></div>
+    </div>
+    <div id="hint">drag · rotate<br>scroll/pinch · zoom</div>
+  </div>
+
+  <div id="panel-wrap">
+    <button id="panel-toggle">
+      <span>// scene setup &mdash; edit the yellow values</span>
+      <span id="toggle-arrow">&#9650;</span>
+    </button>
+    <div id="panel-body" class="open">
+      <div id="presets">
+        <button class="preset active" data-w="1920" data-h="1080">16:9</button>
+        <button class="preset" data-w="1080" data-h="1920">9:16</button>
+        <button class="preset" data-w="1024" data-h="768">4:3</button>
+        <button class="preset" data-w="1000" data-h="1000">1:1</button>
+        <button class="preset" data-w="2560" data-h="1080">21:9</button>
+      </div>
+      <div id="code-block"><span class="comment">// renderer &mdash; sets the canvas pixel size (drives aspect)</span>
+<span class="kw">const</span> renderer = <span class="kw">new</span> <span class="fn">THREE.WebGLRenderer</span>();
+renderer.<span class="fn">setSize</span>( <input class="param" id="p-rw" value="1920" size="4">, <input class="param" id="p-rh" value="1080" size="4"> );
+
+<span class="comment">// camera &mdash; PerspectiveCamera( fov, aspect, near, far )</span>
+<span class="kw">const</span> camera = <span class="kw">new</span> <span class="fn">THREE.PerspectiveCamera</span>(
+  <input class="param" id="p-fov" value="75" size="3">,                 <span class="comment">// fov (vertical, degrees)</span>
+  <input class="param" id="p-rw2" value="1920" size="4"> / <input class="param" id="p-rh2" value="1080" size="4">,  <span class="comment">// aspect = width / height</span>
+  <input class="param" id="p-near" value="0.1" size="4">,              <span class="comment">// near plane</span>
+  <input class="param" id="p-far" value="1000" size="5">             <span class="comment">// far plane</span>
+);
+camera.<span class="fn">position</span>.set( <input class="param" id="p-cx" value="0" size="2">, <input class="param" id="p-cy" value="0" size="2">, <input class="param" id="p-cz" value="5" size="3"> );
+camera.<span class="fn">lookAt</span>( <input class="param" id="p-lx" value="0" size="2">, <input class="param" id="p-ly" value="0" size="2">, <input class="param" id="p-lz" value="0" size="2"> );
+</div>
+      <div id="reset-row"><button id="reset-btn">↺ reset defaults</button></div>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+// ── Renderer / observer camera ────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x0b0b0f, 1);
+const viewport = document.getElementById('viewport');
+viewport.appendChild(renderer.domElement);
+
+const viewCam = new THREE.PerspectiveCamera(45, 1, 0.001, 100000);
+const scene = new THREE.Scene();
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const dl = new THREE.DirectionalLight(0xffffff, 0.7);
+dl.position.set(5, 8, 6);
+scene.add(dl);
+
+const g = new THREE.Group();
+scene.add(g);
+
+function resizeRenderer() {
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  if (w === 0 || h === 0) return;
+  renderer.setSize(w, h);
+  viewCam.aspect = w / h;
+  viewCam.updateProjectionMatrix();
+}
+
+// ── Defaults + param reading ───────────────────────────────────────────────
+const DEFAULTS = { rw:1920, rh:1080, fov:75, near:0.1, far:1000, cx:0, cy:0, cz:5, lx:0, ly:0, lz:0 };
+function getP(id){ return parseFloat(document.getElementById(id).value); }
+function getParams(){
+  const p = {};
+  for (const k of Object.keys(DEFAULTS)){
+    const id = 'p-' + k;
+    const el = document.getElementById(id);
+    let v = el ? parseFloat(el.value) : NaN;
+    if (!isFinite(v)) v = DEFAULTS[k];
+    p[k] = v;
+  }
+  // guard against degenerate values
+  p.rw = Math.max(1, p.rw); p.rh = Math.max(1, p.rh);
+  p.fov = Math.min(179, Math.max(1, p.fov));
+  p.near = Math.max(0.0001, p.near);
+  p.far = Math.max(p.near + 0.001, p.far);
+  return p;
+}
+
+// ── Small mesh helpers (scale-aware) ───────────────────────────────────────
+function basicMat(color, opacity=1, wire=false){
+  return new THREE.MeshBasicMaterial({ color, transparent: opacity<1, opacity, wireframe:wire, side:THREE.DoubleSide });
+}
+function lineMat(color, opacity=1, dashed=false){
+  return dashed
+    ? new THREE.LineDashedMaterial({ color, transparent:true, opacity, dashSize:0.18, gapSize:0.12 })
+    : new THREE.LineBasicMaterial({ color, transparent:opacity<1, opacity });
+}
+function line(pts, color, opacity=1, dashed=false){
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const l = new THREE.Line(geo, lineMat(color, opacity, dashed));
+  if (dashed) l.computeLineDistances();
+  return l;
+}
+function rectLoop(corners, color, opacity=1, dashed=false){
+  return line([...corners, corners[0]], color, opacity, dashed);
+}
+function sphere(pos, r, color, opacity=1){
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 16), basicMat(color, opacity));
+  m.position.copy(pos);
+  return m;
+}
+// arrow whose head size adapts to S (characteristic scene length)
+function arrow(from, to, color, S, opacity=1){
+  const grp = new THREE.Group();
+  const m = basicMat(color, opacity);
+  const dir = to.clone().sub(from).normalize();
+  const len = from.distanceTo(to);
+  const headLen = Math.min(S*0.05, len*0.32);
+  const r = S*0.006;
+  const sl = Math.max(0.0001, len - headLen);
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(r, r, sl, 10), m);
+  shaft.position.copy(from.clone().add(dir.clone().multiplyScalar(sl/2)));
+  shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
+  grp.add(shaft);
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(r*2.6, headLen, 14), m);
+  cone.position.copy(to.clone().sub(dir.clone().multiplyScalar(headLen/2)));
+  cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
+  grp.add(cone);
+  return grp;
+}
+// text sprite; h = world-space height of the label
+function label(text, color, h){
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 160;
+  const ctx = c.getContext('2d');
+  ctx.font = 'bold 50px Courier New';
+  ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const lines = text.split('\n');
+  lines.forEach((t,i)=> ctx.fillText(t, 256, 80 + (i - (lines.length-1)/2) * 58));
+  const tex = new THREE.CanvasTexture(c);
+  tex.anisotropy = 4;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false }));
+  sp.scale.set(h * (512/160), h, 1);
+  return sp;
+}
+function addLabel(text, pos, color, h){
+  const s = label(text, color, h);
+  s.position.copy(pos);
+  g.add(s);
+}
+
+// ── Orbit state ────────────────────────────────────────────────────────────
+let orbitTarget = new THREE.Vector3(0,0,0);
+let orbitRadius = 30;
+let spherical = { theta: 0.62, phi: 1.05 };
+function updateViewCam(){
+  viewCam.position.set(
+    orbitTarget.x + orbitRadius * Math.sin(spherical.phi) * Math.sin(spherical.theta),
+    orbitTarget.y + orbitRadius * Math.cos(spherical.phi),
+    orbitTarget.z + orbitRadius * Math.sin(spherical.phi) * Math.cos(spherical.theta)
+  );
+  viewCam.lookAt(orbitTarget);
+}
+
+// ── Build scene from params ─────────────────────────────────────────────────
+let lastFrameDist = null; // remember to keep orbit stable across rebuilds
+
+function buildScene(reframe=false){
+  while (g.children.length) { const c = g.children[0]; g.remove(c); c.geometry?.dispose?.(); }
+
+  const p = getParams();
+  const aspect = p.rw / p.rh;
+  const fovRad = p.fov * Math.PI / 180;
+
+  // The simulated camera, exactly as three.js would build it.
+  const C = new THREE.Vector3(p.cx, p.cy, p.cz);     // camera.position
+  const L = new THREE.Vector3(p.lx, p.ly, p.lz);     // lookAt target
+  const simCam = new THREE.PerspectiveCamera(p.fov, aspect, p.near, p.far);
+  simCam.position.copy(C);
+  simCam.lookAt(L);
+  simCam.updateMatrixWorld(true);
+  const M = simCam.matrixWorld;
+
+  // Camera basis in world space (three.js: looks down LOCAL -Z, up +Y, right +X)
+  const e = M.elements;
+  const right = new THREE.Vector3(e[0], e[1], e[2]).normalize();
+  const up    = new THREE.Vector3(e[4], e[5], e[6]).normalize();
+  const fwd   = new THREE.Vector3(-e[8], -e[9], -e[10]).normalize(); // viewing direction
+
+  // Distance from camera to the focal (view) plane = distance to lookAt target.
+  // If lookAt == position, fall back to a sensible default so the math is stable.
+  let D = C.distanceTo(L);
+  if (D < 1e-4) D = 1;
+
+  // Frustum half-extents at any distance d in front of the camera.
+  const halfH = d => Math.tan(fovRad / 2) * d;
+  const halfW = d => halfH(d) * aspect;
+
+  // ===== THE FIX =====
+  // The "screen" (canvas / view plane) is the cross-section of the frustum at the
+  // focal plane — NOT a wall sized in pixels sitting on the camera. So its WORLD
+  // size is governed by fov, aspect and the camera's distance D. The four frustum
+  // edge-rays therefore pass exactly through the screen's corners, and the camera
+  // sits a real distance behind it instead of flush against it.
+  const hwD = halfW(D), hhD = halfH(D);
+
+  // Corner builder in camera-local space → world.
+  const cornersAt = d => {
+    const hw = halfW(d), hh = halfH(d);
+    return [
+      new THREE.Vector3(-hw, -hh, -d),
+      new THREE.Vector3( hw, -hh, -d),
+      new THREE.Vector3( hw,  hh, -d),
+      new THREE.Vector3(-hw,  hh, -d),
+    ].map(v => v.applyMatrix4(M));
+  };
+
+  const screenCorners = cornersAt(D);            // BL, BR, TR, TL  (in tj sign terms)
+  const nearCorners   = cornersAt(p.near);
+  const capFar        = Math.min(p.far, D * 3.2); // cap the far plane so it stays in view
+  const farCorners    = cornersAt(capFar);
+
+  // Convenience corner vectors of the screen (camera-space sign: x∈[-hw,hw], y∈[-hh,hh])
+  const sBL = screenCorners[0], sBR = screenCorners[1], sTR = screenCorners[2], sTL = screenCorners[3];
+
+  // Characteristic length for sizing helpers / camera body / labels.
+  const S = Math.max(2 * hwD, 2 * hhD, D);
+
+  // ── View plane (the screen) ───────────────────────────────────────────────
+  // Fill (semi-transparent) via two triangles.
+  const planeGeo = new THREE.BufferGeometry();
+  planeGeo.setAttribute('position', new THREE.Float32BufferAttribute([
+    sBL.x,sBL.y,sBL.z,  sBR.x,sBR.y,sBR.z,  sTR.x,sTR.y,sTR.z,
+    sBL.x,sBL.y,sBL.z,  sTR.x,sTR.y,sTR.z,  sTL.x,sTL.y,sTL.z,
+  ], 3));
+  g.add(new THREE.Mesh(planeGeo, basicMat(0x13132a, 0.55)));
+  g.add(rectLoop(screenCorners, 0x3a3a66, 0.95));
+
+  // Grid on the screen (every 10%) — drawn in the screen's own frame.
+  const gridMat = new THREE.LineBasicMaterial({ color:0x24244a, transparent:true, opacity:0.55 });
+  for (let i=1; i<10; i++){
+    const fx = -hwD + (2*hwD)*(i/10);
+    const a = L.clone().add(right.clone().multiplyScalar(fx)).add(up.clone().multiplyScalar(-hhD));
+    const b = L.clone().add(right.clone().multiplyScalar(fx)).add(up.clone().multiplyScalar( hhD));
+    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]), gridMat));
+    const fy = -hhD + (2*hhD)*(i/10);
+    const c = L.clone().add(up.clone().multiplyScalar(fy)).add(right.clone().multiplyScalar(-hwD));
+    const d = L.clone().add(up.clone().multiplyScalar(fy)).add(right.clone().multiplyScalar( hwD));
+    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([c,d]), gridMat));
+  }
+
+  const lblH = S * 0.05;          // base world label height
+  const corner = (sx, sy) => L.clone()
+      .add(right.clone().multiplyScalar(sx * hwD))
+      .add(up.clone().multiplyScalar(sy * hhD));
+
+  // ── BROWSER coordinate ruling (pixels): origin at TOP-LEFT, +X right, +Y down ─
+  const browserExt = 0.14;
+  g.add(arrow(corner(-1,1).clone().add(right.clone().multiplyScalar(-browserExt*hwD)),
+              corner( 1,1).clone().add(right.clone().multiplyScalar( browserExt*hwD)),
+              0xe05555, S, 0.95));                                   // browser +X (top edge)
+  g.add(arrow(corner(-1,1).clone().add(up.clone().multiplyScalar( browserExt*hhD)),
+              corner(-1,-1).clone().add(up.clone().multiplyScalar(-browserExt*hhD)),
+              0x4ec97a, S, 0.95));                                   // browser +Y (left edge, downward)
+  g.add(sphere(corner(-1,1), S*0.018, 0xffffff));
+  addLabel('(0,0) px', corner(-1,1).clone().add(right.clone().multiplyScalar(-0.18*hwD)).add(up.clone().multiplyScalar(0.16*hhD)), 'rgba(255,255,255,0.7)', lblH*0.85);
+  addLabel('+X px', corner(1,1).clone().add(right.clone().multiplyScalar(0.22*hwD)), '#e05555', lblH*0.85);
+  addLabel('+Y px ↓', corner(-1,-1).clone().add(up.clone().multiplyScalar(-0.22*hhD)), '#4ec97a', lblH*0.85);
+
+  // ── THREE.JS coordinate ruling (units): origin at CENTER, +X right, +Y up ─────
+  g.add(arrow(corner(-1.18,0), corner(1.18,0), 0x9d7fff, S, 0.85));  // tj +X through center
+  g.add(arrow(corner(0,-1.18), corner(0,1.18), 0x6fffa8, S, 0.85));  // tj +Y through center
+  g.add(sphere(L, S*0.02, 0x9d7fff, 0.95));                          // tj origin
+  addLabel('(0,0,0)', L.clone().add(right.clone().multiplyScalar(0.16*hwD)).add(up.clone().multiplyScalar(0.13*hhD)), 'rgba(157,127,255,0.85)', lblH*0.8);
+  addLabel('+X', corner(1.18,0).clone().add(right.clone().multiplyScalar(0.12*hwD)), 'rgba(157,127,255,0.9)', lblH*0.85);
+  addLabel('+Y', corner(0,1.18).clone().add(up.clone().multiplyScalar(0.10*hhD)), 'rgba(111,255,168,0.9)', lblH*0.85);
+
+  // Corner juxtaposition: same point, two coordinate systems (the key lesson).
+  const fmt = n => (Math.round(n*100)/100).toString();
+  const cornerInfo = [
+    { p:corner(-1, 1), px:`(0, 0)`,            tj:`(${fmt(-hwD)}, ${fmt(hhD)})` },
+    { p:corner( 1, 1), px:`(${p.rw}, 0)`,      tj:`(${fmt(hwD)}, ${fmt(hhD)})` },
+    { p:corner( 1,-1), px:`(${p.rw}, ${p.rh})`,tj:`(${fmt(hwD)}, ${fmt(-hhD)})` },
+    { p:corner(-1,-1), px:`(0, ${p.rh})`,      tj:`(${fmt(-hwD)}, ${fmt(-hhD)})` },
+  ];
+  cornerInfo.forEach(ci => {
+    addLabel(ci.px + '\n' + ci.tj,
+      ci.p.clone().add(fwd.clone().multiplyScalar(-S*0.06)),
+      'rgba(255,255,255,0.5)', lblH*0.62);
+  });
+
+  // ── Z AXIS (three.js +Z toward viewer) from screen center ─────────────────
+  const zEnd = L.clone().add(fwd.clone().multiplyScalar(-S*0.9)); // +Z is opposite viewing dir
+  g.add(arrow(L.clone().add(fwd.clone().multiplyScalar(S*0.12)), zEnd, 0x4a9edd, S, 0.9));
+  addLabel('+Z\n(toward viewer)', zEnd.clone().add(up.clone().multiplyScalar(0.12*hhD)), '#4a9edd', lblH*0.8);
+
+  // ── SIMULATED CAMERA body ─────────────────────────────────────────────────
+  const camGrp = new THREE.Group();
+  camGrp.position.copy(C);
+  const b = S * 0.05;
+  const bodyMat = new THREE.MeshLambertMaterial({ color:0xf0a030 });
+  camGrp.add(new THREE.Mesh(new THREE.BoxGeometry(b*1.5, b, b*0.85), bodyMat));
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(b*0.3, b*0.34, b*0.6, 16),
+      new THREE.MeshLambertMaterial({ color:0x1a2980 }));
+  lens.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), fwd);
+  lens.position.copy(fwd.clone().multiplyScalar(b*0.5));
+  camGrp.add(lens);
+  const vf = new THREE.Mesh(new THREE.BoxGeometry(b*0.4, b*0.35, b*0.3), bodyMat);
+  vf.position.copy(up.clone().multiplyScalar(b*0.62));
+  camGrp.add(vf);
+  g.add(camGrp);
+  addLabel(`camera\nposition (${fmt(p.cx)}, ${fmt(p.cy)}, ${fmt(p.cz)})`,
+    C.clone().add(up.clone().multiplyScalar(b*2.4)), '#f0a030', lblH*0.78);
+
+  // ── FRUSTUM ───────────────────────────────────────────────────────────────
+  // near plane (bright), far plane (dim, dashed), and the four edge-rays that
+  // run camera → near corner → SCREEN corner → far corner (collinear by design).
+  g.add(rectLoop(nearCorners, 0xf0a030, 0.75));
+  g.add(rectLoop(farCorners, 0xf0a030, 0.22, true));
+  for (let i=0;i<4;i++){
+    g.add(line([C, farCorners[i]], 0xf0a030, 0.20));
+  }
+  addLabel('near', nearCorners[2].clone().add(up.clone().multiplyScalar(0.05*hhD)), 'rgba(240,160,48,0.7)', lblH*0.62);
+  addLabel(capFar < p.far ? `far (${fmt(p.far)}, clipped)` : 'far',
+    farCorners[2].clone().add(up.clone().multiplyScalar(0.04*hhD)), 'rgba(240,160,48,0.45)', lblH*0.62);
+
+  // line of sight + lookAt marker
+  g.add(line([C, L], 0xf0a030, 0.55, true));
+  g.add(sphere(L, S*0.014, 0xf0a030, 0.7));
+  addLabel(`lookAt (${fmt(p.lx)}, ${fmt(p.ly)}, ${fmt(p.lz)})`,
+    L.clone().add(up.clone().multiplyScalar(-0.16*hhD)).add(right.clone().multiplyScalar(0.05*hwD)),
+    'rgba(240,160,48,0.7)', lblH*0.66);
+
+  // ── Frame the orbit camera (only on first build / reframe / big scale change) ─
+  const sceneCenter = C.clone().add(L).multiplyScalar(0.5);
+  if (reframe || lastFrameDist === null || Math.abs(S - lastFrameDist) / Math.max(S,lastFrameDist) > 0.6){
+    orbitTarget.copy(sceneCenter);
+    orbitRadius = Math.max(S * 1.9, D * 2.2);
+    lastFrameDist = S;
+  } else {
+    orbitTarget.copy(sceneCenter); // keep angle/zoom, just recenter
+  }
+  updateViewCam();
+}
+
+// ── Pointer / touch controls ────────────────────────────────────────────────
+let dragging=false, prevX=0, prevY=0, prevPinch=null;
+const el = renderer.domElement;
+el.addEventListener('mousedown', e=>{ dragging=true; prevX=e.clientX; prevY=e.clientY; });
+window.addEventListener('mouseup', ()=> dragging=false);
+window.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  spherical.theta -= (e.clientX-prevX)*0.006;
+  spherical.phi = Math.max(0.05, Math.min(Math.PI-0.05, spherical.phi + (e.clientY-prevY)*0.006));
+  prevX=e.clientX; prevY=e.clientY; updateViewCam();
+});
+el.addEventListener('wheel', e=>{
+  orbitRadius = Math.max(0.5, Math.min(100000, orbitRadius*(1+e.deltaY*0.001)));
+  updateViewCam();
+}, { passive:true });
+el.addEventListener('touchstart', e=>{
+  if(e.touches.length===1){ dragging=true; prevX=e.touches[0].clientX; prevY=e.touches[0].clientY; prevPinch=null; }
+  else if(e.touches.length===2){ dragging=false; const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY; prevPinch=Math.hypot(dx,dy); }
+}, { passive:true });
+el.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  if(e.touches.length===1 && dragging){
+    spherical.theta -= (e.touches[0].clientX-prevX)*0.006;
+    spherical.phi = Math.max(0.05, Math.min(Math.PI-0.05, spherical.phi + (e.touches[0].clientY-prevY)*0.006));
+    prevX=e.touches[0].clientX; prevY=e.touches[0].clientY; updateViewCam();
+  } else if(e.touches.length===2 && prevPinch){
+    const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
+    const d=Math.hypot(dx,dy);
+    orbitRadius = Math.max(0.5, Math.min(100000, orbitRadius*(1+(prevPinch-d)*0.005)));
+    prevPinch=d; updateViewCam();
+  }
+}, { passive:false });
+el.addEventListener('touchend', ()=>{ dragging=false; prevPinch=null; }, { passive:true });
+
+// ── Param wiring ─────────────────────────────────────────────────────────────
+function autosize(elm){ elm.size = Math.max(2, String(elm.value).length + 1); }
+function syncSize(w,h){
+  [['p-rw',w],['p-rw2',w],['p-rh',h],['p-rh2',h]].forEach(([id,v])=>{
+    const x=document.getElementById(id); if(x){ x.value=v; autosize(x); }
+  });
+}
+document.querySelectorAll('.param').forEach(input=>{
+  autosize(input);
+  input.addEventListener('input', ()=>{
+    autosize(input);
+    // keep the two copies of width / height in sync (renderer.setSize ↔ aspect)
+    const mirror = { 'p-rw':'p-rw2','p-rw2':'p-rw','p-rh':'p-rh2','p-rh2':'p-rh' }[input.id];
+    if(mirror){ const m=document.getElementById(mirror); m.value=input.value; autosize(m); }
+    buildScene(false);
+  });
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') input.blur(); });
+});
+document.querySelectorAll('.preset').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.preset').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    syncSize(btn.dataset.w, btn.dataset.h);
+    buildScene(true);
+  });
+});
+document.getElementById('reset-btn').addEventListener('click', ()=>{
+  for(const k of Object.keys(DEFAULTS)){
+    const x=document.getElementById('p-'+k); if(x){ x.value=DEFAULTS[k]; autosize(x); }
+  }
+  document.getElementById('p-rw2').value=DEFAULTS.rw; autosize(document.getElementById('p-rw2'));
+  document.getElementById('p-rh2').value=DEFAULTS.rh; autosize(document.getElementById('p-rh2'));
+  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active', b.dataset.w==String(DEFAULTS.rw)&&b.dataset.h==String(DEFAULTS.rh)));
+  buildScene(true);
+});
+
+// ── Panel toggle ──────────────────────────────────────────────────────────────
+const panelBody = document.getElementById('panel-body');
+const toggleArrow = document.getElementById('toggle-arrow');
+function isDocked(){ return window.matchMedia('(min-width: 820px) and (min-aspect-ratio: 1/1)').matches; }
+function syncArrow(open){
+  toggleArrow.classList.toggle('docked', isDocked());
+  if(isDocked()){ toggleArrow.innerHTML = open ? '&#9650;' : '&#9650;'; }
+  else { toggleArrow.innerHTML = open ? '&#9650;' : '&#9660;'; }
+}
+document.getElementById('panel-toggle').addEventListener('click', ()=>{
+  const open = panelBody.classList.toggle('open');
+  syncArrow(open);
+  setTimeout(resizeRenderer, 320);
+});
+syncArrow(true);
+
+// ── Init ────────────────────────────────────────────────────────────────────
+const ro = new ResizeObserver(()=> resizeRenderer());
+ro.observe(viewport);
+window.addEventListener('resize', ()=>{ resizeRenderer(); syncArrow(panelBody.classList.contains('open')); });
+resizeRenderer();
+buildScene(true);
+(function animate(){ requestAnimationFrame(animate); renderer.render(scene, viewCam); })();
+</script>
+</body>
+</html>
