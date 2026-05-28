@@ -42,7 +42,7 @@ noindex: true
 
 <section aria-label="Interactive visualizer">
     <div class="tj-embed">
-        <iframe src="/edu/threejs/visualizer.html"
+        <iframe src="/edu/threejs/visualizer.html?v={{ site.time | date: '%s' }}"
                 title="Three.js camera and frustum visualizer"
                 loading="lazy"
                 allowfullscreen></iframe>
@@ -52,7 +52,7 @@ noindex: true
 
 <section class="content-section" aria-label="How to read it">
     <h2>How to read it</h2>
-    <p>The orange <strong>view plane</strong> is the cross-section of the camera's frustum at the focal distance — in other words, it <em>is</em> the canvas you'd see. Its size in world units is set entirely by the field of view, the aspect ratio, and how far the camera sits from what it's looking at. The four frustum edge-rays pass exactly through its corners.</p>
-    <p>The same rectangle carries two coordinate systems at once. In <strong>browser pixels</strong> the origin is the top-left corner, X runs right and Y runs <em>down</em>, ending at the <code>renderer.setSize</code> dimensions. In <strong>three.js units</strong> the origin is the center, X runs right and Y runs <em>up</em>. Reading the same corner in both systems is the whole point: it shows you the conversion the renderer does on every frame.</p>
-    <p>Try pushing <code>fov</code> up and watch the frustum widen and the plane grow; pull the camera's <code>z</code> back and watch how much more of the scene fits; swap the aspect-ratio presets and watch the canvas reshape.</p>
+    <p>The blue <strong>screen</strong> sits fixed at the origin — think of it as the monitor, a stable reference you orbit around. The orange shape is the camera's <strong>frustum</strong>: its actual view volume, drawn from the camera body out through the near and far planes. At the default settings the frustum's edges pass exactly through the screen's corners, which is what "correctly framed" looks like. Editing the camera moves the camera against that fixed stage — it never moves your vantage point.</p>
+    <p>The screen carries two coordinate systems at once. In <strong>browser pixels</strong> the origin is the top-left corner, X runs right and Y runs <em>down</em>, ending at the <code>renderer.setSize</code> dimensions. In <strong>three.js units</strong> the origin is the center, X runs right and Y runs <em>up</em>. Reading the same corner in both systems is the whole point: it shows the conversion the renderer does on every frame.</p>
+    <p>Try pushing <code>fov</code> up and watch the frustum widen past the screen; pull the camera's <code>z</code> back and watch the frustum's reach change while the screen stays put; swap the aspect-ratio presets and watch the screen reshape. Use <strong>⊕ frame view</strong> to recenter your vantage if the camera wanders out of sight.</p>
 </section>
