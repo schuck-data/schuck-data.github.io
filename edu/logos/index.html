@@ -1,0 +1,49 @@
+---
+layout: default
+title: Schuck Data logos in 3D — a render-pipeline playground — Schuck Data
+description: Three Schuck Data logos — the brand lockup and two original marks — dropped into the three.js render-pipeline visualizer, free to move, rotate, and project onto the screen.
+social_title: Schuck Data logos in 3D
+noindex: true
+---
+
+<style>
+  .tj-embed { margin:1.5rem 0 0.75rem; border:1px solid rgba(255,255,255,0.1); border-radius:8px; overflow:hidden;
+    background:#0d1320; box-shadow:0 10px 40px rgba(0,0,0,0.35); }
+  .tj-embed iframe { display:block; width:100%; height:min(82vh, 780px); min-height:500px; border:0; }
+  .tj-cap { font-size:0.85rem; color:var(--text-muted); line-height:1.6; max-width:44rem; margin-bottom:2.5rem; }
+  .tj-params { margin:0.5rem 0 0; }
+  .tj-params dt { font-family:ui-monospace, Menlo, Consolas, monospace; font-size:0.9rem; color:var(--text); margin-top:1rem; }
+  .tj-params dd { margin:0.2rem 0 0; color:var(--text-muted); line-height:1.6; max-width:42rem; }
+  @media (max-width:48rem){ .tj-embed iframe { height:80vh; min-height:440px; } }
+</style>
+
+<section class="hero" aria-labelledby="logos-heading">
+    <p class="hero-eyebrow">Edu · Three.js</p>
+    <h1 id="logos-heading" class="hero-h1">Three logos, one lens.</h1>
+    <p class="hero-lead">The same render-pipeline tool from the <a href="/edu/threejs/">camera &amp; frustum</a> page, but the objects are Schuck Data logos — the brand lockup plus two originals. Move them, spin them, push them past the clip walls, and watch the camera draw each one onto the fixed screen.</p>
+</section>
+
+<section aria-label="Interactive visualizer">
+    <div class="tj-embed">
+        <iframe src="/edu/logos/visualizer.html?v={{ site.time | date: '%s' }}"
+                title="Schuck Data logos render-pipeline visualizer" loading="lazy" allowfullscreen></iframe>
+    </div>
+    <p class="tj-cap">Drag a logo or the center of projection to move it; drag empty space to orbit; scroll or pinch to zoom. Each logo has its own position, rotation, and scale in the panel. The screen always shows the actual rendered frame.</p>
+</section>
+
+<section class="content-section" aria-label="The three logos">
+    <h2>The three marks</h2>
+    <dl class="tj-params">
+        <dt>Brand lockup</dt>
+        <dd>The site logo rebuilt in 3D wireframe: the four-node rising chart — the real Schuck Data brandmark — riding over an extruded <code>SCHUCK</code> / <code>DATA</code> wordmark, with the letter stems doubling as bars, just like the flat logo.</dd>
+        <dt>Constellation</dt>
+        <dd>An original mark: a small node-and-edge graph — points joined by links — for connected, related data. A network you can turn over in your hand.</dd>
+        <dt>Growth bars</dt>
+        <dd>An original mark: a field of bars climbing toward a corner — a three-dimensional bar chart that reads as upward trend and growth.</dd>
+    </dl>
+</section>
+
+<section class="content-section" aria-label="Why this exists">
+    <h2>Why bother</h2>
+    <p>A logo is usually a flat, fixed thing. Dropping the marks into the pipeline turns them into real geometry you can interrogate: see how field of view squeezes the lockup, how moving a mark off-axis skews its projection, how the clip walls slice a logo in half. It's a brand asset and a lesson in the same window.</p>
+</section>
