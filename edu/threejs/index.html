@@ -56,7 +56,7 @@ noindex: true
                 loading="lazy"
                 allowfullscreen></iframe>
     </div>
-    <p class="tj-cap">Edit any yellow value in the <strong>scene setup</strong> panel and the model updates live. Drag to orbit, scroll or pinch to zoom. On a phone the code panel sits below the view; on a wide screen it docks to the side.</p>
+    <p class="tj-cap">The <strong>scene setup</strong> panel shows the equivalent three.js code; the controls beneath it drive each variable with a slider, a number field, or the ▲▼ buttons, and the model updates live. Drag to orbit, scroll or pinch to zoom. On a phone the panel sits below the view; on a wide screen it docks to the side.</p>
 </section>
 
 <section class="content-section" aria-label="How to read it">
@@ -64,7 +64,7 @@ noindex: true
     <p>The blue <strong>screen</strong> sits fixed at the origin — think of it as the monitor, a stable reference you orbit around. The orange shape is the camera's <strong>frustum</strong>: its actual view volume, drawn from the camera body out through the near and far planes. At the default settings the frustum's edges pass exactly through the screen's corners, which is what "correctly framed" looks like. Editing the camera moves the camera against that fixed stage — it never moves your vantage point.</p>
     <p>The screen carries two coordinate systems at once. In <strong>browser pixels</strong> the origin is the top-left corner, X runs right and Y runs <em>down</em>, ending at the <code>renderer.setSize</code> dimensions. In <strong>three.js units</strong> the origin is the center, X runs right and Y runs <em>up</em>. Reading the same corner in both systems is the whole point: it shows the conversion the renderer does on every frame.</p>
     <p>Try pushing <code>fov</code> up and watch the frustum widen past the screen; pull the camera's <code>z</code> back and watch the frustum's reach change while the screen stays put; swap the aspect-ratio presets and watch the screen reshape. Use <strong>⊕ frame view</strong> to recenter your vantage if the camera wanders out of sight.</p>
-    <p>The teal <strong>teapot</strong> sits on the far side of the screen. Its flattened teal copy on the screen itself is the genuine perspective projection of every teapot vertex through the camera — i.e. the 2D image the camera actually produces. Move the camera and the projection stretches, shifts, and scales exactly as the rendered frame would.</p>
+    <p>The teal <strong>teapot</strong> sits on the far side of the screen. The image painted on the screen is the actual frame that camera renders — the teapot is drawn a second time, offscreen, through the simulated camera, and that result is mapped onto the screen. Move the camera and the on-screen image changes exactly as the rendered output would, because it <em>is</em> the rendered output.</p>
 </section>
 
 <section class="content-section" aria-label="What each number means">

@@ -6,14 +6,8 @@
 <title>Three.js Camera & Frustum Visualizer</title>
 <style>
   :root {
-    --bg:        #0b0b0f;
-    --surface:   #111118;
-    --border:    rgba(255,255,255,0.07);
-    --dim:       rgba(255,255,255,0.22);
-    --accent-cam:#f0a030;
-    --param:     #ffd166;
-    --code-bg:   #0d0d15;
-    --teapot:    #63d6c0;
+    --bg:#0b0b0f; --surface:#111118; --border:rgba(255,255,255,0.07);
+    --dim:rgba(255,255,255,0.22); --param:#ffd166; --code-bg:#0d0d15; --teapot:#63d6c0;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { width:100%; height:100%; }
@@ -24,86 +18,89 @@
   #viewport canvas { display:block; position:absolute; top:0; left:0; touch-action:none; }
 
   #legend {
-    position:absolute; top:12px; left:12px;
-    font-size:9.5px; letter-spacing:0.06em; line-height:1.9;
+    position:absolute; top:12px; left:12px; font-size:9.5px; letter-spacing:0.06em; line-height:1.9;
     pointer-events:none; z-index:5; background:rgba(11,11,15,0.45); padding:6px 8px; border-radius:4px;
   }
   .leg { display:flex; align-items:center; gap:6px; }
   .ldot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
   #hint {
-    position:absolute; top:12px; right:12px;
-    font-size:9px; opacity:0.28; letter-spacing:0.08em; text-transform:uppercase;
-    pointer-events:none; text-align:right; line-height:1.9; z-index:5;
+    position:absolute; top:12px; right:12px; font-size:9px; opacity:0.28; letter-spacing:0.08em;
+    text-transform:uppercase; pointer-events:none; text-align:right; line-height:1.9; z-index:5;
   }
 
   #panel-wrap {
     position:relative; z-index:20; background:var(--surface);
-    border-top:1px solid var(--border); flex-shrink:0;
-    display:flex; flex-direction:column;
+    border-top:1px solid var(--border); flex-shrink:0; display:flex; flex-direction:column;
   }
   #panel-toggle {
     width:100%; background:none; border:none; border-bottom:1px solid var(--border);
-    color:var(--dim); font-family:'Courier New',monospace;
-    font-size:10px; letter-spacing:0.12em; text-transform:uppercase;
-    padding:9px 16px; cursor:pointer; text-align:left;
+    color:var(--dim); font-family:'Courier New',monospace; font-size:10px; letter-spacing:0.12em;
+    text-transform:uppercase; padding:9px 16px; cursor:pointer; text-align:left;
     display:flex; justify-content:space-between; align-items:center; transition:color 0.2s; flex-shrink:0;
   }
   #panel-toggle:hover { color:rgba(255,255,255,0.5); }
   #panel-body { max-height:0; overflow:hidden; transition:max-height 0.3s ease; display:flex; flex-direction:column; min-height:0; }
-  #panel-body.open { max-height:62vh; }
+  #panel-body.open { max-height:64vh; }
 
-  #presets { display:flex; gap:6px; padding:10px 16px 6px; flex-wrap:wrap; border-bottom:1px solid var(--border); flex-shrink:0; }
+  #presets { display:flex; gap:6px; padding:10px 16px 8px; flex-wrap:wrap; border-bottom:1px solid var(--border); flex-shrink:0; }
   .preset {
-    font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.07em;
-    padding:4px 10px; border:1px solid rgba(255,255,255,0.12);
-    background:none; color:var(--dim); cursor:pointer; border-radius:2px; transition:all 0.15s;
+    font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.07em; padding:4px 10px;
+    border:1px solid rgba(255,255,255,0.12); background:none; color:var(--dim); cursor:pointer; border-radius:2px; transition:all 0.15s;
   }
   .preset:hover { border-color:rgba(255,255,255,0.3); color:#fff; }
   .preset.active { border-color:var(--param); color:var(--param); background:rgba(255,209,102,0.07); }
 
   #code-block {
-    padding:16px; font-size:12px; line-height:2.4;
-    color:rgba(220,225,255,0.55); background:var(--code-bg);
-    overflow:auto; white-space:pre; flex:1 1 auto; min-height:0;
-    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.18) var(--code-bg);
+    padding:14px 16px; font-size:12px; line-height:2.1; color:rgba(220,225,255,0.5);
+    background:var(--code-bg); white-space:pre; flex-shrink:0; border-bottom:1px solid var(--border);
+    overflow-x:auto; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.18) var(--code-bg);
   }
-  #code-block::-webkit-scrollbar { width:10px; height:10px; }
-  #code-block::-webkit-scrollbar-track { background:var(--code-bg); }
-  #code-block::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.14); border-radius:5px; border:2px solid var(--code-bg); }
-  #code-block::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,0.26); }
-  .kw { color:rgba(150,170,255,0.7); }
-  .fn { color:rgba(120,210,255,0.75); }
+  #code-block::-webkit-scrollbar { height:8px; }
+  #code-block::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.14); border-radius:4px; }
+  .kw { color:rgba(150,170,255,0.7); } .fn { color:rgba(120,210,255,0.75); } .cv { color:var(--param); }
 
-  #reset-row { padding:10px 16px 14px; background:var(--code-bg); flex-shrink:0; display:flex; gap:8px; }
-  #reset-row button {
-    font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.08em;
-    padding:6px 12px; border:1px solid rgba(255,255,255,0.14);
-    background:none; color:var(--dim); cursor:pointer; border-radius:2px; transition:all 0.15s; text-transform:uppercase;
+  #controls {
+    flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 16px 12px;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.18) var(--surface);
   }
-  #reset-row button:hover { border-color:rgba(255,255,255,0.35); color:#fff; }
-
-  /* fixed-width value boxes so the steppers never shift when digits change */
-  .param {
-    color:var(--param); background:rgba(255,209,102,0.08);
-    border:none; border-bottom:1px solid rgba(255,209,102,0.35);
-    font-family:'Courier New',monospace; font-size:12px; outline:none;
-    width:52px; padding:1px 2px; text-align:center; vertical-align:middle;
-    transition:background 0.15s, border-color 0.15s;
+  #controls::-webkit-scrollbar { width:10px; }
+  #controls::-webkit-scrollbar-track { background:var(--surface); }
+  #controls::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.14); border-radius:5px; border:2px solid var(--surface); }
+  #controls::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,0.26); }
+  .ctrl-group { font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:var(--dim); margin:14px 0 6px; }
+  .ctrl-group:first-child { margin-top:6px; }
+  .ctrl { margin-bottom:9px; }
+  .ctrl-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .ctrl-label { font-size:11px; color:#b9c0d6; }
+  .cnum {
+    color:var(--param); background:rgba(255,209,102,0.08); border:none; border-bottom:1px solid rgba(255,209,102,0.35);
+    font-family:'Courier New',monospace; font-size:11.5px; outline:none; width:52px; padding:1px 2px;
+    text-align:center; transition:background 0.15s, border-color 0.15s;
   }
-  .param:focus { background:rgba(255,209,102,0.18); border-bottom-color:var(--param); }
-  .num { display:inline-flex; align-items:center; vertical-align:middle; }
+  .cnum:focus { background:rgba(255,209,102,0.18); border-bottom-color:var(--param); }
+  .num { display:inline-flex; align-items:center; }
   .spin { display:inline-flex; flex-direction:column; margin-left:3px; }
   .spin button {
-    font-family:'Courier New',monospace; font-size:9px; line-height:1;
-    width:17px; height:12px; padding:0; margin:0;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(255,209,102,0.12); color:var(--param);
+    font-family:'Courier New',monospace; font-size:9px; line-height:1; width:17px; height:11px; padding:0; margin:0;
+    display:flex; align-items:center; justify-content:center; background:rgba(255,209,102,0.12); color:var(--param);
     border:1px solid rgba(255,209,102,0.4); cursor:pointer; user-select:none; transition:background 0.12s;
   }
   .spin button:hover { background:rgba(255,209,102,0.32); }
   .spin button:active { background:rgba(255,209,102,0.5); }
-  .spin .up { border-radius:3px 3px 0 0; border-bottom:none; }
-  .spin .dn { border-radius:0 0 3px 3px; }
+  .spin .up { border-radius:3px 3px 0 0; border-bottom:none; } .spin .dn { border-radius:0 0 3px 3px; }
+  .cslider { -webkit-appearance:none; appearance:none; width:100%; height:4px; margin-top:6px; border-radius:2px;
+    background:rgba(255,255,255,0.12); outline:none; accent-color:var(--param); }
+  .cslider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:13px; height:13px; border-radius:50%;
+    background:var(--param); cursor:pointer; border:none; }
+  .cslider::-moz-range-thumb { width:13px; height:13px; border-radius:50%; background:var(--param); cursor:pointer; border:none; }
+
+  #reset-row { padding:10px 16px 14px; background:var(--surface); flex-shrink:0; display:flex; gap:8px; border-top:1px solid var(--border); }
+  #reset-row button {
+    font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.08em; padding:6px 12px;
+    border:1px solid rgba(255,255,255,0.14); background:none; color:var(--dim); cursor:pointer; border-radius:2px;
+    transition:all 0.15s; text-transform:uppercase;
+  }
+  #reset-row button:hover { border-color:rgba(255,255,255,0.35); color:#fff; }
 
   @media (min-width: 820px) and (min-aspect-ratio: 1/1) {
     #app { flex-direction: row; }
@@ -125,14 +122,14 @@
       <div class="leg"><div class="ldot" style="background:#6fffa8"></div><span style="opacity:.55">three.js Y ↑ (units)</span></div>
       <div class="leg"><div class="ldot" style="background:#4a9edd"></div><span style="opacity:.6">three.js Z ↗ (toward viewer)</span></div>
       <div class="leg"><div class="ldot" style="background:#f0a030"></div><span style="opacity:.6">camera + frustum</span></div>
-      <div class="leg"><div class="ldot" style="background:#63d6c0"></div><span style="opacity:.6">teapot + its projection</span></div>
+      <div class="leg"><div class="ldot" style="background:#63d6c0"></div><span style="opacity:.6">teapot + camera's rendered view</span></div>
     </div>
     <div id="hint">drag · rotate<br>scroll/pinch · zoom</div>
   </div>
 
   <div id="panel-wrap">
     <button id="panel-toggle">
-      <span>// scene setup &mdash; edit the yellow values</span>
+      <span>// scene setup</span>
       <span id="toggle-arrow">&#9650;</span>
     </button>
     <div id="panel-body" class="open">
@@ -143,18 +140,23 @@
         <button class="preset" data-w="1000" data-h="1000">1:1</button>
         <button class="preset" data-w="2560" data-h="1080">21:9</button>
       </div>
-      <div id="code-block"><span class="kw">const</span> renderer = <span class="kw">new</span> <span class="fn">THREE.WebGLRenderer</span>();
-renderer.<span class="fn">setSize</span>( <input class="param" id="p-rw" value="1920">, <input class="param" id="p-rh" value="1080"> );
+      <div id="code-block"><span class="kw">const</span> width  = <span class="cv" id="cv-rw">1920</span>;
+<span class="kw">const</span> height = <span class="cv" id="cv-rh">1080</span>;
+renderer.<span class="fn">setSize</span>(width, height);
 
-<span class="kw">const</span> camera = <span class="kw">new</span> <span class="fn">THREE.PerspectiveCamera</span>(
-  <input class="param" id="p-fov" value="75">,
-  <input class="param" id="p-rw2" value="1920"> / <input class="param" id="p-rh2" value="1080">,
-  <input class="param" id="p-near" value="0.1">,
-  <input class="param" id="p-far" value="1000">
-);
-camera.<span class="fn">position</span>.set( <input class="param" id="p-cx" value="0">, <input class="param" id="p-cy" value="0">, <input class="param" id="p-cz" value="5"> );
-camera.<span class="fn">lookAt</span>( <input class="param" id="p-lx" value="0">, <input class="param" id="p-ly" value="0">, <input class="param" id="p-lz" value="0"> );
+<span class="kw">const</span> fov    = <span class="cv" id="cv-fov">75</span>;
+<span class="kw">const</span> aspect = width / height;
+<span class="kw">const</span> near   = <span class="cv" id="cv-near">0.1</span>;
+<span class="kw">const</span> far    = <span class="cv" id="cv-far">1000</span>;
+<span class="kw">const</span> camera = <span class="kw">new</span> <span class="fn">THREE.PerspectiveCamera</span>(fov, aspect, near, far);
+
+<span class="kw">const</span> camX = <span class="cv" id="cv-cx">0</span>, camY = <span class="cv" id="cv-cy">0</span>, camZ = <span class="cv" id="cv-cz">5</span>;
+camera.<span class="fn">position</span>.set(camX, camY, camZ);
+
+<span class="kw">const</span> lookX = <span class="cv" id="cv-lx">0</span>, lookY = <span class="cv" id="cv-ly">0</span>, lookZ = <span class="cv" id="cv-lz">0</span>;
+camera.<span class="fn">lookAt</span>(lookX, lookY, lookZ);
 </div>
+      <div id="controls"></div>
       <div id="reset-row"><button id="reset-btn">↺ reset defaults</button> <button id="frame-btn">⊕ frame view</button></div>
     </div>
   </div>
@@ -169,7 +171,7 @@ import * as THREE from 'three';
 // ── Renderer / observer camera ────────────────────────────────────────────
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor(0x0b0b0f, 1);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 const viewport = document.getElementById('viewport');
 viewport.appendChild(renderer.domElement);
 
@@ -178,49 +180,69 @@ const scene = new THREE.Scene();
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(5, 8, 6); scene.add(dl);
 const dl2 = new THREE.DirectionalLight(0xffffff, 0.35); dl2.position.set(-4, 2, -6); scene.add(dl2);
-const g = new THREE.Group();
-scene.add(g);
+const g = new THREE.Group(); scene.add(g);
 
 function resizeRenderer(){
   const w = viewport.clientWidth, h = viewport.clientHeight;
   if (w === 0 || h === 0) return;
-  renderer.setSize(w, h);
-  viewCam.aspect = w / h; viewCam.updateProjectionMatrix();
+  renderer.setSize(w, h); viewCam.aspect = w / h; viewCam.updateProjectionMatrix();
 }
 
-// ── Defaults + params ────────────────────────────────────────────────────────
+// ── Parameter model + UI config ──────────────────────────────────────────────
 const DEFAULTS = { rw:1920, rh:1080, fov:75, near:0.1, far:1000, cx:0, cy:0, cz:5, lx:0, ly:0, lz:0 };
+const CFG = {
+  rw:{label:'width', min:320,max:3840,step:10}, rh:{label:'height',min:240,max:2160,step:10},
+  fov:{label:'fov',min:10,max:150,step:1}, near:{label:'near',min:0.01,max:20,step:0.01}, far:{label:'far',min:1,max:2000,step:10},
+  cx:{label:'camX',min:-15,max:15,step:0.5}, cy:{label:'camY',min:-15,max:15,step:0.5}, cz:{label:'camZ',min:-20,max:20,step:0.5},
+  lx:{label:'lookX',min:-15,max:15,step:0.5}, ly:{label:'lookY',min:-15,max:15,step:0.5}, lz:{label:'lookZ',min:-15,max:15,step:0.5},
+};
+const GROUPS = [
+  ['renderer (pixels)', ['rw','rh']],
+  ['lens', ['fov','near','far']],
+  ['camera.position', ['cx','cy','cz']],
+  ['camera.lookAt', ['lx','ly','lz']],
+];
+const state = { ...DEFAULTS };
+const fmt = v => (+(+v).toFixed(4)).toString();
+
 function getParams(){
-  const p = {};
-  for (const k of Object.keys(DEFAULTS)){
-    const el = document.getElementById('p-' + k);
-    let v = el ? parseFloat(el.value) : NaN;
-    if (!isFinite(v)) v = DEFAULTS[k];
-    p[k] = v;
-  }
+  const p = { ...state };
   p.rw = Math.max(1, p.rw); p.rh = Math.max(1, p.rh);
   p.fov = Math.min(179, Math.max(1, p.fov));
   p.near = Math.max(0.0001, p.near);
   p.far = Math.max(p.near + 0.001, p.far);
   return p;
 }
+function updateCodeDisplay(){
+  for (const k of Object.keys(DEFAULTS)){
+    const span = document.getElementById('cv-' + k);
+    if (span) span.textContent = fmt(state[k]);
+  }
+}
 
 // Fixed reference screen — sized so the DEFAULT camera frames it exactly.
-const SCREEN_HH = Math.tan(75 * Math.PI / 180 / 2) * 5;   // ≈ 3.8366
+const SCREEN_HH = Math.tan(75 * Math.PI / 180 / 2) * 5;
 
-// ── Utah teapot (loaded defensively; the tool still works if the CDN fails) ──
+// ── Utah teapot + offscreen render target (defensive load) ───────────────────
 const teapotMatrix = new THREE.Matrix4().compose(
-  new THREE.Vector3(0, -0.4, -4),                                   // far side of the screen
+  new THREE.Vector3(0, -0.4, -4),
   new THREE.Quaternion().setFromEuler(new THREE.Euler(0.15, -0.6, 0)),
-  new THREE.Vector3(1, 1, 1)
+  new THREE.Vector3(1,1,1)
 );
-let teapotGeo = null, teapotWorld = [];
+let teapotGeo = null;
+const capScene = new THREE.Scene();
+capScene.background = new THREE.Color(0x0a0a16);
+capScene.add(new THREE.AmbientLight(0xffffff, 0.65));
+const capDir = new THREE.DirectionalLight(0xffffff, 0.85); capDir.position.set(3, 6, 8); capScene.add(capDir);
+const rt = new THREE.WebGLRenderTarget(640, 360);
+rt.texture.colorSpace = THREE.SRGBColorSpace;
+let capTeapot = null;
 try {
   const { TeapotGeometry } = await import('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/geometries/TeapotGeometry.js');
-  teapotGeo = new TeapotGeometry(1.5, 6);
-  const tp = teapotGeo.getAttribute('position');
-  for (let i = 0; i < tp.count; i++)
-    teapotWorld.push(new THREE.Vector3().fromBufferAttribute(tp, i).applyMatrix4(teapotMatrix));
+  teapotGeo = new TeapotGeometry(1.5, 8);
+  capTeapot = new THREE.Mesh(teapotGeo, new THREE.MeshStandardMaterial({ color:0x63d6c0, roughness:0.45, metalness:0.1 }));
+  capTeapot.applyMatrix4(teapotMatrix);
+  capScene.add(capTeapot);
 } catch (e) { console.warn('TeapotGeometry unavailable:', e); }
 
 // ── Mesh helpers ─────────────────────────────────────────────────────────────
@@ -231,39 +253,37 @@ function lineMat(color, opacity=1, dashed=false){
 }
 function line(pts, color, opacity=1, dashed=false){
   const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat(color, opacity, dashed));
-  if (dashed) l.computeLineDistances();
-  return l;
+  if (dashed) l.computeLineDistances(); return l;
 }
 function rectLoop(c, color, opacity=1, dashed=false){ return line([...c, c[0]], color, opacity, dashed); }
 function sphere(pos, r, color, opacity=1){ const m=new THREE.Mesh(new THREE.SphereGeometry(r,16,16), basicMat(color,opacity)); m.position.copy(pos); return m; }
 function arrow(from, to, color, S, opacity=1){
-  const grp = new THREE.Group(); const m = basicMat(color, opacity);
-  const dir = to.clone().sub(from).normalize(); const len = from.distanceTo(to);
-  const headLen = Math.min(S*0.05, len*0.32); const r = S*0.006; const sl = Math.max(0.0001, len - headLen);
-  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(r, r, sl, 10), m);
+  const grp=new THREE.Group(); const m=basicMat(color,opacity);
+  const dir=to.clone().sub(from).normalize(); const len=from.distanceTo(to);
+  const headLen=Math.min(S*0.05, len*0.32); const r=S*0.006; const sl=Math.max(0.0001, len-headLen);
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(r,r,sl,10), m);
   shaft.position.copy(from.clone().add(dir.clone().multiplyScalar(sl/2)));
   shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir); grp.add(shaft);
-  const cone = new THREE.Mesh(new THREE.ConeGeometry(r*2.6, headLen, 14), m);
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(r*2.6, headLen, 14), m);
   cone.position.copy(to.clone().sub(dir.clone().multiplyScalar(headLen/2)));
   cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir); grp.add(cone);
   return grp;
 }
 function label(text, color, h){
-  const c = document.createElement('canvas'); c.width=512; c.height=160;
-  const ctx = c.getContext('2d'); ctx.font='bold 50px Courier New';
-  ctx.fillStyle=color; ctx.textAlign='center'; ctx.textBaseline='middle';
-  const lines = text.split('\n');
-  lines.forEach((t,i)=> ctx.fillText(t, 256, 80 + (i-(lines.length-1)/2)*58));
-  const tex = new THREE.CanvasTexture(c); tex.anisotropy=4;
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false }));
+  const c=document.createElement('canvas'); c.width=512; c.height=160;
+  const ctx=c.getContext('2d'); ctx.font='bold 50px Courier New'; ctx.fillStyle=color;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const lines=text.split('\n'); lines.forEach((t,i)=> ctx.fillText(t, 256, 80+(i-(lines.length-1)/2)*58));
+  const tex=new THREE.CanvasTexture(c); tex.anisotropy=4;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false }));
   sp.scale.set(h*(512/160), h, 1); return sp;
 }
 function addLabel(text, pos, color, h){ const s=label(text,color,h); s.position.copy(pos); g.add(s); }
 
-// ── Observer orbit (target fixed at the screen centre) ───────────────────────
+// ── Observer orbit (target fixed at screen centre) ───────────────────────────
 const orbitTarget = new THREE.Vector3(0,0,0);
 let orbitRadius = 28;
-let spherical = { theta: 0.62, phi: 1.05 };
+let spherical = { theta:0.62, phi:1.05 };
 function updateViewCam(){
   viewCam.position.set(
     orbitTarget.x + orbitRadius*Math.sin(spherical.phi)*Math.sin(spherical.theta),
@@ -275,17 +295,17 @@ function updateViewCam(){
 
 // ── Build scene ────────────────────────────────────────────────────────────────
 function buildScene(reframe=false){
+  updateCodeDisplay();
   while (g.children.length){
     const c = g.children[0]; g.remove(c);
     if (c.geometry && c.geometry !== teapotGeo) c.geometry.dispose();
     const mats = Array.isArray(c.material) ? c.material : (c.material ? [c.material] : []);
-    mats.forEach(m => { m.map?.dispose?.(); m.dispose?.(); });
+    mats.forEach(m => { if (m.map && m.map !== rt.texture) m.map.dispose?.(); m.dispose?.(); });
   }
 
   const p = getParams();
   const aspect = p.rw / p.rh;
   const fovRad = p.fov * Math.PI / 180;
-
   const hhS = SCREEN_HH, hwS = SCREEN_HH * aspect;
   const right = new THREE.Vector3(1,0,0), up = new THREE.Vector3(0,1,0);
   const corner = (sx, sy) => new THREE.Vector3(sx*hwS, sy*hhS, 0);
@@ -293,7 +313,6 @@ function buildScene(reframe=false){
   const S = Math.max(2*hwS, 2*hhS, 8);
   const lblH = S * 0.05;
 
-  // Simulated camera.
   const C = new THREE.Vector3(p.cx, p.cy, p.cz);
   const L = new THREE.Vector3(p.lx, p.ly, p.lz);
   const simCam = new THREE.PerspectiveCamera(p.fov, aspect, p.near, p.far);
@@ -303,53 +322,53 @@ function buildScene(reframe=false){
   const camFwd = new THREE.Vector3(-ce[8], -ce[9], -ce[10]).normalize();
   let D = C.distanceTo(L); if (D < 1e-4) D = 1;
 
-  const halfH = d => Math.tan(fovRad/2) * d;
-  const halfW = d => halfH(d) * aspect;
+  const halfH = d => Math.tan(fovRad/2) * d, halfW = d => halfH(d) * aspect;
   const cornersAt = d => {
-    const hw = halfW(d), hh = halfH(d);
+    const hw=halfW(d), hh=halfH(d);
     return [ new THREE.Vector3(-hw,-hh,-d), new THREE.Vector3(hw,-hh,-d),
              new THREE.Vector3(hw,hh,-d),  new THREE.Vector3(-hw,hh,-d) ].map(v => v.applyMatrix4(M));
   };
 
-  // ── Screen (fixed) ──────────────────────────────────────────────────────────
-  const [bl,br,tr,tl] = screenCorners;
-  const pg = new THREE.BufferGeometry();
-  pg.setAttribute('position', new THREE.Float32BufferAttribute([
-    bl.x,bl.y,bl.z, br.x,br.y,br.z, tr.x,tr.y,tr.z,
-    bl.x,bl.y,bl.z, tr.x,tr.y,tr.z, tl.x,tl.y,tl.z ], 3));
-  g.add(new THREE.Mesh(pg, basicMat(0x13132a, 0.5)));
-  g.add(rectLoop(screenCorners, 0x3a3a66, 0.95));
-  const gridMat = new THREE.LineBasicMaterial({ color:0x24244a, transparent:true, opacity:0.5 });
-  for (let i=1;i<10;i++){
-    const x=-hwS+2*hwS*(i/10);
-    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,-hhS,0), new THREE.Vector3(x,hhS,0)]), gridMat));
-    const y=-hhS+2*hhS*(i/10);
-    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-hwS,y,0), new THREE.Vector3(hwS,y,0)]), gridMat));
+  // ── Render the camera's actual view of the teapot into the offscreen target ──
+  let screenMat;
+  if (teapotGeo){
+    const texH = 480, texW = Math.max(2, Math.round(texH * aspect));
+    rt.setSize(texW, texH);
+    renderer.setRenderTarget(rt);
+    renderer.clear();
+    renderer.render(capScene, simCam);
+    renderer.setRenderTarget(null);
+    screenMat = new THREE.MeshBasicMaterial({ map: rt.texture, toneMapped:false });
+  } else {
+    screenMat = basicMat(0x13132a, 0.6);
   }
 
+  // ── Screen (fixed) — textured with the rendered frame ────────────────────────
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(2*hwS, 2*hhS), screenMat);
+  g.add(screen);
+  g.add(rectLoop(screenCorners, 0x5a5a8a, 0.95));
+
   // ── Browser pixel ruling ──────────────────────────────────────────────────────
-  g.add(arrow(corner(-1.14,1), corner(1.14,1), 0xe05555, S, 0.95));
-  g.add(arrow(corner(-1,1.14), corner(-1,-1.14), 0x4ec97a, S, 0.95));
+  g.add(arrow(corner(-1.14,1), corner(1.14,1), 0xe05555, S, 0.9));
+  g.add(arrow(corner(-1,1.14), corner(-1,-1.14), 0x4ec97a, S, 0.9));
   g.add(sphere(corner(-1,1), S*0.02, 0xffffff));
-  addLabel('(0,0) px', corner(-1,1).clone().add(right.clone().multiplyScalar(-0.18*hwS)).add(up.clone().multiplyScalar(0.18*hhS)), 'rgba(255,255,255,0.75)', lblH*0.85);
+  addLabel('(0,0) px', corner(-1,1).clone().add(right.clone().multiplyScalar(-0.18*hwS)).add(up.clone().multiplyScalar(0.18*hhS)), 'rgba(255,255,255,0.8)', lblH*0.85);
   addLabel('+X px', corner(1.14,1).clone().add(right.clone().multiplyScalar(0.12*hwS)), '#e05555', lblH*0.85);
   addLabel('+Y px ↓', corner(-1,-1.14).clone().add(up.clone().multiplyScalar(-0.10*hhS)), '#4ec97a', lblH*0.85);
 
-  // ── three.js unit ruling ──────────────────────────────────────────────────────
-  g.add(arrow(corner(-1.18,0), corner(1.18,0), 0x9d7fff, S, 0.85));
-  g.add(arrow(corner(0,-1.18), corner(0,1.18), 0x6fffa8, S, 0.85));
-  g.add(sphere(new THREE.Vector3(0,0,0), S*0.022, 0x9d7fff, 0.95));
-  addLabel('(0,0,0)', new THREE.Vector3(0.16*hwS, 0.12*hhS, 0), 'rgba(157,127,255,0.9)', lblH*0.8);
+  // ── three.js unit ruling (slightly in front so it overlays the image) ─────────
+  g.add(arrow(corner(-1.18,0).setZ(0.02), corner(1.18,0).setZ(0.02), 0x9d7fff, S, 0.7));
+  g.add(arrow(corner(0,-1.18).setZ(0.02), corner(0,1.18).setZ(0.02), 0x6fffa8, S, 0.7));
+  g.add(sphere(new THREE.Vector3(0,0,0.02), S*0.02, 0x9d7fff, 0.9));
   addLabel('+X', corner(1.18,0).clone().add(right.clone().multiplyScalar(0.12*hwS)), 'rgba(157,127,255,0.9)', lblH*0.85);
   addLabel('+Y', corner(0,1.18).clone().add(up.clone().multiplyScalar(0.10*hhS)), 'rgba(111,255,168,0.9)', lblH*0.85);
 
-  const fmt = n => (Math.round(n*100)/100).toString();
   [
     { p:corner(-1, 1), px:`(0, 0)`,             tj:`(${fmt(-hwS)}, ${fmt(hhS)})` },
     { p:corner( 1, 1), px:`(${p.rw}, 0)`,       tj:`(${fmt(hwS)}, ${fmt(hhS)})` },
     { p:corner( 1,-1), px:`(${p.rw}, ${p.rh})`, tj:`(${fmt(hwS)}, ${fmt(-hhS)})` },
     { p:corner(-1,-1), px:`(0, ${p.rh})`,       tj:`(${fmt(-hwS)}, ${fmt(-hhS)})` },
-  ].forEach(ci => addLabel(ci.px + '\n' + ci.tj, ci.p.clone().setZ(0.001), 'rgba(255,255,255,0.5)', lblH*0.58));
+  ].forEach(ci => addLabel(ci.px + '\n' + ci.tj, ci.p.clone().setZ(0.03), 'rgba(255,255,255,0.6)', lblH*0.56));
 
   // ── three.js +Z axis ──────────────────────────────────────────────────────────
   g.add(arrow(new THREE.Vector3(0,0,-S*0.12), new THREE.Vector3(0,0,S*0.9), 0x4a9edd, S, 0.9));
@@ -374,42 +393,22 @@ function buildScene(reframe=false){
   g.add(rectLoop(nearCorners, 0xf0a030, 0.8));
   g.add(rectLoop(farCorners, 0xf0a030, 0.22, true));
   for (let i=0;i<4;i++) g.add(line([C, farCorners[i]], 0xf0a030, 0.22));
-  addLabel('near', nearCorners[2].clone().add(up.clone().multiplyScalar(0.05*hhS)), 'rgba(240,160,48,0.7)', lblH*0.58);
-  addLabel(capFar < p.far ? `far (${fmt(p.far)}, clipped)` : 'far', farCorners[2].clone().add(up.clone().multiplyScalar(0.04*hhS)), 'rgba(240,160,48,0.45)', lblH*0.58);
+  addLabel('near', nearCorners[2].clone().add(up.clone().multiplyScalar(0.05*hhS)), 'rgba(240,160,48,0.7)', lblH*0.56);
+  addLabel(capFar < p.far ? `far (${fmt(p.far)}, clipped)` : 'far', farCorners[2].clone().add(up.clone().multiplyScalar(0.04*hhS)), 'rgba(240,160,48,0.45)', lblH*0.56);
   g.add(line([C, L], 0xf0a030, 0.55, true));
   g.add(sphere(L, S*0.014, 0xf0a030, 0.7));
   addLabel(`lookAt (${fmt(p.lx)}, ${fmt(p.ly)}, ${fmt(p.lz)})`, L.clone().add(up.clone().multiplyScalar(-0.16*hhS)).add(right.clone().multiplyScalar(0.06*hwS)), 'rgba(240,160,48,0.7)', lblH*0.62);
 
-  // ── Utah teapot + its perspective projection onto the screen ─────────────────
+  // ── 3D teapot (solid) on the far side of the screen ──────────────────────────
   if (teapotGeo){
-    // 3D teapot on the far side of the screen
-    const teapot = new THREE.Mesh(teapotGeo, new THREE.MeshLambertMaterial({ color:0x63d6c0, transparent:true, opacity:0.9 }));
+    const teapot = new THREE.Mesh(teapotGeo, new THREE.MeshLambertMaterial({ color:0x63d6c0 }));
     teapot.applyMatrix4(teapotMatrix);
     g.add(teapot);
-    const tCentre = new THREE.Vector3(0,-0.4,-4);
-    addLabel('teapot (3D)', tCentre.clone().add(up.clone().multiplyScalar(1.8)), '#63d6c0', lblH*0.7);
-
-    // Project every vertex through the camera, land it on the screen plane (z≈0).
-    const projGeo = teapotGeo.clone();
-    const pp = projGeo.getAttribute('position');
-    for (let i=0;i<teapotWorld.length;i++){
-      const n = teapotWorld[i].clone().project(simCam);              // → NDC
-      const x = THREE.MathUtils.clamp(n.x, -1.6, 1.6) * hwS;          // NDC → screen rect
-      const y = THREE.MathUtils.clamp(n.y, -1.6, 1.6) * hhS;
-      pp.setXYZ(i, x, y, 0.02);                                       // sit just in front of the screen
-    }
-    pp.needsUpdate = true;
-    projGeo.deleteAttribute('normal');
-    g.add(new THREE.Mesh(projGeo, new THREE.MeshBasicMaterial({ color:0x63d6c0, transparent:true, opacity:0.18, side:THREE.DoubleSide, depthTest:false, depthWrite:false })));
-    g.add(new THREE.Mesh(projGeo, new THREE.MeshBasicMaterial({ color:0x9affe8, wireframe:true, transparent:true, opacity:0.45, depthTest:false })));
-    addLabel('projection\n(what the camera sees)', new THREE.Vector3(0, -hhS*0.62, 0.05), 'rgba(154,255,232,0.75)', lblH*0.6);
+    addLabel('teapot (3D object)', new THREE.Vector3(0,-0.4,-4).add(up.clone().multiplyScalar(1.9)), '#63d6c0', lblH*0.68);
+    addLabel("camera's rendered view →", new THREE.Vector3(0, -hhS*0.78, 0.06), 'rgba(154,255,232,0.8)', lblH*0.56);
   }
 
-  // ── Reframe observer only on load / explicit button ──────────────────────────
-  if (reframe){
-    orbitRadius = Math.max(S * 1.9, C.length() * 1.45, D * 1.45);
-    updateViewCam();
-  }
+  if (reframe){ orbitRadius = Math.max(S*1.9, C.length()*1.45, D*1.45); updateViewCam(); }
 }
 
 // ── Observer controls ──────────────────────────────────────────────────────────
@@ -447,64 +446,83 @@ el.addEventListener('touchmove', e=>{
 }, { passive:false });
 el.addEventListener('touchend', ()=>{ dragging=false; prevPinch=null; }, { passive:false });
 
-// ── Param wiring ─────────────────────────────────────────────────────────────
-function syncSize(w,h){ [['p-rw',w],['p-rw2',w],['p-rh',h],['p-rh2',h]].forEach(([id,v])=>{ const x=document.getElementById(id); if(x) x.value=v; }); }
-document.querySelectorAll('.param').forEach(input=>{
-  input.addEventListener('input', ()=>{
-    const mirror = { 'p-rw':'p-rw2','p-rw2':'p-rw','p-rh':'p-rh2','p-rh2':'p-rh' }[input.id];
-    if(mirror) document.getElementById(mirror).value = input.value;
-    buildScene(false);
+// ── Build the control rows (slider + number + steppers) ──────────────────────
+const controls = document.getElementById('controls');
+const widgets = {};   // id -> { slider, num }
+function clamp(v, mn, mx){ return Math.max(mn, Math.min(mx, v)); }
+function roundStep(v, step){ const dec=(String(step).split('.')[1]||'').length; return +(+v).toFixed(dec); }
+
+function setValue(id, v, { fromNum=false } = {}){
+  const cfg = CFG[id];
+  v = roundStep(clamp(v, cfg.min, cfg.max), cfg.step);
+  state[id] = v;
+  const w = widgets[id];
+  w.slider.value = v;
+  if (!fromNum) w.num.value = v;     // don't fight the user mid-typing
+  buildScene(false);
+}
+
+GROUPS.forEach(([title, ids])=>{
+  const h = document.createElement('div'); h.className='ctrl-group'; h.textContent=title; controls.appendChild(h);
+  ids.forEach(id=>{
+    const cfg = CFG[id];
+    const row = document.createElement('div'); row.className='ctrl';
+    const top = document.createElement('div'); top.className='ctrl-top';
+    const lab = document.createElement('span'); lab.className='ctrl-label'; lab.textContent=cfg.label;
+    const numWrap = document.createElement('span'); numWrap.className='num';
+    const num = document.createElement('input'); num.className='cnum'; num.id='p-'+id;
+    num.value = state[id];
+    numWrap.appendChild(num);
+    top.appendChild(lab); top.appendChild(numWrap);
+    const slider = document.createElement('input');
+    slider.type='range'; slider.className='cslider'; slider.id='s-'+id;
+    slider.min=cfg.min; slider.max=cfg.max; slider.step=cfg.step; slider.value=state[id];
+    row.appendChild(top); row.appendChild(slider); controls.appendChild(row);
+    widgets[id] = { slider, num };
+
+    slider.addEventListener('input', ()=> setValue(id, parseFloat(slider.value)));
+    num.addEventListener('input', ()=>{ const v=parseFloat(num.value); if(isFinite(v)) setValue(id, v, { fromNum:true }); });
+    num.addEventListener('blur', ()=>{ num.value = state[id]; });
+    num.addEventListener('keydown', e=>{ if(e.key==='Enter') num.blur(); });
+
+    // ▲▼ steppers
+    const spin = document.createElement('span'); spin.className='spin';
+    const upB = document.createElement('button'); upB.type='button'; upB.className='up'; upB.tabIndex=-1; upB.textContent='▲';
+    const dnB = document.createElement('button'); dnB.type='button'; dnB.className='dn'; dnB.tabIndex=-1; dnB.textContent='▼';
+    spin.appendChild(upB); spin.appendChild(dnB); numWrap.appendChild(spin);
+    const hold = (btn, dir)=>{
+      let to, iv;
+      const tick = ()=> setValue(id, state[id] + dir*cfg.step);
+      const start = ev => { ev.preventDefault(); tick(); to=setTimeout(()=>{ iv=setInterval(tick, 80); }, 360); };
+      const stop = ()=>{ clearTimeout(to); clearInterval(iv); };
+      btn.addEventListener('mousedown', start);
+      btn.addEventListener('touchstart', start, { passive:false });
+      ['mouseup','mouseleave','touchend','touchcancel'].forEach(evn=>btn.addEventListener(evn, stop));
+    };
+    hold(upB, 1); hold(dnB, -1);
   });
-  input.addEventListener('keydown', e=>{ if(e.key==='Enter') input.blur(); });
 });
+
+function syncAllWidgets(){
+  for (const id of Object.keys(CFG)){ widgets[id].slider.value = state[id]; widgets[id].num.value = state[id]; }
+}
+
+// ── Presets / reset / frame ──────────────────────────────────────────────────
 document.querySelectorAll('.preset').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.preset').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    syncSize(btn.dataset.w, btn.dataset.h);
-    buildScene(false);
+    state.rw = +btn.dataset.w; state.rh = +btn.dataset.h;
+    syncAllWidgets(); buildScene(false);
   });
 });
 document.getElementById('reset-btn').addEventListener('click', ()=>{
-  for(const k of Object.keys(DEFAULTS)){ const x=document.getElementById('p-'+k); if(x) x.value=DEFAULTS[k]; }
-  document.getElementById('p-rw2').value=DEFAULTS.rw; document.getElementById('p-rh2').value=DEFAULTS.rh;
-  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active', b.dataset.w==String(DEFAULTS.rw)&&b.dataset.h==String(DEFAULTS.rh)));
+  Object.assign(state, DEFAULTS);
+  syncAllWidgets();
+  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active', +b.dataset.w===DEFAULTS.rw && +b.dataset.h===DEFAULTS.rh));
   buildScene(false);
 });
 document.getElementById('frame-btn').addEventListener('click', ()=> buildScene(true));
-
-// ── Click steppers (▲▼); typing still works ─────────────────────────────────
-const STEP = { 'p-rw':10,'p-rh':10,'p-rw2':10,'p-rh2':10,'p-fov':1,'p-near':0.05,'p-far':10,'p-cx':0.5,'p-cy':0.5,'p-cz':0.5,'p-lx':0.5,'p-ly':0.5,'p-lz':0.5 };
-const MINV = { 'p-rw':1,'p-rh':1,'p-rw2':1,'p-rh2':1,'p-fov':1,'p-near':0.01,'p-far':0.02 };
-function applyStep(input, dir){
-  const step = STEP[input.id] || 1;
-  let v = parseFloat(input.value); if(!isFinite(v)) v = DEFAULTS[input.id.slice(2)] ?? 0;
-  v += dir * step;
-  if(input.id in MINV) v = Math.max(MINV[input.id], v);
-  if(input.id === 'p-fov') v = Math.min(179, v);
-  const dec = (String(step).split('.')[1] || '').length;
-  v = parseFloat(v.toFixed(dec));
-  input.value = v;
-  input.dispatchEvent(new Event('input', { bubbles:true }));
-}
-function attachStepper(input){
-  const wrap = document.createElement('span'); wrap.className = 'num';
-  input.parentNode.insertBefore(wrap, input); wrap.appendChild(input);
-  const spin = document.createElement('span'); spin.className = 'spin';
-  const up = document.createElement('button'); up.type='button'; up.className='up'; up.tabIndex=-1; up.textContent='▲';
-  const dn = document.createElement('button'); dn.type='button'; dn.className='dn'; dn.tabIndex=-1; dn.textContent='▼';
-  spin.appendChild(up); spin.appendChild(dn); wrap.appendChild(spin);
-  const hold = (btn, dir) => {
-    let to, iv;
-    const start = ev => { ev.preventDefault(); applyStep(input, dir); to = setTimeout(()=>{ iv = setInterval(()=>applyStep(input, dir), 80); }, 360); };
-    const stop = () => { clearTimeout(to); clearInterval(iv); };
-    btn.addEventListener('mousedown', start);
-    btn.addEventListener('touchstart', start, { passive:false });
-    ['mouseup','mouseleave','touchend','touchcancel'].forEach(evn => btn.addEventListener(evn, stop));
-  };
-  hold(up, 1); hold(dn, -1);
-}
-document.querySelectorAll('.param').forEach(attachStepper);
 
 // ── Panel toggle ──────────────────────────────────────────────────────────────
 const panelBody = document.getElementById('panel-body');
