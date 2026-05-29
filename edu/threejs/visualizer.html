@@ -223,11 +223,11 @@ const DEFAULTS = { rw:1920, rh:1080, fov:75, near:5.2, far:14, cx:0, cy:0, cz:5,
 const state = { ...DEFAULTS };
 const CFG = {
   rw:{label:'width',min:320,max:3840,step:10}, rh:{label:'height',min:240,max:2160,step:10},
-  fov:{label:'fov',min:FOV_MIN,max:FOV_MAX,step:1}, near:{label:'near',min:0.5,max:40,step:0.5}, far:{label:'far',min:1,max:40,step:0.5},
-  cx:{label:'camX',min:-15,max:15,step:0.5}, cy:{label:'camY',min:-15,max:15,step:0.5}, cz:{label:'camZ',min:-25,max:25,step:0.5},
+  fov:{label:'fov',min:FOV_MIN,max:FOV_MAX,step:1}, near:{label:'near',min:0.5,max:15,step:0.5}, far:{label:'far',min:1,max:40,step:0.5},
+  cx:{label:'camX',min:-15,max:15,step:0.5}, cy:{label:'camY',min:-15,max:15,step:0.5}, cz:{label:'camZ',min:-10,max:30,step:0.5},
   lx:{label:'lookX',min:-15,max:15,step:0.5}, ly:{label:'lookY',min:-15,max:15,step:0.5}, lz:{label:'lookZ',min:-15,max:15,step:0.5},
-  tx:{label:'posX',min:-12,max:12,step:0.25}, ty:{label:'posY',min:-12,max:12,step:0.25}, tz:{label:'posZ',min:-18,max:2,step:0.25}, ts:{label:'scale',min:0.2,max:4,step:0.1},
-  ax:{label:'posX',min:-12,max:12,step:0.25}, ay:{label:'posY',min:-12,max:12,step:0.25}, az:{label:'posZ',min:-18,max:2,step:0.25}, as:{label:'scale',min:0.2,max:4,step:0.1},
+  tx:{label:'posX',min:-12,max:12,step:0.25}, ty:{label:'posY',min:-8,max:8,step:0.25}, tz:{label:'posZ',min:-9,max:1,step:0.25}, ts:{label:'scale',min:0.2,max:4,step:0.1},
+  ax:{label:'posX',min:-12,max:12,step:0.25}, ay:{label:'posY',min:-8,max:8,step:0.25}, az:{label:'posZ',min:-9,max:1,step:0.25}, as:{label:'scale',min:0.2,max:4,step:0.1},
   trotx:{label:'rotX',min:-180,max:180,step:5}, troty:{label:'rotY',min:-180,max:180,step:5}, trotz:{label:'rotZ',min:-180,max:180,step:5},
   arotx:{label:'rotX',min:-180,max:180,step:5}, aroty:{label:'rotY',min:-180,max:180,step:5}, arotz:{label:'rotZ',min:-180,max:180,step:5},
 };
