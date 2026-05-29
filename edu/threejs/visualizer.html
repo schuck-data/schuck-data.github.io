@@ -6,7 +6,7 @@
 <title>Three.js Render Pipeline Visualizer</title>
 <style>
   :root {
-    --bg:#0d1320; --surface:#121a2b; --surface2:#0f1726; --border:rgba(255,255,255,0.08);
+    --bg:#0d1320; --surface:#121a2b; --border:rgba(255,255,255,0.08);
     --dim:rgba(255,255,255,0.26); --text:rgba(226,232,244,0.9);
     --c-screen:#d8def0; --c-lens:#ffd166; --c-view:#ff8c42;
     --c-x:#d06a78; --c-y:#5bbf7a; --c-z:#4a9edd; --c-teapot:#4fd1c5; --c-amphora:#e87fa6;
@@ -20,14 +20,12 @@
   #viewport { flex:1 1 auto; position:relative; overflow:hidden; min-height:0; min-width:0; touch-action:none; }
   #viewport canvas { display:block; position:absolute; top:0; left:0; touch-action:none; }
 
-  #legend {
-    position:absolute; top:10px; left:10px; font-size:9.5px; letter-spacing:0.04em; line-height:1.85;
-    pointer-events:none; z-index:5; background:rgba(13,19,32,0.55); padding:6px 9px; border-radius:5px; border:1px solid var(--border);
-  }
+  #legend { position:absolute; top:10px; left:10px; font-size:9.5px; letter-spacing:0.04em; line-height:1.8;
+    pointer-events:none; z-index:5; background:rgba(13,19,32,0.55); padding:6px 9px; border-radius:5px; border:1px solid var(--border); }
   .leg { display:flex; align-items:center; gap:6px; }
   .ldot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-  #hint { position:absolute; top:10px; right:10px; font-size:8.5px; opacity:0.3; letter-spacing:0.08em;
-    text-transform:uppercase; pointer-events:none; text-align:right; line-height:1.9; z-index:5; }
+  #hint { position:absolute; top:10px; right:10px; font-size:8.5px; opacity:0.32; letter-spacing:0.07em;
+    text-transform:uppercase; pointer-events:none; text-align:right; line-height:1.85; z-index:5; }
 
   #panel-wrap { position:relative; z-index:20; background:var(--surface); border-top:1px solid var(--border);
     flex-shrink:0; display:flex; flex-direction:column; }
@@ -44,47 +42,47 @@
   .preset:hover { border-color:rgba(255,255,255,0.3); color:#fff; }
   .preset.active { border-color:var(--c-lens); color:var(--c-lens); background:rgba(255,209,102,0.08); }
 
-  #code-block { padding:14px 16px; font-size:12px; line-height:1.95; color:rgba(220,225,255,0.45);
+  #code-block { padding:13px 16px; font-size:11.5px; line-height:1.85; color:rgba(220,225,255,0.45);
     background:var(--code-bg); white-space:pre; flex-shrink:0; border-bottom:1px solid var(--border); overflow-x:auto;
     scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.18) var(--code-bg); }
   #code-block::-webkit-scrollbar { height:8px; } #code-block::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.14); border-radius:4px; }
   .kw { color:rgba(150,170,255,0.7); } .fn { color:rgba(120,210,255,0.72); } .cm { color:rgba(255,255,255,0.18); }
-  .cv { cursor:pointer; border-bottom:1px dotted transparent; transition:border-color 0.15s; }
+  .cv { cursor:pointer; border-bottom:1px dotted transparent; }
   .cv:hover { border-bottom-color:currentColor; }
 
   #controls { flex:1 1 auto; min-height:0; overflow-y:auto; padding:4px 16px 10px;
     scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.18) var(--surface); }
   #controls::-webkit-scrollbar { width:10px; } #controls::-webkit-scrollbar-track { background:var(--surface); }
   #controls::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.14); border-radius:5px; border:2px solid var(--surface); }
-  .grp { border-bottom:1px solid var(--border); }
-  .grp-head { display:flex; align-items:center; gap:8px; padding:10px 2px 8px; cursor:pointer; font-size:9.5px;
+  .grp { border-bottom:1px solid var(--border); padding-bottom:4px; }
+  .grp-head { display:flex; align-items:center; gap:8px; padding:9px 2px 7px; cursor:pointer; font-size:9.5px;
     letter-spacing:0.13em; text-transform:uppercase; color:var(--dim); }
   .grp-head .swatch { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
   .grp-head .arrow { margin-left:auto; transition:transform 0.2s; opacity:0.5; }
   .grp.closed .arrow { transform:rotate(-90deg); }
-  .grp-body { overflow:hidden; }
   .grp.closed .grp-body { display:none; }
-  .ctrl { margin:0 0 9px; }
-  .ctrl-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .ctrl-label { font-size:11px; color:#aeb6cc; }
+
+  /* compact single-row controls */
+  .ctrl { display:flex; align-items:center; gap:7px; margin:0 0 6px; }
+  .ctrl-label { width:46px; flex-shrink:0; font-size:10.5px; color:#aeb6cc; }
+  .cslider { -webkit-appearance:none; appearance:none; flex:1 1 auto; height:4px; border-radius:2px;
+    background:rgba(255,255,255,0.12); outline:none; min-width:40px; }
+  .cslider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:12px; height:12px; border-radius:50%; cursor:pointer; border:none; }
+  .cslider::-moz-range-thumb { width:12px; height:12px; border-radius:50%; cursor:pointer; border:none; }
+  .num { display:inline-flex; align-items:center; flex-shrink:0; }
   .cnum { color:var(--c-lens); background:rgba(255,255,255,0.05); border:none; border-bottom:1px solid rgba(255,255,255,0.2);
-    font-family:inherit; font-size:11.5px; outline:none; width:52px; padding:1px 2px; text-align:center; }
+    font-family:inherit; font-size:11px; outline:none; width:42px; padding:1px 2px; text-align:center; }
   .cnum:focus { background:rgba(255,255,255,0.1); }
-  .num { display:inline-flex; align-items:center; }
-  .spin { display:inline-flex; flex-direction:column; margin-left:3px; }
-  .spin button { font-family:inherit; font-size:9px; line-height:1; width:16px; height:11px; padding:0; margin:0;
+  .spin { display:inline-flex; flex-direction:column; margin-left:2px; }
+  .spin button { font-family:inherit; font-size:8px; line-height:1; width:14px; height:10px; padding:0; margin:0;
     display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.06); color:#aeb6cc;
     border:1px solid rgba(255,255,255,0.18); cursor:pointer; user-select:none; }
   .spin button:hover { background:rgba(255,255,255,0.16); }
   .spin .up { border-radius:3px 3px 0 0; border-bottom:none; } .spin .dn { border-radius:0 0 3px 3px; }
-  .cslider { -webkit-appearance:none; appearance:none; width:100%; height:4px; margin-top:6px; border-radius:2px;
-    background:rgba(255,255,255,0.12); outline:none; }
-  .cslider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:13px; height:13px; border-radius:50%; cursor:pointer; border:none; }
-  .cslider::-moz-range-thumb { width:13px; height:13px; border-radius:50%; cursor:pointer; border:none; }
   .pulse { animation:pulse 0.9s ease; }
-  @keyframes pulse { 0%,100%{ background:transparent; } 25%{ background:rgba(255,209,102,0.18); } }
+  @keyframes pulse { 0%,100%{ background:transparent; } 25%{ background:rgba(255,209,102,0.16); } }
 
-  #reset-row { padding:10px 16px 14px; background:var(--surface); flex-shrink:0; display:flex; gap:8px; border-top:1px solid var(--border); }
+  #reset-row { padding:9px 16px 13px; background:var(--surface); flex-shrink:0; display:flex; gap:8px; border-top:1px solid var(--border); }
   #reset-row button { font-family:inherit; font-size:9.5px; letter-spacing:0.08em; padding:6px 12px; border:1px solid rgba(255,255,255,0.16);
     background:none; color:var(--dim); cursor:pointer; border-radius:3px; transition:all 0.15s; text-transform:uppercase; }
   #reset-row button:hover { border-color:rgba(255,255,255,0.38); color:#fff; }
@@ -106,11 +104,11 @@
       <div class="leg"><div class="ldot" style="background:var(--c-screen)"></div><span>the screen (the only real thing)</span></div>
       <div class="leg"><div class="ldot" style="background:var(--c-lens)"></div><span>center of projection + frustum</span></div>
       <div class="leg"><div class="ldot" style="background:var(--c-view)"></div><span>view / line of sight</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--c-teapot)"></div><span>teapot (construct)</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--c-amphora)"></div><span>amphora (construct)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--c-teapot)"></div><span>teapot (drag me)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--c-amphora)"></div><span>amphora (drag me)</span></div>
       <div class="leg"><div class="ldot" style="background:var(--c-z)"></div><span>world axes (three.js units)</span></div>
     </div>
-    <div id="hint">drag · rotate<br>scroll/pinch · zoom</div>
+    <div id="hint">drag empty space · rotate<br>drag a pot or the apex · move it<br>scroll/pinch · zoom</div>
   </div>
 
   <div id="panel-wrap">
@@ -136,8 +134,8 @@ camera.<span class="fn">position</span>.set(<span class="cv" data-id="cx">0</spa
 camera.<span class="fn">lookAt</span>(<span class="cv" data-id="lx">0</span>, <span class="cv" data-id="ly">0</span>, <span class="cv" data-id="lz">0</span>);
 
 <span class="cm">// two independent objects</span>
-teapot.<span class="fn">position</span>.set(<span class="cv" data-id="tx">-1.5</span>, <span class="cv" data-id="ty">0</span>, <span class="cv" data-id="tz">-4</span>);  teapot.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="ts">1</span>);
-amphora.<span class="fn">position</span>.set(<span class="cv" data-id="ax">1.8</span>, <span class="cv" data-id="ay">-0.6</span>, <span class="cv" data-id="az">-5</span>); amphora.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="as">1</span>);
+teapot.<span class="fn">position</span>.set(<span class="cv" data-id="tx">-1.4</span>, <span class="cv" data-id="ty">0</span>, <span class="cv" data-id="tz">-4</span>);  teapot.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="ts">1</span>);
+amphora.<span class="fn">position</span>.set(<span class="cv" data-id="ax">1.6</span>, <span class="cv" data-id="ay">0</span>, <span class="cv" data-id="az">-5</span>);  amphora.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="as">1</span>);
 </div>
       <div id="controls"></div>
       <div id="reset-row"><button id="reset-btn">↺ reset</button> <button id="frame-btn">⊕ frame view</button></div>
@@ -152,7 +150,8 @@ amphora.<span class="fn">position</span>.set(<span class="cv" data-id="ax">1.8</
 import * as THREE from 'three';
 
 const COL = { screen:0xd8def0, lens:0xffd166, view:0xff8c42, x:0xd06a78, y:0x5bbf7a, z:0x4a9edd, teapot:0x4fd1c5, amphora:0xe87fa6 };
-const SCREEN_H = 4;   // fixed screen half-height (diagram units) — the anchor that never moves
+const SCREEN_H = 4;            // fixed screen half-height — the anchor that never moves
+const FOV_MIN = 10, FOV_MAX = 150;
 
 // ── Renderer + observer camera ───────────────────────────────────────────────
 const renderer = new THREE.WebGLRenderer({ antialias:true });
@@ -167,11 +166,7 @@ const scene = new THREE.Scene();
 scene.add(new THREE.AmbientLight(0xffffff, 0.7));
 const dlA = new THREE.DirectionalLight(0xffffff, 0.6); dlA.position.set(6,9,8); scene.add(dlA);
 const g = new THREE.Group(); scene.add(g);
-
-function resizeRenderer(){
-  const w = viewport.clientWidth, h = viewport.clientHeight; if (!w || !h) return;
-  renderer.setSize(w, h); viewCam.aspect = w/h; viewCam.updateProjectionMatrix();
-}
+function resizeRenderer(){ const w=viewport.clientWidth,h=viewport.clientHeight; if(!w||!h) return; renderer.setSize(w,h); viewCam.aspect=w/h; viewCam.updateProjectionMatrix(); }
 
 // ── Offscreen render (the actual image the camera produces) ───────────────────
 const capScene = new THREE.Scene(); capScene.background = new THREE.Color(0x070b14);
@@ -179,37 +174,45 @@ capScene.add(new THREE.AmbientLight(0xffffff, 0.7));
 const capDir = new THREE.DirectionalLight(0xffffff, 0.9); capDir.position.set(3,6,8); capScene.add(capDir);
 const rt = new THREE.WebGLRenderTarget(640, 360); rt.texture.colorSpace = THREE.SRGBColorSpace;
 
-// ── Geometry: teapot (CDN, defensive) + amphora (lathe = potter's wheel) ──────
-function amphoraGeometry(){
-  const p = [[0.02,0.0],[0.28,0.05],[0.5,0.35],[0.82,0.95],[1.0,1.6],[0.9,2.25],[0.62,2.95],[0.42,3.45],[0.46,3.85],[0.62,4.2],[0.5,4.25]];
-  const pts = p.map(([r,y]) => new THREE.Vector2(r, y));
-  const geo = new THREE.LatheGeometry(pts, 24);
-  geo.center();                       // centre vertically about the origin
-  geo.computeBoundingBox();
-  return geo;
+// ── Geometry: teapot (CDN) + amphora (lathe body + ring handles) ──────────────
+function baseAlign(geo, targetH){
+  geo.computeBoundingBox(); let bb=geo.boundingBox;
+  if(targetH){ const s=targetH/(bb.max.y-bb.min.y); geo.scale(s,s,s); geo.computeBoundingBox(); bb=geo.boundingBox; }
+  const c=bb.getCenter(new THREE.Vector3());
+  geo.translate(-c.x, -bb.min.y, -c.z);     // base sits on local y = 0, centred in x/z
+  geo.computeBoundingBox(); return geo;
 }
-let teapotGeo = null;
-const amphoraGeo = amphoraGeometry();
+let teapotGeo=null, amphoraGeo=null;
 try {
   const { TeapotGeometry } = await import('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/geometries/TeapotGeometry.js');
-  teapotGeo = new TeapotGeometry(0.9, 8); teapotGeo.computeBoundingBox();
-} catch (e) { console.warn('TeapotGeometry unavailable, using a sphere stand-in', e); teapotGeo = new THREE.SphereGeometry(1,20,16); teapotGeo.computeBoundingBox(); }
-
+  teapotGeo = baseAlign(new TeapotGeometry(0.8, 8), 1.4);
+} catch(e){ console.warn('teapot stand-in', e); teapotGeo = baseAlign(new THREE.SphereGeometry(1,20,16), 1.4); }
+{
+  const prof = [[0.02,0],[0.28,0.05],[0.5,0.35],[0.82,0.95],[1.0,1.6],[0.9,2.25],[0.62,2.95],[0.42,3.45],[0.46,3.85],[0.62,4.2],[0.5,4.25]];
+  let geo = new THREE.LatheGeometry(prof.map(([r,y])=>new THREE.Vector2(r,y)), 28);
+  try {
+    const { mergeGeometries } = await import('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/utils/BufferGeometryUtils.js');
+    const hL=new THREE.TorusGeometry(0.4,0.06,8,18); hL.translate(0.82,2.45,0);
+    const hR=new THREE.TorusGeometry(0.4,0.06,8,18); hR.translate(-0.82,2.45,0);
+    const m=mergeGeometries([geo,hL,hR], false); if(m) geo=m;
+  } catch(e){ console.warn('amphora handles skipped', e); }
+  amphoraGeo = baseAlign(geo, 1.7);
+}
 const capTeapot  = new THREE.Mesh(teapotGeo,  new THREE.MeshStandardMaterial({ color:COL.teapot,  roughness:0.5, metalness:0.05 }));
 const capAmphora = new THREE.Mesh(amphoraGeo, new THREE.MeshStandardMaterial({ color:COL.amphora, roughness:0.6, metalness:0.05, side:THREE.DoubleSide }));
 capScene.add(capTeapot, capAmphora);
 
 // ── Parameter model + control config ─────────────────────────────────────────
 const DEFAULTS = { rw:1920, rh:1080, fov:75, near:0.1, far:1000, cx:0, cy:0, cz:5, lx:0, ly:0, lz:0,
-                   tx:-1.5, ty:0, tz:-4, ts:1, ax:1.8, ay:-0.6, az:-5, as:1 };
+                   tx:-1.4, ty:0, tz:-4, ts:1, ax:1.6, ay:0, az:-5, as:1 };
 const state = { ...DEFAULTS };
 const CFG = {
-  rw:{label:'width', min:320,max:3840,step:10}, rh:{label:'height',min:240,max:2160,step:10},
-  fov:{label:'fov',min:10,max:150,step:1}, near:{label:'near',min:0.05,max:20,step:0.05}, far:{label:'far',min:1,max:2000,step:1},
+  rw:{label:'width',min:320,max:3840,step:10}, rh:{label:'height',min:240,max:2160,step:10},
+  fov:{label:'fov',min:FOV_MIN,max:FOV_MAX,step:1}, near:{label:'near',min:0.05,max:20,step:0.05}, far:{label:'far',min:1,max:2000,step:1},
   cx:{label:'camX',min:-15,max:15,step:0.5}, cy:{label:'camY',min:-15,max:15,step:0.5}, cz:{label:'camZ',min:-25,max:25,step:0.5},
   lx:{label:'lookX',min:-15,max:15,step:0.5}, ly:{label:'lookY',min:-15,max:15,step:0.5}, lz:{label:'lookZ',min:-15,max:15,step:0.5},
-  tx:{label:'posX',min:-12,max:12,step:0.5}, ty:{label:'posY',min:-12,max:12,step:0.5}, tz:{label:'posZ',min:-18,max:2,step:0.5}, ts:{label:'scale',min:0.2,max:4,step:0.1},
-  ax:{label:'posX',min:-12,max:12,step:0.5}, ay:{label:'posY',min:-12,max:12,step:0.5}, az:{label:'posZ',min:-18,max:2,step:0.5}, as:{label:'scale',min:0.2,max:4,step:0.1},
+  tx:{label:'posX',min:-12,max:12,step:0.25}, ty:{label:'posY',min:-12,max:12,step:0.25}, tz:{label:'posZ',min:-18,max:2,step:0.25}, ts:{label:'scale',min:0.2,max:4,step:0.1},
+  ax:{label:'posX',min:-12,max:12,step:0.25}, ay:{label:'posY',min:-12,max:12,step:0.25}, az:{label:'posZ',min:-18,max:2,step:0.25}, as:{label:'scale',min:0.2,max:4,step:0.1},
 };
 const GROUPS = [
   { title:'renderer (pixels)', color:'var(--c-screen)', ids:['rw','rh'] },
@@ -219,224 +222,214 @@ const GROUPS = [
   { title:'object · amphora',  color:'var(--c-amphora)',ids:['ax','ay','az','as'] },
 ];
 const fmt = v => (+(+v).toFixed(4)).toString();
-function getParams(){
-  const p = { ...state };
-  p.rw=Math.max(1,p.rw); p.rh=Math.max(1,p.rh); p.fov=Math.min(170,Math.max(2,p.fov));
-  p.near=Math.max(0.01,p.near); p.far=Math.max(p.near+0.01,p.far);
-  return p;
-}
+function getParams(){ const p={...state}; p.rw=Math.max(1,p.rw); p.rh=Math.max(1,p.rh); p.fov=Math.min(FOV_MAX,Math.max(FOV_MIN,p.fov));
+  p.near=Math.max(0.01,p.near); p.far=Math.max(p.near+0.01,p.far); return p; }
 
-// ── Mesh helpers ──────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function lineMat(c,o=1,dash=false){ return dash ? new THREE.LineDashedMaterial({color:c,transparent:true,opacity:o,dashSize:0.22,gapSize:0.14})
                                                  : new THREE.LineBasicMaterial({color:c,transparent:o<1,opacity:o}); }
 function line(pts,c,o=1,dash=false){ const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat(c,o,dash)); if(dash) l.computeLineDistances(); return l; }
-function rect(corners,c,o=1,dash=false){ return line([...corners,corners[0]],c,o,dash); }
+function rect(cs,c,o=1,dash=false){ return line([...cs,cs[0]],c,o,dash); }
 function dot(pos,r,c,o=1){ const m=new THREE.Mesh(new THREE.SphereGeometry(r,12,12), new THREE.MeshBasicMaterial({color:c,transparent:o<1,opacity:o})); m.position.copy(pos); return m; }
-function arrow(from,to,c,r,o=1){
-  const grp=new THREE.Group(); const m=new THREE.MeshBasicMaterial({color:c,transparent:o<1,opacity:o});
+function arrow(from,to,c,r,o=1){ const grp=new THREE.Group(); const m=new THREE.MeshBasicMaterial({color:c,transparent:o<1,opacity:o});
   const dir=to.clone().sub(from); const len=dir.length(); if(len<1e-6) return grp; dir.normalize();
-  const head=Math.min(len*0.3, r*7), sl=Math.max(0.001,len-head);
-  const sh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,sl,8), m); sh.position.copy(from.clone().addScaledVector(dir,sl/2)); sh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir); grp.add(sh);
-  const cn=new THREE.Mesh(new THREE.ConeGeometry(r*2.4,head,12), m); cn.position.copy(to.clone().addScaledVector(dir,-head/2)); cn.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir); grp.add(cn);
-  return grp;
-}
-function sprite(text,color,h){
-  const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d');
+  const head=Math.min(len*0.3,r*7), sl=Math.max(0.001,len-head);
+  const sh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,sl,8),m); sh.position.copy(from.clone().addScaledVector(dir,sl/2)); sh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir); grp.add(sh);
+  const cn=new THREE.Mesh(new THREE.ConeGeometry(r*2.4,head,12),m); cn.position.copy(to.clone().addScaledVector(dir,-head/2)); cn.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir); grp.add(cn);
+  return grp; }
+function sprite(text,color,h){ const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d');
   x.font='bold 44px Courier New'; x.fillStyle=color; x.textAlign='center'; x.textBaseline='middle';
   text.split('\n').forEach((t,i,a)=>x.fillText(t,256,64+(i-(a.length-1)/2)*50));
-  const tex=new THREE.CanvasTexture(c); tex.anisotropy=4;
-  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false})); s.scale.set(h*4,h,1); return s;
-}
+  const tex=new THREE.CanvasTexture(c); tex.anisotropy=4; const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false})); s.scale.set(h*4,h,1); return s; }
 function addLabel(t,pos,color,h){ const s=sprite(t,color,h); s.position.copy(pos); g.add(s); }
 function cssHex(c){ return '#'+c.toString(16).padStart(6,'0'); }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function roundStep(v,s){ const d=(String(s).split('.')[1]||'').length; return +(+v).toFixed(d); }
 
 // ── Observer orbit ─────────────────────────────────────────────────────────────
 const orbitTarget = new THREE.Vector3(0,0,-1);
-let orbitRadius = 26, spherical = { theta:0.7, phi:1.08 };
-function updateViewCam(){
-  viewCam.position.set(
-    orbitTarget.x + orbitRadius*Math.sin(spherical.phi)*Math.sin(spherical.theta),
-    orbitTarget.y + orbitRadius*Math.cos(spherical.phi),
-    orbitTarget.z + orbitRadius*Math.sin(spherical.phi)*Math.cos(spherical.theta));
-  viewCam.lookAt(orbitTarget);
-}
+let orbitRadius = 24, spherical = { theta:0.82, phi:1.02 };
+function updateViewCam(){ viewCam.position.set(
+  orbitTarget.x + orbitRadius*Math.sin(spherical.phi)*Math.sin(spherical.theta),
+  orbitTarget.y + orbitRadius*Math.cos(spherical.phi),
+  orbitTarget.z + orbitRadius*Math.sin(spherical.phi)*Math.cos(spherical.theta));
+  viewCam.lookAt(orbitTarget); }
+
+// ── Current frame (shared with drag) ──────────────────────────────────────────
+let curDiag=new THREE.Matrix4(), curInvDiag=new THREE.Matrix4(), curApex=new THREE.Vector3(), curH=SCREEN_H;
+let pickApex=null, pickTeapot=null, pickAmphora=null;
 
 // ── Build ────────────────────────────────────────────────────────────────────
-const objMatTeapot = [], objMatAmphora = [];   // track wireframe materials for clip-plane updates
 function buildScene(reframe=false){
-  while (g.children.length){
-    const c=g.children[0]; g.remove(c);
+  while (g.children.length){ const c=g.children[0]; g.remove(c);
     if (c.geometry && c.geometry!==teapotGeo && c.geometry!==amphoraGeo) c.geometry.dispose();
-    (Array.isArray(c.material)?c.material:(c.material?[c.material]:[])).forEach(m=>{ if(m.map && m.map!==rt.texture) m.map.dispose?.(); m.dispose?.(); });
-  }
+    (Array.isArray(c.material)?c.material:(c.material?[c.material]:[])).forEach(m=>{ if(m.map && m.map!==rt.texture) m.map.dispose?.(); m.dispose?.(); }); }
+
   const p = getParams();
-  const aspect = p.rw/p.rh, fovRad = p.fov*Math.PI/180;
-  const H = SCREEN_H, W = H*aspect;
-  const focal = H / Math.tan(fovRad/2);            // apex-to-screen distance = focal length
-  const apex = new THREE.Vector3(0,0,focal);
+  const aspect=p.rw/p.rh, fovRad=p.fov*Math.PI/180, H=SCREEN_H, W=H*aspect;
+  const focal=H/Math.tan(fovRad/2);
+  const apex=new THREE.Vector3(0,0,focal);
 
-  // real camera → view matrix; diagram = shift(+focal in z) ∘ view
-  const simCam = new THREE.PerspectiveCamera(p.fov, aspect, p.near, p.far);
+  const simCam=new THREE.PerspectiveCamera(p.fov,aspect,p.near,p.far);
   simCam.position.set(p.cx,p.cy,p.cz); simCam.lookAt(p.lx,p.ly,p.lz); simCam.updateMatrixWorld(true); simCam.updateProjectionMatrix();
-  const diag = new THREE.Matrix4().makeTranslation(0,0,focal).multiply(simCam.matrixWorldInverse);
+  const diag=new THREE.Matrix4().makeTranslation(0,0,focal).multiply(simCam.matrixWorldInverse);
+  curDiag.copy(diag); curInvDiag.copy(diag).invert(); curApex.copy(apex); curH=H;
 
-  // ---- offscreen render of the true image ----
+  // offscreen render of the true image
   capTeapot.position.set(p.tx,p.ty,p.tz); capTeapot.scale.setScalar(p.ts);
   capAmphora.position.set(p.ax,p.ay,p.az); capAmphora.scale.setScalar(p.as);
   const texH=480, texW=Math.max(2,Math.round(texH*aspect)); rt.setSize(texW,texH);
-  renderer.setRenderTarget(rt); renderer.setClearColor(0x070b14,1); renderer.clear(); renderer.render(capScene, simCam); renderer.setRenderTarget(null);
+  renderer.setRenderTarget(rt); renderer.setClearColor(0x070b14,1); renderer.clear(); renderer.render(capScene,simCam); renderer.setRenderTarget(null);
 
-  // ---- the screen (fixed, shows the render) ----
-  const corner=(sx,sy)=>new THREE.Vector3(sx*W, sy*H, 0);
+  // screen (fixed, translucent so the construct shows through)
+  const corner=(sx,sy)=>new THREE.Vector3(sx*W,sy*H,0);
   const sc=[corner(-1,-1),corner(1,-1),corner(1,1),corner(-1,1)];
-  const screen=new THREE.Mesh(new THREE.PlaneGeometry(2*W,2*H), new THREE.MeshBasicMaterial({map:rt.texture,toneMapped:false,side:THREE.DoubleSide,transparent:true,opacity:0.82,depthWrite:false}));
-  g.add(screen); g.add(rect(sc, COL.screen, 0.9));
-  addLabel('(0,0) px', corner(-1,1).clone().add(new THREE.Vector3(-0.06*W,0.12*H,0)), 'rgba(216,222,240,0.55)', H*0.16);
-  addLabel(`(${p.rw}, ${p.rh}) px`, corner(1,-1).clone().add(new THREE.Vector3(0.02*W,-0.12*H,0)), 'rgba(216,222,240,0.5)', H*0.16);
-  addLabel('the screen', new THREE.Vector3(0,-H-0.22*H,0), cssHex(COL.screen), H*0.17);
+  g.add(new THREE.Mesh(new THREE.PlaneGeometry(2*W,2*H), new THREE.MeshBasicMaterial({map:rt.texture,toneMapped:false,side:THREE.DoubleSide,transparent:true,opacity:0.82,depthWrite:false})));
+  g.add(rect(sc,COL.screen,0.9));
+  addLabel('(0,0) px', corner(-1,1).clone().add(new THREE.Vector3(-0.05*W,0.11*H,0)),'rgba(216,222,240,0.55)',H*0.15);
+  addLabel(`(${p.rw}, ${p.rh}) px`, corner(1,-1).clone().add(new THREE.Vector3(0.02*W,-0.11*H,0)),'rgba(216,222,240,0.5)',H*0.15);
+  addLabel('the screen', new THREE.Vector3(0,-H-0.22*H,0), cssHex(COL.screen), H*0.16);
+  drawScreenHint(aspect,W,H);
 
-  // ---- apex + frustum ----
-  g.add(dot(apex, H*0.05, COL.lens));
-  addLabel('center of\nprojection', apex.clone().add(new THREE.Vector3(0,H*0.22,0)), cssHex(COL.lens), H*0.15);
-  // frustum edges apex → screen corners → far
-  const farD = Math.min(p.far, focal*2.4);                // visual cap for the drawn far plane
-  const zFar = focal - farD;
-  const farCorners = sc.map(cc=>{ const d=cc.clone().sub(apex); const t=(zFar-apex.z)/d.z; return apex.clone().addScaledVector(d,t); });
-  sc.forEach((cc,i)=> g.add(line([apex, farCorners[i]], COL.lens, 0.22)));
-  g.add(rect(farCorners, COL.lens, 0.18, true));
+  // apex + frustum
+  g.add(dot(apex,H*0.045,COL.lens));
+  const pa=new THREE.Mesh(new THREE.SphereGeometry(H*0.16,12,12), new THREE.MeshBasicMaterial({color:COL.lens,transparent:true,opacity:0.001})); pa.position.copy(apex); pa.userData.drag='fov'; g.add(pa); pickApex=pa;
+  addLabel('center of\nprojection', apex.clone().add(new THREE.Vector3(0,H*0.2,0)), cssHex(COL.lens), H*0.14);
+  const farD=Math.min(p.far,focal*2.4), zFar=focal-farD;
+  const farCorners=sc.map(cc=>{ const d=cc.clone().sub(apex); const t=(zFar-apex.z)/d.z; return apex.clone().addScaledVector(d,t); });
+  sc.forEach((cc,i)=> g.add(line([apex,farCorners[i]],COL.lens,0.2)));
+  g.add(rect(farCorners,COL.lens,0.16,true));
+  const planeAt=(d)=>{ const z=focal-d, hh=H*d/focal, hw=hh*aspect; return [new THREE.Vector3(-hw,-hh,z),new THREE.Vector3(hw,-hh,z),new THREE.Vector3(hw,hh,z),new THREE.Vector3(-hw,hh,z)]; };
+  g.add(rect(planeAt(Math.min(p.near,farD*0.98)),COL.lens,0.45));
+  addLabel('near', planeAt(Math.min(p.near,farD*0.98))[2].clone().add(new THREE.Vector3(0,0.04*H,0)),'rgba(255,209,102,0.55)',H*0.11);
+  addLabel(farD<p.far?`far (${fmt(p.far)}, capped)`:'far', farCorners[2].clone().add(new THREE.Vector3(0,0.04*H,0)),'rgba(255,209,102,0.4)',H*0.11);
+  const clipNear=new THREE.Plane(new THREE.Vector3(0,0,-1),focal-p.near), clipFar=new THREE.Plane(new THREE.Vector3(0,0,1),-(focal-p.far));
 
-  // ---- near / far clip planes (drawn) + real clipping of the wireframes ----
-  const planeAt = (distFromApex)=>{ const z=focal-distFromApex, hh=H*distFromApex/focal, hw=hh*aspect, ctr=new THREE.Vector3(0,0,z);
-    return [new THREE.Vector3(-hw,-hh,z),new THREE.Vector3(hw,-hh,z),new THREE.Vector3(hw,hh,z),new THREE.Vector3(-hw,hh,z)]; };
-  g.add(rect(planeAt(Math.min(p.near, farD*0.98)), COL.lens, 0.5));
-  addLabel('near', planeAt(Math.min(p.near,farD*0.98))[2].clone().add(new THREE.Vector3(0,0.04*H,0)), 'rgba(255,209,102,0.6)', H*0.12);
-  addLabel(farD<p.far?`far (${fmt(p.far)}, capped)`:'far', farCorners[2].clone().add(new THREE.Vector3(0,0.04*H,0)), 'rgba(255,209,102,0.4)', H*0.12);
-  // clip planes in diagram space (constant z = view axis)
-  const clipNear = new THREE.Plane(new THREE.Vector3(0,0,-1), focal - p.near);   // keep z <= focal-near
-  const clipFar  = new THREE.Plane(new THREE.Vector3(0,0, 1), -(focal - p.far)); // keep z >= focal-far
-
-  // ---- world axes (the authoring frame), transformed into the diagram ----
+  // world axes
   const wO=new THREE.Vector3(0,0,0).applyMatrix4(diag);
-  const axLen=2.2;
-  [['x',new THREE.Vector3(axLen,0,0),COL.x],['y',new THREE.Vector3(0,axLen,0),COL.y],['z',new THREE.Vector3(0,0,axLen),COL.z]].forEach(([n,v,c])=>{
-    const tip=v.clone().applyMatrix4(diag); g.add(arrow(wO,tip,c,H*0.012,0.85)); addLabel('+'+n.toUpperCase(), tip.clone().lerp(wO,-0.12), cssHex(c), H*0.13);
-  });
-  g.add(dot(wO, H*0.03, COL.z, 0.9)); addLabel('world (0,0,0)', wO.clone().add(new THREE.Vector3(0,-0.18*H,0)), 'rgba(170,182,210,0.7)', H*0.12);
+  [['x',new THREE.Vector3(2.2,0,0),COL.x],['y',new THREE.Vector3(0,2.2,0),COL.y],['z',new THREE.Vector3(0,0,2.2),COL.z]].forEach(([n,v,c])=>{
+    const tip=v.clone().applyMatrix4(diag); g.add(arrow(wO,tip,c,H*0.012,0.8)); addLabel('+'+n.toUpperCase(), tip.clone().lerp(wO,-0.12), cssHex(c), H*0.12); });
+  g.add(dot(wO,H*0.028,COL.z,0.85)); addLabel('world (0,0,0)', wO.clone().add(new THREE.Vector3(0,-0.16*H,0)),'rgba(170,182,210,0.7)',H*0.11);
 
-  // ---- the two objects (wireframe, in diagram space) + sightlines ----
-  function placeObject(geo, col, pos, scl, name){
-    const mat=new THREE.MeshBasicMaterial({color:col, wireframe:true, transparent:true, opacity:0.7, clippingPlanes:[clipNear, clipFar]});
-    (name==='teapot'?objMatTeapot:objMatAmphora).length=0; (name==='teapot'?objMatTeapot:objMatAmphora).push(mat);
-    const m=new THREE.Mesh(geo, mat);
-    const world=new THREE.Matrix4().compose(new THREE.Vector3(pos[0],pos[1],pos[2]), new THREE.Quaternion(), new THREE.Vector3(scl,scl,scl));
-    m.matrixAutoUpdate=false; m.matrix.copy(new THREE.Matrix4().multiplyMatrices(diag, world)); m.matrixWorldNeedsUpdate=true;
-    g.add(m);
-    // sightlines from apex through the object's bounding-box corners to the screen
-    const bb=geo.boundingBox, mm=m.matrix;
-    const cs=[];
-    for(const X of [bb.min.x,bb.max.x]) for(const Y of [bb.min.y,bb.max.y]) for(const Z of [bb.min.z,bb.max.z]) cs.push(new THREE.Vector3(X,Y,Z).applyMatrix4(mm));
-    cs.forEach(pt=>{
-      g.add(line([apex, pt], col, 0.13));
-      const d=pt.clone().sub(apex); if(Math.abs(d.z)>1e-6){ const t=(0-apex.z)/d.z; if(t>0){ const hit=apex.clone().addScaledVector(d,t); g.add(dot(hit, H*0.012, col, 0.85)); } }
-    });
-    const lc=new THREE.Vector3(0,0,0).applyMatrix4(mm);
-    addLabel(name, lc.clone().add(new THREE.Vector3(0, (bb.max.y-bb.min.y)*scl*0.6+0.3, 0)), cssHex(col), H*0.14);
+  // objects + four extreme sightlines each
+  function placeObject(geo,col,pos,scl,name){
+    const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:col,wireframe:true,transparent:true,opacity:0.7,clippingPlanes:[clipNear,clipFar]}));
+    const world=new THREE.Matrix4().compose(new THREE.Vector3(pos[0],pos[1],pos[2]),new THREE.Quaternion(),new THREE.Vector3(scl,scl,scl));
+    m.matrixAutoUpdate=false; m.matrix.multiplyMatrices(diag,world); m.matrixWorldNeedsUpdate=true; m.userData.drag=name;
+    g.add(m); if(name==='teapot') pickTeapot=m; else pickAmphora=m;
+    // extreme top/bottom/left/right vertices in diagram space → 4 rays
+    const pos2=geo.getAttribute('position'); const step=Math.max(1,Math.floor(pos2.count/500)); const v=new THREE.Vector3();
+    let pMX,pmX,pMY,pmY,vMX,vmX,vMY,vmY;
+    for(let i=0;i<pos2.count;i+=step){ v.fromBufferAttribute(pos2,i).applyMatrix4(m.matrix);
+      if(vMX===undefined||v.x>vMX){vMX=v.x; pMX=v.clone();} if(vmX===undefined||v.x<vmX){vmX=v.x; pmX=v.clone();}
+      if(vMY===undefined||v.y>vMY){vMY=v.y; pMY=v.clone();} if(vmY===undefined||v.y<vmY){vmY=v.y; pmY=v.clone();} }
+    [pMX,pmX,pMY,pmY].forEach(pt=>{ g.add(line([apex,pt],col,0.2)); const d=pt.clone().sub(apex);
+      if(Math.abs(d.z)>1e-6){ const t=(0-apex.z)/d.z; if(t>0) g.add(dot(apex.clone().addScaledVector(d,t),H*0.013,col,0.8)); } });
+    const lc=new THREE.Vector3(0, geo.boundingBox.max.y*scl, 0).applyMatrix4(m.matrix);
+    addLabel(name, lc.clone().add(new THREE.Vector3(0,0.3,0)), cssHex(col), H*0.13);
   }
-  placeObject(teapotGeo, COL.teapot, [p.tx,p.ty,p.tz], p.ts, 'teapot');
-  placeObject(amphoraGeo, COL.amphora, [p.ax,p.ay,p.az], p.as, 'amphora');
+  placeObject(teapotGeo,COL.teapot,[p.tx,p.ty,p.tz],p.ts,'teapot');
+  placeObject(amphoraGeo,COL.amphora,[p.ax,p.ay,p.az],p.as,'amphora');
 
-  // ---- line of sight (the camera's view axis) ----
-  g.add(line([apex, new THREE.Vector3(0,0,focal-Math.min(farD,10))], COL.view, 0.45, true));
+  // line of sight
+  g.add(line([apex,new THREE.Vector3(0,0,focal-Math.min(farD,10))],COL.view,0.45,true));
 
   updateCode();
-  if (reframe){
-    const span=Math.max(W*2, focal+farD*0.6, 12);
-    orbitTarget.set(0,0,(focal + (focal-farD))*0.12);
-    orbitRadius=span*1.15; updateViewCam();
+  if (reframe){ orbitTarget.set(0,0,(focal+zFar)/2); orbitRadius=Math.max(3.1*W,2.8*H,farD*1.9); updateViewCam(); }
+}
+
+// subtle browser/phone chrome on the screen, keyed to aspect
+function drawScreenHint(aspect,W,H){
+  const c=0x9fb3d0, o=0.32, z=0.02;
+  if(aspect>=1.2){
+    g.add(line([new THREE.Vector3(-W,H*0.8,z),new THREE.Vector3(W,H*0.8,z)],c,o));
+    [-0.93,-0.87,-0.81].forEach(fx=>g.add(dot(new THREE.Vector3(fx*W,H*0.9,z),H*0.022,c,o)));
+  } else if(aspect<=0.82){
+    g.add(line([new THREE.Vector3(-W*0.22,H*0.92,z),new THREE.Vector3(W*0.22,H*0.92,z)],c,o*1.4));   // notch
+    g.add(line([new THREE.Vector3(-W*0.34,-H*0.9,z),new THREE.Vector3(W*0.34,-H*0.9,z)],c,o*1.2));    // home bar
   }
 }
 
-// ── Code panel (live values + click-to-control) ──────────────────────────────
-function updateCode(){ for(const k of Object.keys(DEFAULTS)){ const el=document.querySelector(`.cv[data-id="${k}"]`); if(el) el.textContent=fmt(state[k]); } }
-document.querySelectorAll('.cv').forEach(el=>{
-  const id=el.dataset.id; const c=groupColorFor(id); el.style.color=c;
-  el.addEventListener('click', ()=>{
-    const row=document.getElementById('row-'+id); if(!row) return;
-    const grp=row.closest('.grp'); if(grp && grp.classList.contains('closed')) toggleGroup(grp);
-    row.scrollIntoView({block:'center', behavior:'smooth'}); row.classList.remove('pulse'); void row.offsetWidth; row.classList.add('pulse');
-    const num=document.getElementById('p-'+id); if(num) num.focus();
-  });
-});
+// ── Code panel ────────────────────────────────────────────────────────────────
 function groupColorFor(id){ for(const grp of GROUPS) if(grp.ids.includes(id)) return grp.color; return 'var(--c-lens)'; }
+function updateCode(){ for(const k of Object.keys(DEFAULTS)){ const el=document.querySelector(`.cv[data-id="${k}"]`); if(el) el.textContent=fmt(state[k]); } }
+document.querySelectorAll('.cv').forEach(el=>{ const id=el.dataset.id; el.style.color=groupColorFor(id);
+  el.addEventListener('click', ()=>{ const row=document.getElementById('row-'+id); if(!row) return;
+    const grp=row.closest('.grp'); if(grp&&grp.classList.contains('closed')) grp.classList.remove('closed');
+    row.scrollIntoView({block:'center',behavior:'smooth'}); row.classList.remove('pulse'); void row.offsetWidth; row.classList.add('pulse');
+    const num=document.getElementById('p-'+id); if(num) num.focus(); }); });
 
-// ── Build controls (collapsible, color-coded) ────────────────────────────────
+// ── Controls (compact single-row, collapsible groups) ─────────────────────────
 const controls=document.getElementById('controls'); const widgets={};
-function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
-function roundStep(v,s){ const d=(String(s).split('.')[1]||'').length; return +(+v).toFixed(d); }
-function setVal(id,v,fromNum=false){
-  const cfg=CFG[id]; v=roundStep(clamp(v,cfg.min,cfg.max),cfg.step); state[id]=v;
-  const w=widgets[id]; w.slider.value=v; if(!fromNum) w.num.value=v; buildScene(false);
-}
-function toggleGroup(grp){ grp.classList.toggle('closed'); }
+function setVal(id,v,fromNum=false){ const cfg=CFG[id]; v=roundStep(clamp(v,cfg.min,cfg.max),cfg.step); state[id]=v;
+  const w=widgets[id]; w.slider.value=v; if(!fromNum) w.num.value=v; buildScene(false); }
+function setMany(obj){ for(const id in obj){ const cfg=CFG[id]; const v=roundStep(clamp(obj[id],cfg.min,cfg.max),cfg.step); state[id]=v; widgets[id].slider.value=v; widgets[id].num.value=v; } buildScene(false); }
 GROUPS.forEach(group=>{
   const wrap=document.createElement('div'); wrap.className='grp';
   const head=document.createElement('div'); head.className='grp-head';
   head.innerHTML=`<span class="swatch" style="background:${group.color}"></span><span>${group.title}</span><span class="arrow">▾</span>`;
-  head.addEventListener('click', ()=>toggleGroup(wrap));
-  const body=document.createElement('div'); body.className='grp-body';
-  wrap.appendChild(head); wrap.appendChild(body); controls.appendChild(wrap);
-  group.ids.forEach(id=>{
-    const cfg=CFG[id]; const row=document.createElement('div'); row.className='ctrl'; row.id='row-'+id;
-    const top=document.createElement('div'); top.className='ctrl-top';
+  head.addEventListener('click',()=>wrap.classList.toggle('closed'));
+  const body=document.createElement('div'); body.className='grp-body'; wrap.appendChild(head); wrap.appendChild(body); controls.appendChild(wrap);
+  group.ids.forEach(id=>{ const cfg=CFG[id]; const row=document.createElement('div'); row.className='ctrl'; row.id='row-'+id;
     const lab=document.createElement('span'); lab.className='ctrl-label'; lab.textContent=cfg.label;
-    const nw=document.createElement('span'); nw.className='num';
-    const num=document.createElement('input'); num.className='cnum'; num.id='p-'+id; num.value=state[id]; num.style.color=group.color; nw.appendChild(num);
-    top.appendChild(lab); top.appendChild(nw);
     const slider=document.createElement('input'); slider.type='range'; slider.id='s-'+id; slider.className='cslider';
     slider.min=cfg.min; slider.max=cfg.max; slider.step=cfg.step; slider.value=state[id]; slider.style.accentColor=group.color;
-    row.appendChild(top); row.appendChild(slider); body.appendChild(row); widgets[id]={slider,num};
-    slider.addEventListener('input', ()=>setVal(id, parseFloat(slider.value)));
-    num.addEventListener('input', ()=>{ const v=parseFloat(num.value); if(isFinite(v)) setVal(id,v,true); });
-    num.addEventListener('blur', ()=>{ num.value=state[id]; });
-    num.addEventListener('keydown', e=>{ if(e.key==='Enter') num.blur(); });
+    const nw=document.createElement('span'); nw.className='num';
+    const num=document.createElement('input'); num.className='cnum'; num.id='p-'+id; num.value=state[id]; num.style.color=group.color; nw.appendChild(num);
     const spin=document.createElement('span'); spin.className='spin';
     const up=document.createElement('button'); up.type='button'; up.className='up'; up.tabIndex=-1; up.textContent='▲';
     const dn=document.createElement('button'); dn.type='button'; dn.className='dn'; dn.tabIndex=-1; dn.textContent='▼';
     spin.appendChild(up); spin.appendChild(dn); nw.appendChild(spin);
-    const hold=(btn,dir)=>{ let to,iv; const tick=()=>setVal(id, state[id]+dir*cfg.step);
-      const start=e=>{ e.preventDefault(); tick(); to=setTimeout(()=>iv=setInterval(tick,80),360); };
-      const stop=()=>{ clearTimeout(to); clearInterval(iv); };
+    row.append(lab,slider,nw); body.appendChild(row); widgets[id]={slider,num};
+    slider.addEventListener('input',()=>setVal(id,parseFloat(slider.value)));
+    num.addEventListener('input',()=>{ const v=parseFloat(num.value); if(isFinite(v)) setVal(id,v,true); });
+    num.addEventListener('blur',()=>{ num.value=state[id]; });
+    num.addEventListener('keydown',e=>{ if(e.key==='Enter') num.blur(); });
+    const hold=(btn,dir)=>{ let to,iv; const tick=()=>setVal(id,state[id]+dir*cfg.step);
+      const start=e=>{ e.preventDefault(); tick(); to=setTimeout(()=>iv=setInterval(tick,80),360); }; const stop=()=>{ clearTimeout(to); clearInterval(iv); };
       btn.addEventListener('mousedown',start); btn.addEventListener('touchstart',start,{passive:false});
       ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev=>btn.addEventListener(ev,stop)); };
-    hold(up,1); hold(dn,-1);
-  });
-});
+    hold(up,1); hold(dn,-1); }); });
 function syncWidgets(){ for(const id of Object.keys(CFG)){ widgets[id].slider.value=state[id]; widgets[id].num.value=state[id]; } }
 
-// ── Presets / reset / frame ──────────────────────────────────────────────────
 document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.preset').forEach(x=>x.classList.remove('active')); b.classList.add('active');
-  state.rw=+b.dataset.w; state.rh=+b.dataset.h; syncWidgets(); buildScene(false);
-}));
-document.getElementById('reset-btn').addEventListener('click',()=>{
-  Object.assign(state,DEFAULTS); syncWidgets();
-  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active', +b.dataset.w===DEFAULTS.rw && +b.dataset.h===DEFAULTS.rh));
-  buildScene(false);
-});
+  state.rw=+b.dataset.w; state.rh=+b.dataset.h; syncWidgets(); buildScene(false); }));
+document.getElementById('reset-btn').addEventListener('click',()=>{ Object.assign(state,DEFAULTS); syncWidgets();
+  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',+b.dataset.w===DEFAULTS.rw&&+b.dataset.h===DEFAULTS.rh)); buildScene(true); });
 document.getElementById('frame-btn').addEventListener('click',()=>buildScene(true));
 
-// ── Observer controls ─────────────────────────────────────────────────────────
-let drag=false, pX=0, pY=0, pinch=null; const el=renderer.domElement;
-el.addEventListener('mousedown',e=>{ drag=true; pX=e.clientX; pY=e.clientY; });
-window.addEventListener('mouseup',()=>drag=false);
-window.addEventListener('mousemove',e=>{ if(!drag) return; spherical.theta-=(e.clientX-pX)*0.006;
-  spherical.phi=clamp(spherical.phi-(e.clientY-pY)*0.006,0.05,Math.PI-0.05); pX=e.clientX; pY=e.clientY; updateViewCam(); });
+// ── Observer + drag controls ──────────────────────────────────────────────────
+let drag=false, pX=0, pY=0, pinch=null, dragMode=null; const el=renderer.domElement;
+const ray=new THREE.Raycaster(), ndc=new THREE.Vector2();
+function setNDC(e){ const r=el.getBoundingClientRect(); ndc.x=((e.clientX-r.left)/r.width)*2-1; ndc.y=-((e.clientY-r.top)/r.height)*2+1; }
+function pickList(){ return [pickApex,pickTeapot,pickAmphora].filter(Boolean); }
+function handleDrag(e){
+  setNDC(e); ray.setFromCamera(ndc,viewCam);
+  const n=new THREE.Vector3(); viewCam.getWorldDirection(n);
+  if(dragMode==='fov'){
+    const plane=new THREE.Plane().setFromNormalAndCoplanarPoint(n,curApex); const pt=new THREE.Vector3();
+    if(ray.ray.intersectPlane(plane,pt)){ const z=Math.max(0.05,pt.z); const fov=2*Math.atan(curH/z)*180/Math.PI; setVal('fov',clamp(fov,FOV_MIN,FOV_MAX)); }
+  } else {
+    const ids = dragMode==='teapot'?['tx','ty','tz']:['ax','ay','az'];
+    const ctr=new THREE.Vector3(state[ids[0]],state[ids[1]],state[ids[2]]).applyMatrix4(curDiag);
+    const plane=new THREE.Plane().setFromNormalAndCoplanarPoint(n,ctr); const pt=new THREE.Vector3();
+    if(ray.ray.intersectPlane(plane,pt)){ const w=pt.applyMatrix4(curInvDiag); setMany({[ids[0]]:w.x,[ids[1]]:w.y,[ids[2]]:w.z}); }
+  }
+}
+el.addEventListener('mousedown',e=>{ setNDC(e); ray.setFromCamera(ndc,viewCam);
+  const hit=ray.intersectObjects(pickList(),false);
+  if(hit.length){ dragMode=hit[0].object.userData.drag; el.style.cursor='grabbing'; return; }
+  drag=true; pX=e.clientX; pY=e.clientY; });
+window.addEventListener('mousemove',e=>{ if(dragMode){ handleDrag(e); return; }
+  if(!drag) return; spherical.theta-=(e.clientX-pX)*0.006; spherical.phi=clamp(spherical.phi-(e.clientY-pY)*0.006,0.05,Math.PI-0.05); pX=e.clientX; pY=e.clientY; updateViewCam(); });
+window.addEventListener('mouseup',()=>{ drag=false; dragMode=null; el.style.cursor='default'; });
 el.addEventListener('wheel',e=>{ e.preventDefault(); orbitRadius=clamp(orbitRadius*(1+e.deltaY*0.001),1,100000); updateViewCam(); },{passive:false});
 el.addEventListener('touchstart',e=>{ if(e.touches.length===1){ drag=true; pX=e.touches[0].clientX; pY=e.touches[0].clientY; pinch=null; }
-  else if(e.touches.length===2){ drag=false; pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); } },{passive:false});
+  else if(e.touches.length===2){ drag=false; pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); } },{passive:false});
 el.addEventListener('touchmove',e=>{ e.preventDefault();
   if(e.touches.length===1&&drag){ spherical.theta-=(e.touches[0].clientX-pX)*0.006; spherical.phi=clamp(spherical.phi-(e.touches[0].clientY-pY)*0.006,0.05,Math.PI-0.05); pX=e.touches[0].clientX; pY=e.touches[0].clientY; updateViewCam(); }
-  else if(e.touches.length===2&&pinch){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); orbitRadius=clamp(orbitRadius*(1+(pinch-d)*0.005),1,100000); pinch=d; updateViewCam(); } },{passive:false});
+  else if(e.touches.length===2&&pinch){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); orbitRadius=clamp(orbitRadius*(1+(pinch-d)*0.005),1,100000); pinch=d; updateViewCam(); } },{passive:false});
 el.addEventListener('touchend',()=>{ drag=false; pinch=null; },{passive:false});
 
 // ── Panel toggle ──────────────────────────────────────────────────────────────
@@ -450,7 +443,7 @@ syncArrow(true);
 new ResizeObserver(()=>resizeRenderer()).observe(viewport);
 window.addEventListener('resize',()=>{ resizeRenderer(); syncArrow(panelBody.classList.contains('open')); });
 resizeRenderer(); buildScene(true);
-(function animate(){ requestAnimationFrame(animate); renderer.render(scene, viewCam); })();
+(function animate(){ requestAnimationFrame(animate); renderer.render(scene,viewCam); })();
 </script>
 </body>
 </html>
