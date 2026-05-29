@@ -1,0 +1,57 @@
+---
+layout: default
+title: Site map — Schuck Data
+description: Every page on schuckdata.com.
+noindex: true
+hide_backstage_link: false
+---
+
+<style>
+  .sm-tree { margin:1rem 0 0; font-size:0.95rem; line-height:1.6; }
+  .sm-tree ul { list-style:none; margin:0; padding-left:1.25rem; }
+  .sm-tree-root { padding-left:0; }
+  .sm-tree li { margin:0.25rem 0; }
+  .sm-tree a { color:var(--text-muted, #9fb1c9); text-decoration:none; }
+  .sm-tree a:hover, .sm-tree a:focus-visible { color:#fff; text-decoration:underline; }
+  .sm-branch { color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:0.08em; font-size:0.78rem; }
+  @media (min-width:42rem){ .sm-tree-root { column-count:2; column-gap:3rem; } .sm-tree-root > li { break-inside:avoid; } }
+</style>
+
+<section class="hero" aria-labelledby="sm-heading">
+    <p class="hero-eyebrow">Index</p>
+    <h1 id="sm-heading" class="hero-h1">Site map</h1>
+    <p class="hero-lead">Every page on the site, in one place.</p>
+</section>
+
+<section class="content-section" aria-label="All pages">
+    <nav class="sm-tree" aria-label="All pages">
+        <ul class="sm-tree-root">
+            <li><a href="/">Home</a></li>
+            <li><a href="/ABOUT/">About</a></li>
+            <li><a href="/SERVICES/">Services</a></li>
+            <li><a href="/WORK/">Work</a></li>
+            <li><a href="/FOUNDER/">Founder</a></li>
+            <li><a href="/CAREERS/">Careers</a></li>
+            <li><a href="/CONTACT/">Contact</a></li>
+            <li><span class="sm-branch">Edu</span>
+                <ul>
+                    <li><a href="/edu/threejs/">Camera &amp; frustum</a></li>
+                    <li><a href="/edu/logos/">Logos in 3D</a></li>
+                </ul>
+            </li>
+            <li><span class="sm-branch">Backstage</span>
+                <ul>
+                    <li><a href="/BACKSTAGE/" rel="nofollow">Backstage</a></li>
+                    <li><a href="/QR/" rel="nofollow">QR</a></li>
+                    <li><span class="sm-branch">QR Library</span>
+                        <ul>
+                            <li><a href="/QRLIBRARY/SVSD1/" rel="nofollow">SVSD1</a></li>
+                            <li><a href="/QRLIBRARY/SVSD2/" rel="nofollow">SVSD2</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/ARTMATH/" rel="nofollow">Artmath</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</section>

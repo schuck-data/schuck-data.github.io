@@ -98,9 +98,8 @@
     <div id="legend">
       <div class="leg"><div class="ldot" style="background:var(--c-screen)"></div><span>the screen</span></div>
       <div class="leg"><div class="ldot" style="background:var(--c-lens)"></div><span>center of projection + frustum</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--c-A)"></div><span>brand lockup (drag me)</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--c-B)"></div><span>constellation (drag me)</span></div>
-      <div class="leg"><div class="ldot" style="background:var(--c-C)"></div><span>growth bars (drag me)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--c-A)"></div><span>wordmark (drag me)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--c-B)"></div><span>tesseract + chart path (drag me)</span></div>
       <div class="leg"><div class="ldot" style="background:var(--c-z)"></div><span>world axes</span></div>
     </div>
     <div id="hint" aria-hidden="true">drag empty space · rotate<br>drag a logo or the apex · move it<br>scroll/pinch · zoom</div>
@@ -125,12 +124,10 @@ renderer.<span class="fn">setSize</span>(width, height);
 camera.<span class="fn">position</span>.set(<span class="cv" data-id="cx">0</span>, <span class="cv" data-id="cy">0</span>, <span class="cv" data-id="cz">5</span>);
 camera.<span class="fn">lookAt</span>(<span class="cv" data-id="lx">0</span>, <span class="cv" data-id="ly">0</span>, <span class="cv" data-id="lz">0</span>);
 
-<span class="cm">// brand lockup (chart + wordmark)</span>
-brand.<span class="fn">position</span>.set(<span class="cv" data-id="oax">-3.6</span>, <span class="cv" data-id="oay">0</span>, <span class="cv" data-id="oaz">-5</span>); brand.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="oas">0.5</span>);
-<span class="cm">// constellation</span>
-graph.<span class="fn">position</span>.set(<span class="cv" data-id="obx">0</span>, <span class="cv" data-id="oby">0</span>, <span class="cv" data-id="obz">-4.5</span>); graph.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="obs">1</span>);
-<span class="cm">// growth bars</span>
-bars.<span class="fn">position</span>.set(<span class="cv" data-id="ocx">3.4</span>, <span class="cv" data-id="ocy">0</span>, <span class="cv" data-id="ocz">-5.5</span>); bars.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="ocs">1</span>);
+<span class="cm">// wordmark</span>
+wordmark.<span class="fn">position</span>.set(<span class="cv" data-id="oax">0</span>, <span class="cv" data-id="oay">0</span>, <span class="cv" data-id="oaz">-5</span>); wordmark.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="oas">0.7</span>);
+<span class="cm">// tesseract (chart path highlighted)</span>
+tesseract.<span class="fn">position</span>.set(<span class="cv" data-id="obx">0</span>, <span class="cv" data-id="oby">1.5</span>, <span class="cv" data-id="obz">-4.5</span>); tesseract.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="obs">0.7</span>);
 </div>
       <div id="controls"></div>
       <div id="reset-row"><button id="reset-btn">↺ reset</button> <button id="frame-btn">⊕ frame view</button></div>
@@ -181,61 +178,65 @@ let mergeGeometries=null;
 try { ({ mergeGeometries } = await import(CDN+'utils/BufferGeometryUtils.js')); } catch(e){ console.warn('merge utils missing', e); }
 function mergeOr(parts){ parts=parts.filter(Boolean).map(p=> p.index ? p.toNonIndexed() : p); return (mergeGeometries && mergeGeometries(parts, false)) || parts[0]; }
 
-// Logo A — the brand lockup: rising 4-node chart + extruded SCHUCK / DATA wordmark
-async function buildLogoA(){
+// paint a part geometry one flat vertex colour, so a merged geo can carry several colours
+function paint(geo, hex){ const c=new THREE.Color(hex); const n=geo.getAttribute('position').count; const a=new Float32Array(n*3);
+  for(let i=0;i<n;i++){ a[3*i]=c.r; a[3*i+1]=c.g; a[3*i+2]=c.b; } geo.setAttribute('color', new THREE.BufferAttribute(a,3)); return geo; }
+function edgeTube(a,b,r){ return new THREE.TubeGeometry(new THREE.CatmullRomCurve3([a,b]),1,r,6,false); }
+
+// Wordmark — clean extruded SCHUCK / DATA. No chart, no bars.
+async function buildWordmark(){
   const parts=[];
-  const nodes=[[-2.4,1.1],[-1.2,1.65],[0.0,1.35],[1.2,2.05]];   // x,y — up, dip, up (matches the mark)
-  const curve=new THREE.CatmullRomCurve3(nodes.map(([x,y])=>new THREE.Vector3(x,y,0)), false);
-  parts.push(new THREE.TubeGeometry(curve, 30, 0.05, 6, false));
-  nodes.forEach(([x,y])=>{ const s=new THREE.IcosahedronGeometry(0.16,1); s.translate(x,y,0); parts.push(s); });
-  nodes.forEach(([x,y])=>{ const b=new THREE.BoxGeometry(0.1, y, 0.1); b.translate(x, y/2, 0); parts.push(b); });
   try {
     const { FontLoader } = await import(CDN+'loaders/FontLoader.js');
     const { TextGeometry } = await import(CDN+'geometries/TextGeometry.js');
     const font = await new Promise((res,rej)=> new FontLoader().load('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/fonts/helvetiker_bold.typeface.json', res, undefined, rej));
-    const big = new TextGeometry('SCHUCK', { font, size:1.0, height:0.16, curveSegments:2, bevelEnabled:false });
-    big.center(); big.translate(0, -0.2, 0); parts.push(big);
-    const small = new TextGeometry('DATA', { font, size:0.42, height:0.13, curveSegments:2, bevelEnabled:false });
-    small.center(); small.translate(2.0, 0.55, 0); parts.push(small);
-  } catch(e){ console.warn('wordmark font skipped', e); }
-  return baseAlign(mergeOr(parts), 2.4);
+    const big = new TextGeometry('SCHUCK', { font, size:1.0, height:0.18, curveSegments:3, bevelEnabled:false }); big.center(); parts.push(big);
+    const small = new TextGeometry('DATA', { font, size:0.4, height:0.14, curveSegments:3, bevelEnabled:false }); small.center(); small.translate(2.05, 0.78, 0); parts.push(small);
+  } catch(e){ console.warn('wordmark font skipped', e); parts.push(new THREE.BoxGeometry(4,1,0.2)); }
+  return baseAlign(mergeOr(parts), 1.3);
 }
-// Logo B — original: a connected constellation (nodes + edges) = linked data
-function buildLogoB(){
-  const N=[[0,1.4,0],[-1,0.5,0.6],[1,0.6,-0.5],[-0.7,-0.6,-0.4],[0.8,-0.5,0.6],[0.1,-0.05,-1],[0.3,0.7,0.95]];
-  const E=[[0,1],[0,2],[1,3],[2,4],[3,5],[4,5],[1,6],[6,2],[5,0]];
-  const parts=[];
-  N.forEach(n=>{ const s=new THREE.IcosahedronGeometry(0.17,1); s.translate(n[0],n[1],n[2]); parts.push(s); });
-  E.forEach(([a,b])=>{ const c=new THREE.CatmullRomCurve3([new THREE.Vector3(...N[a]), new THREE.Vector3(...N[b])]); parts.push(new THREE.TubeGeometry(c,1,0.03,5,false)); });
-  return baseAlign(mergeOr(parts), 1.9);
+
+// Tesseract (cube-in-cube) built from its own edges, with the brand chart zigzag highlighted.
+function buildTesseract(){
+  const O=1.0, I=0.42, DIM=0x3a4d68, HI=0x93c5fd, parts=[];
+  const signs=[]; for(const x of [-1,1]) for(const y of [-1,1]) for(const z of [-1,1]) signs.push([x,y,z]);
+  const oV=signs.map(s=>new THREE.Vector3(s[0]*O,s[1]*O,s[2]*O));
+  const iV=signs.map(s=>new THREE.Vector3(s[0]*I,s[1]*I,s[2]*I));
+  const sidx=(x,y,z)=> signs.findIndex(s=>s[0]===x&&s[1]===y&&s[2]===z);
+  function cubeEdges(V){ const e=[]; for(let a=0;a<8;a++) for(let b=a+1;b<8;b++){ let d=0; for(let k=0;k<3;k++) if(signs[a][k]!==signs[b][k]) d++; if(d===1) e.push([V[a],V[b]]); } return e; }
+  cubeEdges(oV).forEach(([a,b])=> parts.push(paint(edgeTube(a,b,0.02), DIM)));
+  cubeEdges(iV).forEach(([a,b])=> parts.push(paint(edgeTube(a,b,0.02), DIM)));
+  for(let k=0;k<8;k++) parts.push(paint(edgeTube(oV[k],iV[k],0.018), DIM));
+  // highlighted path = the four-node chart, rebuilt from the hypercube:
+  // outer bottom-left → strut → inner bottom-left → inner bottom edge → inner bottom-right → inner depth edge → inner back-right
+  const Obl=sidx(-1,-1,1), Ibl=sidx(-1,-1,1), Ibr=sidx(1,-1,1), Iback=sidx(1,-1,-1);
+  parts.push(paint(edgeTube(oV[Obl], iV[Ibl], 0.038), HI));      // 2. strut
+  parts.push(paint(edgeTube(iV[Ibl], iV[Ibr], 0.038), HI));      // 4. inner bottom edge
+  parts.push(paint(edgeTube(iV[Ibr], iV[Iback], 0.038), HI));    // 6. inner depth edge
+  [oV[Obl], iV[Ibl], iV[Ibr], iV[Iback]].forEach(v=>{            // 1,3,5,7. the four nodes
+    const s=new THREE.IcosahedronGeometry(0.085,1); s.translate(v.x,v.y,v.z); parts.push(paint(s, HI)); });
+  return baseAlign(mergeOr(parts), 2.0);
 }
-// Logo C — original: an ascending bar field rising toward a corner = growth
-function buildLogoC(){
-  const parts=[], n=4, gap=0.46;
-  for(let i=0;i<n;i++) for(let j=0;j<n;j++){
-    const h=0.35 + (i+j)*0.26;
-    const b=new THREE.BoxGeometry(0.28, h, 0.28); b.translate((i-(n-1)/2)*gap, h/2, (j-(n-1)/2)*gap); parts.push(b);
-  }
-  return baseAlign(mergeOr(parts), 1.7);
-}
-let geoA, geoB, geoC;
-try { geoA = await buildLogoA(); } catch(e){ console.warn('logoA failed', e); geoA = baseAlign(new THREE.BoxGeometry(2,1,0.3),1.5); }
-geoB = buildLogoB(); geoC = buildLogoC();
+
+let geoWord, geoTess;
+try { geoWord = await buildWordmark(); } catch(e){ console.warn('wordmark failed', e); geoWord = baseAlign(new THREE.BoxGeometry(4,1,0.2),1.3); }
+geoTess = buildTesseract();
 
 // ── Object registry (drives controls, code, capScene, scene) ──────────────────
 const OBJS = [
-  { key:'A', name:'brand lockup', col:COL.A, geo:()=>geoA, ids:{px:'oax',py:'oay',pz:'oaz',rx:'oarx',ry:'oary',rz:'oarz',s:'oas'} },
-  { key:'B', name:'constellation', col:COL.B, geo:()=>geoB, ids:{px:'obx',py:'oby',pz:'obz',rx:'obrx',ry:'obry',rz:'obrz',s:'obs'} },
-  { key:'C', name:'growth bars',  col:COL.C, geo:()=>geoC, ids:{px:'ocx',py:'ocy',pz:'ocz',rx:'ocrx',ry:'ocry',rz:'ocrz',s:'ocs'} },
+  { key:'A', name:'wordmark',  col:COL.A, wire:true, geo:()=>geoWord, ids:{px:'oax',py:'oay',pz:'oaz',rx:'oarx',ry:'oary',rz:'oarz',s:'oas'} },
+  { key:'B', name:'tesseract', col:COL.B, vc:true,   geo:()=>geoTess, ids:{px:'obx',py:'oby',pz:'obz',rx:'obrx',ry:'obry',rz:'obrz',s:'obs'} },
 ];
 const capMesh = {};
-OBJS.forEach(o=>{ const m=new THREE.Mesh(o.geo(), new THREE.MeshStandardMaterial({ color:o.col, roughness:0.5, metalness:0.05, side:THREE.DoubleSide })); capMesh[o.key]=m; capScene.add(m); });
+OBJS.forEach(o=>{ const mat = o.vc
+    ? new THREE.MeshStandardMaterial({ vertexColors:true, roughness:0.5, metalness:0.05, side:THREE.DoubleSide })
+    : new THREE.MeshStandardMaterial({ color:o.col, roughness:0.5, metalness:0.05, side:THREE.DoubleSide });
+  const m=new THREE.Mesh(o.geo(), mat); capMesh[o.key]=m; capScene.add(m); });
 
 // ── Parameter model ──────────────────────────────────────────────────────────
 const DEFAULTS = { rw:1920, rh:1080, fov:75, near:5.2, far:14, cx:0, cy:0, cz:5, lx:0, ly:0, lz:0,
-  oax:-3.6, oay:0, oaz:-5, oarx:0, oary:-12, oarz:0, oas:0.5,
-  obx:0,   oby:0, obz:-4.5, obrx:0, obry:18, obrz:0, obs:1,
-  ocx:3.4, ocy:0, ocz:-5.5, ocrx:0, ocry:-10, ocrz:0, ocs:1 };
+  oax:0, oay:0,   oaz:-5,   oarx:0, oary:-8,  oarz:0, oas:0.7,
+  obx:0, oby:1.5, obz:-4.5, obrx:14, obry:-24, obrz:0, obs:0.7 };
 const state = { ...DEFAULTS };
 const CFG = {
   rw:{label:'width',min:320,max:3840,step:10}, rh:{label:'height',min:240,max:2160,step:10},
@@ -293,7 +294,7 @@ const pick = {};
 
 function buildScene(reframe=false){
   while (g.children.length){ const c=g.children[0]; g.remove(c);
-    if (c.geometry && c.geometry!==geoA && c.geometry!==geoB && c.geometry!==geoC) c.geometry.dispose();
+    if (c.geometry && c.geometry!==geoWord && c.geometry!==geoTess) c.geometry.dispose();
     (Array.isArray(c.material)?c.material:(c.material?[c.material]:[])).forEach(m=>{ if(m.map && m.map!==rt.texture) m.map.dispose?.(); m.dispose?.(); }); }
   const p = getParams();
   const aspect=p.rw/p.rh, fovRad=p.fov*Math.PI/180, H=SCREEN_H, W=H*aspect;
@@ -337,7 +338,10 @@ function buildScene(reframe=false){
 
   // logos (wireframe) + 4 extreme sightlines each
   OBJS.forEach(o=>{ const I=o.ids, geo=o.geo();
-    const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:o.col,wireframe:true,transparent:true,opacity:0.72,clippingPlanes:[clipNear,clipFar]}));
+    const mat = o.vc
+      ? new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:0.92,clippingPlanes:[clipNear,clipFar]})
+      : new THREE.MeshBasicMaterial({color:o.col,wireframe:!!o.wire,transparent:true,opacity:0.72,clippingPlanes:[clipNear,clipFar]});
+    const m=new THREE.Mesh(geo,mat);
     const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(p[I.rx]*D2R,p[I.ry]*D2R,p[I.rz]*D2R));
     const world=new THREE.Matrix4().compose(new THREE.Vector3(p[I.px],p[I.py],p[I.pz]), q, new THREE.Vector3(p[I.s],p[I.s],p[I.s]));
     m.matrixAutoUpdate=false; m.matrix.multiplyMatrices(diag,world); m.matrixWorldNeedsUpdate=true; m.userData.drag=o.key; g.add(m); pick[o.key]=m;
