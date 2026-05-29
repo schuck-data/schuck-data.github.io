@@ -81,6 +81,10 @@
   .spin .up { border-radius:3px 3px 0 0; border-bottom:none; } .spin .dn { border-radius:0 0 3px 3px; }
   .pulse { animation:pulse 0.9s ease; }
   @keyframes pulse { 0%,100%{ background:transparent; } 25%{ background:rgba(255,209,102,0.16); } }
+  .grp-head { width:100%; background:none; border:none; font-family:inherit; text-align:left; }
+  :focus-visible { outline:2px solid #79b0ff; outline-offset:1px; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  @media (prefers-reduced-motion: reduce){ .pulse{ animation:none; } #panel-body{ transition:none; } }
 
   #reset-row { padding:9px 16px 13px; background:var(--surface); flex-shrink:0; display:flex; gap:8px; border-top:1px solid var(--border); }
   #reset-row button { font-family:inherit; font-size:9.5px; letter-spacing:0.08em; padding:6px 12px; border:1px solid rgba(255,255,255,0.16);
@@ -108,11 +112,12 @@
       <div class="leg"><div class="ldot" style="background:var(--c-amphora)"></div><span>amphora (drag me)</span></div>
       <div class="leg"><div class="ldot" style="background:var(--c-z)"></div><span>world axes (three.js units)</span></div>
     </div>
-    <div id="hint">drag empty space · rotate<br>drag a pot or the apex · move it<br>scroll/pinch · zoom</div>
+    <div id="hint" aria-hidden="true">drag empty space · rotate<br>drag a pot or the apex · move it<br>scroll/pinch · zoom</div>
+    <p id="viz-desc" class="sr-only">Interactive 3D diagram of how three.js projects a scene onto the screen. It is a visual aid; every value it shows can be read and changed with the labelled sliders and number fields in the scene setup panel below.</p>
   </div>
 
   <div id="panel-wrap">
-    <button id="panel-toggle"><span>// scene setup</span><span id="toggle-arrow">&#9650;</span></button>
+    <button id="panel-toggle" aria-expanded="true" aria-controls="panel-body"><span>// scene setup</span><span id="toggle-arrow" aria-hidden="true">&#9650;</span></button>
     <div id="panel-body" class="open">
       <div id="presets">
         <button class="preset active" data-w="1920" data-h="1080">16:9</button>
@@ -127,7 +132,7 @@ renderer.<span class="fn">setSize</span>(width, height);
 
 <span class="cm">// the lens (projection)</span>
 <span class="kw">const</span> camera = <span class="kw">new</span> <span class="fn">THREE.PerspectiveCamera</span>(
-  <span class="cv" data-id="fov">75</span>, width / height, <span class="cv" data-id="near">0.1</span>, <span class="cv" data-id="far">1000</span>);
+  <span class="cv" data-id="fov">75</span>, width / height, <span class="cv" data-id="near">5.2</span>, <span class="cv" data-id="far">14</span>);
 
 <span class="cm">// the view (where the world sits)</span>
 camera.<span class="fn">position</span>.set(<span class="cv" data-id="cx">0</span>, <span class="cv" data-id="cy">0</span>, <span class="cv" data-id="cz">5</span>);
@@ -163,6 +168,9 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.localClippingEnabled = true;
 const viewport = document.getElementById('viewport');
 viewport.appendChild(renderer.domElement);
+renderer.domElement.setAttribute('role','img');
+renderer.domElement.setAttribute('aria-label','3D diagram of the three.js render pipeline');
+renderer.domElement.setAttribute('aria-describedby','viz-desc');
 
 const viewCam = new THREE.PerspectiveCamera(45, 1, 0.01, 100000);
 const scene = new THREE.Scene();
@@ -209,13 +217,13 @@ const capAmphora = new THREE.Mesh(amphoraGeo, new THREE.MeshStandardMaterial({ c
 capScene.add(capTeapot, capAmphora);
 
 // ── Parameter model + control config ─────────────────────────────────────────
-const DEFAULTS = { rw:1920, rh:1080, fov:75, near:0.1, far:1000, cx:0, cy:0, cz:5, lx:0, ly:0, lz:0,
+const DEFAULTS = { rw:1920, rh:1080, fov:75, near:5.2, far:14, cx:0, cy:0, cz:5, lx:0, ly:0, lz:0,
                    tx:-1.4, ty:0, tz:-4, trotx:0, troty:-20, trotz:0, ts:1,
                    ax:1.6, ay:0, az:-5, arotx:0, aroty:0, arotz:0, as:1 };
 const state = { ...DEFAULTS };
 const CFG = {
   rw:{label:'width',min:320,max:3840,step:10}, rh:{label:'height',min:240,max:2160,step:10},
-  fov:{label:'fov',min:FOV_MIN,max:FOV_MAX,step:1}, near:{label:'near',min:0.05,max:20,step:0.05}, far:{label:'far',min:1,max:2000,step:1},
+  fov:{label:'fov',min:FOV_MIN,max:FOV_MAX,step:1}, near:{label:'near',min:0.5,max:40,step:0.5}, far:{label:'far',min:1,max:40,step:0.5},
   cx:{label:'camX',min:-15,max:15,step:0.5}, cy:{label:'camY',min:-15,max:15,step:0.5}, cz:{label:'camZ',min:-25,max:25,step:0.5},
   lx:{label:'lookX',min:-15,max:15,step:0.5}, ly:{label:'lookY',min:-15,max:15,step:0.5}, lz:{label:'lookZ',min:-15,max:15,step:0.5},
   tx:{label:'posX',min:-12,max:12,step:0.25}, ty:{label:'posY',min:-12,max:12,step:0.25}, tz:{label:'posZ',min:-18,max:2,step:0.25}, ts:{label:'scale',min:0.2,max:4,step:0.1},
@@ -304,7 +312,7 @@ function buildScene(reframe=false){
   g.add(dot(apex,H*0.045,COL.lens));
   const pa=new THREE.Mesh(new THREE.SphereGeometry(H*0.16,12,12), new THREE.MeshBasicMaterial({color:COL.lens,transparent:true,opacity:0.001})); pa.position.copy(apex); pa.userData.drag='fov'; g.add(pa); pickApex=pa;
   addLabel('center of\nprojection', apex.clone().add(new THREE.Vector3(0,H*0.2,0)), cssHex(COL.lens), H*0.14);
-  const farD=Math.min(p.far,focal*2.4), zFar=focal-farD;
+  const farD=Math.min(p.far,focal*3), zFar=focal-farD;
   const farCorners=sc.map(cc=>{ const d=cc.clone().sub(apex); const t=(zFar-apex.z)/d.z; return apex.clone().addScaledVector(d,t); });
   sc.forEach((cc,i)=> g.add(line([apex,farCorners[i]],COL.lens,0.2)));
   g.add(rect(farCorners,COL.lens,0.16,true));
@@ -366,27 +374,33 @@ const ROT_IDS=['trotx','troty','trotz','arotx','aroty','arotz'];
 function updateCode(){ for(const k of Object.keys(DEFAULTS)){ const el=document.querySelector(`.cv[data-id="${k}"]`); if(el) el.textContent=ROT_IDS.includes(k)?fmt(state[k]*D2R):fmt(state[k]); } }
 document.querySelectorAll('.cv').forEach(el=>{ const id=el.dataset.id; el.style.color=groupColorFor(id);
   el.addEventListener('click', ()=>{ const row=document.getElementById('row-'+id); if(!row) return;
-    const grp=row.closest('.grp'); if(grp&&grp.classList.contains('closed')) grp.classList.remove('closed');
-    row.scrollIntoView({block:'center',behavior:'smooth'}); row.classList.remove('pulse'); void row.offsetWidth; row.classList.add('pulse');
+    const grp=row.closest('.grp'); if(grp&&grp.classList.contains('closed')){ grp.classList.remove('closed'); const h=grp.querySelector('.grp-head'); if(h) h.setAttribute('aria-expanded','true'); }
+    const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    row.scrollIntoView({block:'center',behavior:RM?'auto':'smooth'}); row.classList.remove('pulse'); void row.offsetWidth; row.classList.add('pulse');
     const num=document.getElementById('p-'+id); if(num) num.focus(); }); });
 
 // ── Controls (compact single-row, collapsible groups) ─────────────────────────
 const controls=document.getElementById('controls'); const widgets={};
+let _buildPending=false, _buildReframe=false;   // coalesce rapid edits to one rebuild per frame
+function requestBuild(reframe=false){ _buildReframe=_buildReframe||reframe; if(_buildPending) return; _buildPending=true;
+  requestAnimationFrame(()=>{ _buildPending=false; const rf=_buildReframe; _buildReframe=false; buildScene(rf); }); }
 function setVal(id,v,fromNum=false){ const cfg=CFG[id]; v=roundStep(clamp(v,cfg.min,cfg.max),cfg.step); state[id]=v;
-  const w=widgets[id]; w.slider.value=v; if(!fromNum) w.num.value=v; buildScene(false); }
-function setMany(obj){ for(const id in obj){ const cfg=CFG[id]; const v=roundStep(clamp(obj[id],cfg.min,cfg.max),cfg.step); state[id]=v; widgets[id].slider.value=v; widgets[id].num.value=v; } buildScene(false); }
+  const w=widgets[id]; w.slider.value=v; if(!fromNum) w.num.value=v; requestBuild(false); }
+function setMany(obj){ for(const id in obj){ const cfg=CFG[id]; const v=roundStep(clamp(obj[id],cfg.min,cfg.max),cfg.step); state[id]=v; widgets[id].slider.value=v; widgets[id].num.value=v; } requestBuild(false); }
 GROUPS.forEach(group=>{
   const wrap=document.createElement('div'); wrap.className='grp';
-  const head=document.createElement('div'); head.className='grp-head';
-  head.innerHTML=`<span class="swatch" style="background:${group.color}"></span><span>${group.title}</span><span class="arrow">▾</span>`;
-  head.addEventListener('click',()=>wrap.classList.toggle('closed'));
-  const body=document.createElement('div'); body.className='grp-body'; wrap.appendChild(head); wrap.appendChild(body); controls.appendChild(wrap);
+  const head=document.createElement('button'); head.type='button'; head.className='grp-head'; head.setAttribute('aria-expanded','true');
+  head.innerHTML=`<span class="swatch" style="background:${group.color}"></span><span>${group.title}</span><span class="arrow" aria-hidden="true">▾</span>`;
+  const body=document.createElement('div'); body.className='grp-body'; body.id='grpbody-'+group.ids[0]; head.setAttribute('aria-controls',body.id);
+  head.addEventListener('click',()=>{ const closed=wrap.classList.toggle('closed'); head.setAttribute('aria-expanded',String(!closed)); });
+  wrap.appendChild(head); wrap.appendChild(body); controls.appendChild(wrap);
   group.ids.forEach(id=>{ const cfg=CFG[id]; const row=document.createElement('div'); row.className='ctrl'; row.id='row-'+id;
     const lab=document.createElement('span'); lab.className='ctrl-label'; lab.textContent=cfg.label;
     const slider=document.createElement('input'); slider.type='range'; slider.id='s-'+id; slider.className='cslider';
     slider.min=cfg.min; slider.max=cfg.max; slider.step=cfg.step; slider.value=state[id]; slider.style.accentColor=group.color;
+    slider.setAttribute('aria-label', cfg.label+' — '+group.title);
     const nw=document.createElement('span'); nw.className='num';
-    const num=document.createElement('input'); num.className='cnum'; num.id='p-'+id; num.value=state[id]; num.style.color=group.color; nw.appendChild(num);
+    const num=document.createElement('input'); num.className='cnum'; num.id='p-'+id; num.value=state[id]; num.style.color=group.color; num.inputMode='decimal'; num.setAttribute('aria-label', cfg.label+' value'); nw.appendChild(num);
     const spin=document.createElement('span'); spin.className='spin';
     const up=document.createElement('button'); up.type='button'; up.className='up'; up.tabIndex=-1; up.textContent='▲';
     const dn=document.createElement('button'); dn.type='button'; dn.className='dn'; dn.tabIndex=-1; dn.textContent='▼';
@@ -403,12 +417,14 @@ GROUPS.forEach(group=>{
     hold(up,1); hold(dn,-1); }); });
 function syncWidgets(){ for(const id of Object.keys(CFG)){ widgets[id].slider.value=state[id]; widgets[id].num.value=state[id]; } }
 
+function syncPresetAria(){ document.querySelectorAll('.preset').forEach(x=>x.setAttribute('aria-pressed',String(x.classList.contains('active')))); }
 document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.preset').forEach(x=>x.classList.remove('active')); b.classList.add('active');
-  state.rw=+b.dataset.w; state.rh=+b.dataset.h; syncWidgets(); buildScene(false); }));
+  document.querySelectorAll('.preset').forEach(x=>x.classList.toggle('active',x===b)); syncPresetAria();
+  state.rw=+b.dataset.w; state.rh=+b.dataset.h; syncWidgets(); requestBuild(false); }));
 document.getElementById('reset-btn').addEventListener('click',()=>{ Object.assign(state,DEFAULTS); syncWidgets();
-  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',+b.dataset.w===DEFAULTS.rw&&+b.dataset.h===DEFAULTS.rh)); buildScene(true); });
-document.getElementById('frame-btn').addEventListener('click',()=>buildScene(true));
+  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',+b.dataset.w===DEFAULTS.rw&&+b.dataset.h===DEFAULTS.rh)); syncPresetAria(); requestBuild(true); });
+document.getElementById('frame-btn').addEventListener('click',()=>requestBuild(true));
+syncPresetAria();
 
 // ── Observer + drag controls ──────────────────────────────────────────────────
 let drag=false, pX=0, pY=0, pinch=null, dragMode=null; const el=renderer.domElement;
@@ -447,7 +463,7 @@ el.addEventListener('touchend',()=>{ drag=false; pinch=null; },{passive:false});
 const panelBody=document.getElementById('panel-body'), toggleArrow=document.getElementById('toggle-arrow');
 function docked(){ return window.matchMedia('(min-width:860px) and (min-aspect-ratio:1/1)').matches; }
 function syncArrow(open){ toggleArrow.innerHTML=(open||docked())?'&#9650;':'&#9660;'; }
-document.getElementById('panel-toggle').addEventListener('click',()=>{ const o=panelBody.classList.toggle('open'); syncArrow(o); setTimeout(resizeRenderer,320); });
+document.getElementById('panel-toggle').addEventListener('click',e=>{ const o=panelBody.classList.toggle('open'); syncArrow(o); e.currentTarget.setAttribute('aria-expanded',String(o)); setTimeout(resizeRenderer,320); });
 syncArrow(true);
 
 // ── Init ────────────────────────────────────────────────────────────────────

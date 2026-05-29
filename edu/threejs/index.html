@@ -99,7 +99,7 @@ noindex: true
 
 <section class="content-section" aria-label="Zoom and clipping">
     <h2>Zoom is the lens moving; clipping is real</h2>
-    <p>With the screen pinned, the only way to change <code>fov</code> is to move the center of projection toward or away from it — that distance <em>is</em> the focal length. Wide fov pulls the apex in close and gathers a wide cone of the world onto the same screen (everything looks smaller); telephoto pushes it far away. The <code>near</code> and <code>far</code> values are clip walls: anything past them is genuinely cut away, not just hidden.</p>
+    <p>With the screen pinned, the only way to change <code>fov</code> is to move the center of projection toward or away from it — that distance <em>is</em> the focal length. Wide fov pulls the apex in close and gathers a wide cone of the world onto the same screen (everything looks smaller); telephoto pushes it far away. The <code>near</code> and <code>far</code> values are clip walls: anything past them is genuinely cut away, not just hidden. By default <code>near</code> sits right at the screen, so everything you see is behind it — pull <code>near</code> inward and objects between the lens and the screen pop into view.</p>
 
     <div class="tj-try"><strong>Try it:</strong> change <code>fov</code> and watch the apex slide along the axis — that's a zoom lens. Then pull <code>far</code> inward until a pot loses its back to the clip plane.</div>
 </section>
