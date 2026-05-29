@@ -3,108 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Three.js Camera & Frustum Visualizer</title>
+<title>Three.js Render Pipeline Visualizer</title>
 <style>
   :root {
-    --bg:#0b0b0f; --surface:#111118; --border:rgba(255,255,255,0.07);
-    --dim:rgba(255,255,255,0.22); --param:#ffd166; --code-bg:#0d0d15; --teapot:#63d6c0;
+    --bg:#0d1320; --surface:#121a2b; --surface2:#0f1726; --border:rgba(255,255,255,0.08);
+    --dim:rgba(255,255,255,0.26); --text:rgba(226,232,244,0.9);
+    --c-screen:#d8def0; --c-lens:#ffd166; --c-view:#ff8c42;
+    --c-x:#d06a78; --c-y:#5bbf7a; --c-z:#4a9edd; --c-teapot:#4fd1c5; --c-amphora:#e87fa6;
+    --code-bg:#0a101b;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { width:100%; height:100%; }
-  body { background:var(--bg); overflow:hidden; font-family:'Courier New', monospace; color:#ccc; }
+  body { background:var(--bg); overflow:hidden; font-family:'Courier New',monospace; color:var(--text); }
 
   #app { width:100%; height:100%; display:flex; flex-direction:column; }
   #viewport { flex:1 1 auto; position:relative; overflow:hidden; min-height:0; min-width:0; touch-action:none; }
   #viewport canvas { display:block; position:absolute; top:0; left:0; touch-action:none; }
 
   #legend {
-    position:absolute; top:12px; left:12px; font-size:9.5px; letter-spacing:0.06em; line-height:1.9;
-    pointer-events:none; z-index:5; background:rgba(11,11,15,0.45); padding:6px 8px; border-radius:4px;
+    position:absolute; top:10px; left:10px; font-size:9.5px; letter-spacing:0.04em; line-height:1.85;
+    pointer-events:none; z-index:5; background:rgba(13,19,32,0.55); padding:6px 9px; border-radius:5px; border:1px solid var(--border);
   }
   .leg { display:flex; align-items:center; gap:6px; }
   .ldot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-  #hint {
-    position:absolute; top:12px; right:12px; font-size:9px; opacity:0.28; letter-spacing:0.08em;
-    text-transform:uppercase; pointer-events:none; text-align:right; line-height:1.9; z-index:5;
-  }
+  #hint { position:absolute; top:10px; right:10px; font-size:8.5px; opacity:0.3; letter-spacing:0.08em;
+    text-transform:uppercase; pointer-events:none; text-align:right; line-height:1.9; z-index:5; }
 
-  #panel-wrap {
-    position:relative; z-index:20; background:var(--surface);
-    border-top:1px solid var(--border); flex-shrink:0; display:flex; flex-direction:column;
-  }
-  #panel-toggle {
-    width:100%; background:none; border:none; border-bottom:1px solid var(--border);
-    color:var(--dim); font-family:'Courier New',monospace; font-size:10px; letter-spacing:0.12em;
-    text-transform:uppercase; padding:9px 16px; cursor:pointer; text-align:left;
-    display:flex; justify-content:space-between; align-items:center; transition:color 0.2s; flex-shrink:0;
-  }
-  #panel-toggle:hover { color:rgba(255,255,255,0.5); }
+  #panel-wrap { position:relative; z-index:20; background:var(--surface); border-top:1px solid var(--border);
+    flex-shrink:0; display:flex; flex-direction:column; }
+  #panel-toggle { width:100%; background:none; border:none; border-bottom:1px solid var(--border); color:var(--dim);
+    font-family:inherit; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; padding:9px 16px; cursor:pointer;
+    text-align:left; display:flex; justify-content:space-between; align-items:center; transition:color 0.2s; flex-shrink:0; }
+  #panel-toggle:hover { color:rgba(255,255,255,0.55); }
   #panel-body { max-height:0; overflow:hidden; transition:max-height 0.3s ease; display:flex; flex-direction:column; min-height:0; }
-  #panel-body.open { max-height:64vh; }
+  #panel-body.open { max-height:66vh; }
 
   #presets { display:flex; gap:6px; padding:10px 16px 8px; flex-wrap:wrap; border-bottom:1px solid var(--border); flex-shrink:0; }
-  .preset {
-    font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.07em; padding:4px 10px;
-    border:1px solid rgba(255,255,255,0.12); background:none; color:var(--dim); cursor:pointer; border-radius:2px; transition:all 0.15s;
-  }
+  .preset { font-family:inherit; font-size:9.5px; letter-spacing:0.06em; padding:4px 10px; border:1px solid rgba(255,255,255,0.12);
+    background:none; color:var(--dim); cursor:pointer; border-radius:3px; transition:all 0.15s; }
   .preset:hover { border-color:rgba(255,255,255,0.3); color:#fff; }
-  .preset.active { border-color:var(--param); color:var(--param); background:rgba(255,209,102,0.07); }
+  .preset.active { border-color:var(--c-lens); color:var(--c-lens); background:rgba(255,209,102,0.08); }
 
-  #code-block {
-    padding:14px 16px; font-size:12px; line-height:2.1; color:rgba(220,225,255,0.5);
-    background:var(--code-bg); white-space:pre; flex-shrink:0; border-bottom:1px solid var(--border);
-    overflow-x:auto; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.18) var(--code-bg);
-  }
-  #code-block::-webkit-scrollbar { height:8px; }
-  #code-block::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.14); border-radius:4px; }
-  .kw { color:rgba(150,170,255,0.7); } .fn { color:rgba(120,210,255,0.75); } .cv { color:var(--param); }
+  #code-block { padding:14px 16px; font-size:12px; line-height:1.95; color:rgba(220,225,255,0.45);
+    background:var(--code-bg); white-space:pre; flex-shrink:0; border-bottom:1px solid var(--border); overflow-x:auto;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.18) var(--code-bg); }
+  #code-block::-webkit-scrollbar { height:8px; } #code-block::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.14); border-radius:4px; }
+  .kw { color:rgba(150,170,255,0.7); } .fn { color:rgba(120,210,255,0.72); } .cm { color:rgba(255,255,255,0.18); }
+  .cv { cursor:pointer; border-bottom:1px dotted transparent; transition:border-color 0.15s; }
+  .cv:hover { border-bottom-color:currentColor; }
 
-  #controls {
-    flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 16px 12px;
-    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.18) var(--surface);
-  }
-  #controls::-webkit-scrollbar { width:10px; }
-  #controls::-webkit-scrollbar-track { background:var(--surface); }
+  #controls { flex:1 1 auto; min-height:0; overflow-y:auto; padding:4px 16px 10px;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.18) var(--surface); }
+  #controls::-webkit-scrollbar { width:10px; } #controls::-webkit-scrollbar-track { background:var(--surface); }
   #controls::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.14); border-radius:5px; border:2px solid var(--surface); }
-  #controls::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,0.26); }
-  .ctrl-group { font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:var(--dim); margin:14px 0 6px; }
-  .ctrl-group:first-child { margin-top:6px; }
-  .ctrl { margin-bottom:9px; }
+  .grp { border-bottom:1px solid var(--border); }
+  .grp-head { display:flex; align-items:center; gap:8px; padding:10px 2px 8px; cursor:pointer; font-size:9.5px;
+    letter-spacing:0.13em; text-transform:uppercase; color:var(--dim); }
+  .grp-head .swatch { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
+  .grp-head .arrow { margin-left:auto; transition:transform 0.2s; opacity:0.5; }
+  .grp.closed .arrow { transform:rotate(-90deg); }
+  .grp-body { overflow:hidden; }
+  .grp.closed .grp-body { display:none; }
+  .ctrl { margin:0 0 9px; }
   .ctrl-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .ctrl-label { font-size:11px; color:#b9c0d6; }
-  .cnum {
-    color:var(--param); background:rgba(255,209,102,0.08); border:none; border-bottom:1px solid rgba(255,209,102,0.35);
-    font-family:'Courier New',monospace; font-size:11.5px; outline:none; width:52px; padding:1px 2px;
-    text-align:center; transition:background 0.15s, border-color 0.15s;
-  }
-  .cnum:focus { background:rgba(255,209,102,0.18); border-bottom-color:var(--param); }
+  .ctrl-label { font-size:11px; color:#aeb6cc; }
+  .cnum { color:var(--c-lens); background:rgba(255,255,255,0.05); border:none; border-bottom:1px solid rgba(255,255,255,0.2);
+    font-family:inherit; font-size:11.5px; outline:none; width:52px; padding:1px 2px; text-align:center; }
+  .cnum:focus { background:rgba(255,255,255,0.1); }
   .num { display:inline-flex; align-items:center; }
   .spin { display:inline-flex; flex-direction:column; margin-left:3px; }
-  .spin button {
-    font-family:'Courier New',monospace; font-size:9px; line-height:1; width:17px; height:11px; padding:0; margin:0;
-    display:flex; align-items:center; justify-content:center; background:rgba(255,209,102,0.12); color:var(--param);
-    border:1px solid rgba(255,209,102,0.4); cursor:pointer; user-select:none; transition:background 0.12s;
-  }
-  .spin button:hover { background:rgba(255,209,102,0.32); }
-  .spin button:active { background:rgba(255,209,102,0.5); }
+  .spin button { font-family:inherit; font-size:9px; line-height:1; width:16px; height:11px; padding:0; margin:0;
+    display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.06); color:#aeb6cc;
+    border:1px solid rgba(255,255,255,0.18); cursor:pointer; user-select:none; }
+  .spin button:hover { background:rgba(255,255,255,0.16); }
   .spin .up { border-radius:3px 3px 0 0; border-bottom:none; } .spin .dn { border-radius:0 0 3px 3px; }
   .cslider { -webkit-appearance:none; appearance:none; width:100%; height:4px; margin-top:6px; border-radius:2px;
-    background:rgba(255,255,255,0.12); outline:none; accent-color:var(--param); }
-  .cslider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:13px; height:13px; border-radius:50%;
-    background:var(--param); cursor:pointer; border:none; }
-  .cslider::-moz-range-thumb { width:13px; height:13px; border-radius:50%; background:var(--param); cursor:pointer; border:none; }
+    background:rgba(255,255,255,0.12); outline:none; }
+  .cslider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:13px; height:13px; border-radius:50%; cursor:pointer; border:none; }
+  .cslider::-moz-range-thumb { width:13px; height:13px; border-radius:50%; cursor:pointer; border:none; }
+  .pulse { animation:pulse 0.9s ease; }
+  @keyframes pulse { 0%,100%{ background:transparent; } 25%{ background:rgba(255,209,102,0.18); } }
 
   #reset-row { padding:10px 16px 14px; background:var(--surface); flex-shrink:0; display:flex; gap:8px; border-top:1px solid var(--border); }
-  #reset-row button {
-    font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:0.08em; padding:6px 12px;
-    border:1px solid rgba(255,255,255,0.14); background:none; color:var(--dim); cursor:pointer; border-radius:2px;
-    transition:all 0.15s; text-transform:uppercase;
-  }
-  #reset-row button:hover { border-color:rgba(255,255,255,0.35); color:#fff; }
+  #reset-row button { font-family:inherit; font-size:9.5px; letter-spacing:0.08em; padding:6px 12px; border:1px solid rgba(255,255,255,0.16);
+    background:none; color:var(--dim); cursor:pointer; border-radius:3px; transition:all 0.15s; text-transform:uppercase; }
+  #reset-row button:hover { border-color:rgba(255,255,255,0.38); color:#fff; }
 
-  @media (min-width: 820px) and (min-aspect-ratio: 1/1) {
+  @media (min-width: 860px) and (min-aspect-ratio: 1/1) {
     #app { flex-direction: row; }
-    #panel-wrap { width:400px; flex-shrink:0; border-top:none; border-left:1px solid var(--border); height:100%; }
+    #panel-wrap { width:420px; flex-shrink:0; border-top:none; border-left:1px solid var(--border); height:100%; }
     #panel-toggle { border-bottom:1px solid var(--border); }
     #panel-body { flex:1 1 auto; }
     #panel-body.open { max-height:none; }
@@ -116,23 +103,18 @@
 <div id="app">
   <div id="viewport">
     <div id="legend">
-      <div class="leg"><div class="ldot" style="background:#fff"></div><span style="opacity:.5">browser (0,0) — top-left</span></div>
-      <div class="leg"><div class="ldot" style="background:#e05555"></div><span style="opacity:.6">browser X → (pixels)</span></div>
-      <div class="leg"><div class="ldot" style="background:#4ec97a"></div><span style="opacity:.6">browser Y ↓ (pixels)</span></div>
-      <div class="leg"><div class="ldot" style="background:#9d7fff"></div><span style="opacity:.55">three.js X → (units)</span></div>
-      <div class="leg"><div class="ldot" style="background:#6fffa8"></div><span style="opacity:.55">three.js Y ↑ (units)</span></div>
-      <div class="leg"><div class="ldot" style="background:#4a9edd"></div><span style="opacity:.6">three.js Z ↗ (toward viewer)</span></div>
-      <div class="leg"><div class="ldot" style="background:#f0a030"></div><span style="opacity:.6">camera + frustum</span></div>
-      <div class="leg"><div class="ldot" style="background:#63d6c0"></div><span style="opacity:.6">teapot + camera's rendered view</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--c-screen)"></div><span>the screen (the only real thing)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--c-lens)"></div><span>center of projection + frustum</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--c-view)"></div><span>view / line of sight</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--c-teapot)"></div><span>teapot (construct)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--c-amphora)"></div><span>amphora (construct)</span></div>
+      <div class="leg"><div class="ldot" style="background:var(--c-z)"></div><span>world axes (three.js units)</span></div>
     </div>
     <div id="hint">drag · rotate<br>scroll/pinch · zoom</div>
   </div>
 
   <div id="panel-wrap">
-    <button id="panel-toggle">
-      <span>// scene setup</span>
-      <span id="toggle-arrow">&#9650;</span>
-    </button>
+    <button id="panel-toggle"><span>// scene setup</span><span id="toggle-arrow">&#9650;</span></button>
     <div id="panel-body" class="open">
       <div id="presets">
         <button class="preset active" data-w="1920" data-h="1080">16:9</button>
@@ -141,28 +123,24 @@
         <button class="preset" data-w="1000" data-h="1000">1:1</button>
         <button class="preset" data-w="2560" data-h="1080">21:9</button>
       </div>
-      <div id="code-block"><span class="kw">const</span> width  = <span class="cv" id="cv-rw">1920</span>;
-<span class="kw">const</span> height = <span class="cv" id="cv-rh">1080</span>;
+      <div id="code-block"><span class="cm">// the canvas — the only real output</span>
+<span class="kw">const</span> width = <span class="cv" data-id="rw">1920</span>, height = <span class="cv" data-id="rh">1080</span>;
 renderer.<span class="fn">setSize</span>(width, height);
 
-<span class="kw">const</span> fov    = <span class="cv" id="cv-fov">75</span>;
-<span class="kw">const</span> aspect = width / height;
-<span class="kw">const</span> near   = <span class="cv" id="cv-near">0.1</span>;
-<span class="kw">const</span> far    = <span class="cv" id="cv-far">1000</span>;
-<span class="kw">const</span> camera = <span class="kw">new</span> <span class="fn">THREE.PerspectiveCamera</span>(fov, aspect, near, far);
+<span class="cm">// the lens (projection)</span>
+<span class="kw">const</span> camera = <span class="kw">new</span> <span class="fn">THREE.PerspectiveCamera</span>(
+  <span class="cv" data-id="fov">75</span>, width / height, <span class="cv" data-id="near">0.1</span>, <span class="cv" data-id="far">1000</span>);
 
-<span class="kw">const</span> camX = <span class="cv" id="cv-cx">0</span>, camY = <span class="cv" id="cv-cy">0</span>, camZ = <span class="cv" id="cv-cz">5</span>;
-camera.<span class="fn">position</span>.set(camX, camY, camZ);
+<span class="cm">// the view (where the world sits)</span>
+camera.<span class="fn">position</span>.set(<span class="cv" data-id="cx">0</span>, <span class="cv" data-id="cy">0</span>, <span class="cv" data-id="cz">5</span>);
+camera.<span class="fn">lookAt</span>(<span class="cv" data-id="lx">0</span>, <span class="cv" data-id="ly">0</span>, <span class="cv" data-id="lz">0</span>);
 
-<span class="kw">const</span> lookX = <span class="cv" id="cv-lx">0</span>, lookY = <span class="cv" id="cv-ly">0</span>, lookZ = <span class="cv" id="cv-lz">0</span>;
-camera.<span class="fn">lookAt</span>(lookX, lookY, lookZ);
-
-<span class="kw">const</span> teapot = <span class="kw">new</span> <span class="fn">THREE.Mesh</span>(geometry, material);
-teapot.<span class="fn">position</span>.set(<span class="cv" id="cv-tx">0</span>, <span class="cv" id="cv-ty">0</span>, <span class="cv" id="cv-tz">-4</span>);
-scene.<span class="fn">add</span>(teapot);
+<span class="cm">// two independent objects</span>
+teapot.<span class="fn">position</span>.set(<span class="cv" data-id="tx">-1.5</span>, <span class="cv" data-id="ty">0</span>, <span class="cv" data-id="tz">-4</span>);  teapot.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="ts">1</span>);
+amphora.<span class="fn">position</span>.set(<span class="cv" data-id="ax">1.8</span>, <span class="cv" data-id="ay">-0.6</span>, <span class="cv" data-id="az">-5</span>); amphora.<span class="fn">scale</span>.<span class="fn">setScalar</span>(<span class="cv" data-id="as">1</span>);
 </div>
       <div id="controls"></div>
-      <div id="reset-row"><button id="reset-btn">↺ reset defaults</button> <button id="frame-btn">⊕ frame view</button></div>
+      <div id="reset-row"><button id="reset-btn">↺ reset</button> <button id="frame-btn">⊕ frame view</button></div>
     </div>
   </div>
 </div>
@@ -173,378 +151,305 @@ scene.<span class="fn">add</span>(teapot);
 <script type="module">
 import * as THREE from 'three';
 
-// ── Renderer / observer camera ────────────────────────────────────────────
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const COL = { screen:0xd8def0, lens:0xffd166, view:0xff8c42, x:0xd06a78, y:0x5bbf7a, z:0x4a9edd, teapot:0x4fd1c5, amphora:0xe87fa6 };
+const SCREEN_H = 4;   // fixed screen half-height (diagram units) — the anchor that never moves
+
+// ── Renderer + observer camera ───────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.localClippingEnabled = true;
 const viewport = document.getElementById('viewport');
 viewport.appendChild(renderer.domElement);
 
-const viewCam = new THREE.PerspectiveCamera(45, 1, 0.001, 100000);
+const viewCam = new THREE.PerspectiveCamera(45, 1, 0.01, 100000);
 const scene = new THREE.Scene();
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(5, 8, 6); scene.add(dl);
-const dl2 = new THREE.DirectionalLight(0xffffff, 0.35); dl2.position.set(-4, 2, -6); scene.add(dl2);
+scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+const dlA = new THREE.DirectionalLight(0xffffff, 0.6); dlA.position.set(6,9,8); scene.add(dlA);
 const g = new THREE.Group(); scene.add(g);
 
 function resizeRenderer(){
-  const w = viewport.clientWidth, h = viewport.clientHeight;
-  if (w === 0 || h === 0) return;
-  renderer.setSize(w, h); viewCam.aspect = w / h; viewCam.updateProjectionMatrix();
+  const w = viewport.clientWidth, h = viewport.clientHeight; if (!w || !h) return;
+  renderer.setSize(w, h); viewCam.aspect = w/h; viewCam.updateProjectionMatrix();
 }
 
-// ── Parameter model + UI config ──────────────────────────────────────────────
-const DEFAULTS = { rw:1920, rh:1080, fov:75, near:0.1, far:1000, cx:0, cy:0, cz:5, lx:0, ly:0, lz:0, tx:0, ty:0, tz:-4 };
-const CFG = {
-  rw:{label:'width', min:320,max:3840,step:10}, rh:{label:'height',min:240,max:2160,step:10},
-  fov:{label:'fov',min:10,max:150,step:1}, near:{label:'near',min:0.01,max:20,step:0.01}, far:{label:'far',min:1,max:2000,step:10},
-  cx:{label:'camX',min:-15,max:15,step:0.5}, cy:{label:'camY',min:-15,max:15,step:0.5}, cz:{label:'camZ',min:-20,max:20,step:0.5},
-  lx:{label:'lookX',min:-15,max:15,step:0.5}, ly:{label:'lookY',min:-15,max:15,step:0.5}, lz:{label:'lookZ',min:-15,max:15,step:0.5},
-  tx:{label:'teapotX',min:-10,max:10,step:0.5}, ty:{label:'teapotY',min:-10,max:10,step:0.5}, tz:{label:'teapotZ',min:-14,max:2,step:0.5},
-};
-const GROUPS = [
-  ['renderer (pixels)', ['rw','rh']],
-  ['lens', ['fov','near','far']],
-  ['camera.position', ['cx','cy','cz']],
-  ['camera.lookAt', ['lx','ly','lz']],
-  ['subject (teapot)', ['tx','ty','tz']],
-];
-const state = { ...DEFAULTS };
-const fmt = v => (+(+v).toFixed(4)).toString();
+// ── Offscreen render (the actual image the camera produces) ───────────────────
+const capScene = new THREE.Scene(); capScene.background = new THREE.Color(0x070b14);
+capScene.add(new THREE.AmbientLight(0xffffff, 0.7));
+const capDir = new THREE.DirectionalLight(0xffffff, 0.9); capDir.position.set(3,6,8); capScene.add(capDir);
+const rt = new THREE.WebGLRenderTarget(640, 360); rt.texture.colorSpace = THREE.SRGBColorSpace;
 
-function getParams(){
-  const p = { ...state };
-  p.rw = Math.max(1, p.rw); p.rh = Math.max(1, p.rh);
-  p.fov = Math.min(179, Math.max(1, p.fov));
-  p.near = Math.max(0.0001, p.near);
-  p.far = Math.max(p.near + 0.001, p.far);
-  return p;
+// ── Geometry: teapot (CDN, defensive) + amphora (lathe = potter's wheel) ──────
+function amphoraGeometry(){
+  const p = [[0.02,0.0],[0.28,0.05],[0.5,0.35],[0.82,0.95],[1.0,1.6],[0.9,2.25],[0.62,2.95],[0.42,3.45],[0.46,3.85],[0.62,4.2],[0.5,4.25]];
+  const pts = p.map(([r,y]) => new THREE.Vector2(r, y));
+  const geo = new THREE.LatheGeometry(pts, 24);
+  geo.center();                       // centre vertically about the origin
+  geo.computeBoundingBox();
+  return geo;
 }
-function updateCodeDisplay(){
-  for (const k of Object.keys(DEFAULTS)){
-    const span = document.getElementById('cv-' + k);
-    if (span) span.textContent = fmt(state[k]);
-  }
-}
-
-// Fixed reference screen — sized so the DEFAULT camera frames it exactly.
-const SCREEN_HH = Math.tan(75 * Math.PI / 180 / 2) * 5;
-
-// ── Utah teapot + offscreen render target (defensive load) ───────────────────
-const TEAPOT_ROT = new THREE.Euler(0.15, -0.6, 0);   // a fixed pose so the spout/handle read clearly
 let teapotGeo = null;
-const capScene = new THREE.Scene();
-capScene.background = new THREE.Color(0x0a0a16);
-capScene.add(new THREE.AmbientLight(0xffffff, 0.65));
-const capDir = new THREE.DirectionalLight(0xffffff, 0.85); capDir.position.set(3, 6, 8); capScene.add(capDir);
-const rt = new THREE.WebGLRenderTarget(640, 360);
-rt.texture.colorSpace = THREE.SRGBColorSpace;
-let capTeapot = null;
+const amphoraGeo = amphoraGeometry();
 try {
   const { TeapotGeometry } = await import('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/geometries/TeapotGeometry.js');
-  teapotGeo = new TeapotGeometry(1.5, 8);
-  capTeapot = new THREE.Mesh(teapotGeo, new THREE.MeshStandardMaterial({ color:0x63d6c0, roughness:0.45, metalness:0.1 }));
-  capScene.add(capTeapot);
-} catch (e) { console.warn('TeapotGeometry unavailable:', e); }
+  teapotGeo = new TeapotGeometry(0.9, 8); teapotGeo.computeBoundingBox();
+} catch (e) { console.warn('TeapotGeometry unavailable, using a sphere stand-in', e); teapotGeo = new THREE.SphereGeometry(1,20,16); teapotGeo.computeBoundingBox(); }
 
-// ── Mesh helpers ─────────────────────────────────────────────────────────────
-function basicMat(color, opacity=1){ return new THREE.MeshBasicMaterial({ color, transparent:opacity<1, opacity, side:THREE.DoubleSide }); }
-function lineMat(color, opacity=1, dashed=false){
-  return dashed ? new THREE.LineDashedMaterial({ color, transparent:true, opacity, dashSize:0.18, gapSize:0.12 })
-                : new THREE.LineBasicMaterial({ color, transparent:opacity<1, opacity });
+const capTeapot  = new THREE.Mesh(teapotGeo,  new THREE.MeshStandardMaterial({ color:COL.teapot,  roughness:0.5, metalness:0.05 }));
+const capAmphora = new THREE.Mesh(amphoraGeo, new THREE.MeshStandardMaterial({ color:COL.amphora, roughness:0.6, metalness:0.05, side:THREE.DoubleSide }));
+capScene.add(capTeapot, capAmphora);
+
+// ── Parameter model + control config ─────────────────────────────────────────
+const DEFAULTS = { rw:1920, rh:1080, fov:75, near:0.1, far:1000, cx:0, cy:0, cz:5, lx:0, ly:0, lz:0,
+                   tx:-1.5, ty:0, tz:-4, ts:1, ax:1.8, ay:-0.6, az:-5, as:1 };
+const state = { ...DEFAULTS };
+const CFG = {
+  rw:{label:'width', min:320,max:3840,step:10}, rh:{label:'height',min:240,max:2160,step:10},
+  fov:{label:'fov',min:10,max:150,step:1}, near:{label:'near',min:0.05,max:20,step:0.05}, far:{label:'far',min:1,max:2000,step:1},
+  cx:{label:'camX',min:-15,max:15,step:0.5}, cy:{label:'camY',min:-15,max:15,step:0.5}, cz:{label:'camZ',min:-25,max:25,step:0.5},
+  lx:{label:'lookX',min:-15,max:15,step:0.5}, ly:{label:'lookY',min:-15,max:15,step:0.5}, lz:{label:'lookZ',min:-15,max:15,step:0.5},
+  tx:{label:'posX',min:-12,max:12,step:0.5}, ty:{label:'posY',min:-12,max:12,step:0.5}, tz:{label:'posZ',min:-18,max:2,step:0.5}, ts:{label:'scale',min:0.2,max:4,step:0.1},
+  ax:{label:'posX',min:-12,max:12,step:0.5}, ay:{label:'posY',min:-12,max:12,step:0.5}, az:{label:'posZ',min:-18,max:2,step:0.5}, as:{label:'scale',min:0.2,max:4,step:0.1},
+};
+const GROUPS = [
+  { title:'renderer (pixels)', color:'var(--c-screen)', ids:['rw','rh'] },
+  { title:'lens · projection', color:'var(--c-lens)',   ids:['fov','near','far'] },
+  { title:'view · camera',     color:'var(--c-view)',   ids:['cx','cy','cz','lx','ly','lz'] },
+  { title:'object · teapot',   color:'var(--c-teapot)', ids:['tx','ty','tz','ts'] },
+  { title:'object · amphora',  color:'var(--c-amphora)',ids:['ax','ay','az','as'] },
+];
+const fmt = v => (+(+v).toFixed(4)).toString();
+function getParams(){
+  const p = { ...state };
+  p.rw=Math.max(1,p.rw); p.rh=Math.max(1,p.rh); p.fov=Math.min(170,Math.max(2,p.fov));
+  p.near=Math.max(0.01,p.near); p.far=Math.max(p.near+0.01,p.far);
+  return p;
 }
-function line(pts, color, opacity=1, dashed=false){
-  const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat(color, opacity, dashed));
-  if (dashed) l.computeLineDistances(); return l;
-}
-function rectLoop(c, color, opacity=1, dashed=false){ return line([...c, c[0]], color, opacity, dashed); }
-function sphere(pos, r, color, opacity=1){ const m=new THREE.Mesh(new THREE.SphereGeometry(r,16,16), basicMat(color,opacity)); m.position.copy(pos); return m; }
-function arrow(from, to, color, S, opacity=1){
-  const grp=new THREE.Group(); const m=basicMat(color,opacity);
-  const dir=to.clone().sub(from).normalize(); const len=from.distanceTo(to);
-  const headLen=Math.min(S*0.05, len*0.32); const r=S*0.006; const sl=Math.max(0.0001, len-headLen);
-  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(r,r,sl,10), m);
-  shaft.position.copy(from.clone().add(dir.clone().multiplyScalar(sl/2)));
-  shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir); grp.add(shaft);
-  const cone=new THREE.Mesh(new THREE.ConeGeometry(r*2.6, headLen, 14), m);
-  cone.position.copy(to.clone().sub(dir.clone().multiplyScalar(headLen/2)));
-  cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir); grp.add(cone);
+
+// ── Mesh helpers ──────────────────────────────────────────────────────────────
+function lineMat(c,o=1,dash=false){ return dash ? new THREE.LineDashedMaterial({color:c,transparent:true,opacity:o,dashSize:0.22,gapSize:0.14})
+                                                 : new THREE.LineBasicMaterial({color:c,transparent:o<1,opacity:o}); }
+function line(pts,c,o=1,dash=false){ const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat(c,o,dash)); if(dash) l.computeLineDistances(); return l; }
+function rect(corners,c,o=1,dash=false){ return line([...corners,corners[0]],c,o,dash); }
+function dot(pos,r,c,o=1){ const m=new THREE.Mesh(new THREE.SphereGeometry(r,12,12), new THREE.MeshBasicMaterial({color:c,transparent:o<1,opacity:o})); m.position.copy(pos); return m; }
+function arrow(from,to,c,r,o=1){
+  const grp=new THREE.Group(); const m=new THREE.MeshBasicMaterial({color:c,transparent:o<1,opacity:o});
+  const dir=to.clone().sub(from); const len=dir.length(); if(len<1e-6) return grp; dir.normalize();
+  const head=Math.min(len*0.3, r*7), sl=Math.max(0.001,len-head);
+  const sh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,sl,8), m); sh.position.copy(from.clone().addScaledVector(dir,sl/2)); sh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir); grp.add(sh);
+  const cn=new THREE.Mesh(new THREE.ConeGeometry(r*2.4,head,12), m); cn.position.copy(to.clone().addScaledVector(dir,-head/2)); cn.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir); grp.add(cn);
   return grp;
 }
-function label(text, color, h){
-  const c=document.createElement('canvas'); c.width=512; c.height=160;
-  const ctx=c.getContext('2d'); ctx.font='bold 50px Courier New'; ctx.fillStyle=color;
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  const lines=text.split('\n'); lines.forEach((t,i)=> ctx.fillText(t, 256, 80+(i-(lines.length-1)/2)*58));
+function sprite(text,color,h){
+  const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d');
+  x.font='bold 44px Courier New'; x.fillStyle=color; x.textAlign='center'; x.textBaseline='middle';
+  text.split('\n').forEach((t,i,a)=>x.fillText(t,256,64+(i-(a.length-1)/2)*50));
   const tex=new THREE.CanvasTexture(c); tex.anisotropy=4;
-  const sp=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false }));
-  sp.scale.set(h*(512/160), h, 1); return sp;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false})); s.scale.set(h*4,h,1); return s;
 }
-function addLabel(text, pos, color, h){ const s=label(text,color,h); s.position.copy(pos); g.add(s); }
+function addLabel(t,pos,color,h){ const s=sprite(t,color,h); s.position.copy(pos); g.add(s); }
+function cssHex(c){ return '#'+c.toString(16).padStart(6,'0'); }
 
-// ── Observer orbit (target fixed at screen centre) ───────────────────────────
-const orbitTarget = new THREE.Vector3(0,0,0);
-let orbitRadius = 28;
-let spherical = { theta:0.62, phi:1.05 };
+// ── Observer orbit ─────────────────────────────────────────────────────────────
+const orbitTarget = new THREE.Vector3(0,0,-1);
+let orbitRadius = 26, spherical = { theta:0.7, phi:1.08 };
 function updateViewCam(){
   viewCam.position.set(
     orbitTarget.x + orbitRadius*Math.sin(spherical.phi)*Math.sin(spherical.theta),
     orbitTarget.y + orbitRadius*Math.cos(spherical.phi),
-    orbitTarget.z + orbitRadius*Math.sin(spherical.phi)*Math.cos(spherical.theta)
-  );
+    orbitTarget.z + orbitRadius*Math.sin(spherical.phi)*Math.cos(spherical.theta));
   viewCam.lookAt(orbitTarget);
 }
 
-// ── Build scene ────────────────────────────────────────────────────────────────
+// ── Build ────────────────────────────────────────────────────────────────────
+const objMatTeapot = [], objMatAmphora = [];   // track wireframe materials for clip-plane updates
 function buildScene(reframe=false){
-  updateCodeDisplay();
   while (g.children.length){
-    const c = g.children[0]; g.remove(c);
-    if (c.geometry && c.geometry !== teapotGeo) c.geometry.dispose();
-    const mats = Array.isArray(c.material) ? c.material : (c.material ? [c.material] : []);
-    mats.forEach(m => { if (m.map && m.map !== rt.texture) m.map.dispose?.(); m.dispose?.(); });
+    const c=g.children[0]; g.remove(c);
+    if (c.geometry && c.geometry!==teapotGeo && c.geometry!==amphoraGeo) c.geometry.dispose();
+    (Array.isArray(c.material)?c.material:(c.material?[c.material]:[])).forEach(m=>{ if(m.map && m.map!==rt.texture) m.map.dispose?.(); m.dispose?.(); });
   }
-
   const p = getParams();
-  const aspect = p.rw / p.rh;
-  const fovRad = p.fov * Math.PI / 180;
-  const hhS = SCREEN_HH, hwS = SCREEN_HH * aspect;
-  const right = new THREE.Vector3(1,0,0), up = new THREE.Vector3(0,1,0);
-  const corner = (sx, sy) => new THREE.Vector3(sx*hwS, sy*hhS, 0);
-  const screenCorners = [corner(-1,-1), corner(1,-1), corner(1,1), corner(-1,1)];
-  const S = Math.max(2*hwS, 2*hhS, 8);
-  const lblH = S * 0.05;
+  const aspect = p.rw/p.rh, fovRad = p.fov*Math.PI/180;
+  const H = SCREEN_H, W = H*aspect;
+  const focal = H / Math.tan(fovRad/2);            // apex-to-screen distance = focal length
+  const apex = new THREE.Vector3(0,0,focal);
 
-  const C = new THREE.Vector3(p.cx, p.cy, p.cz);
-  const L = new THREE.Vector3(p.lx, p.ly, p.lz);
+  // real camera → view matrix; diagram = shift(+focal in z) ∘ view
   const simCam = new THREE.PerspectiveCamera(p.fov, aspect, p.near, p.far);
-  simCam.position.copy(C); simCam.lookAt(L);
-  simCam.updateMatrixWorld(true); simCam.updateProjectionMatrix();
-  const M = simCam.matrixWorld; const ce = M.elements;
-  const camFwd = new THREE.Vector3(-ce[8], -ce[9], -ce[10]).normalize();
-  let D = C.distanceTo(L); if (D < 1e-4) D = 1;
+  simCam.position.set(p.cx,p.cy,p.cz); simCam.lookAt(p.lx,p.ly,p.lz); simCam.updateMatrixWorld(true); simCam.updateProjectionMatrix();
+  const diag = new THREE.Matrix4().makeTranslation(0,0,focal).multiply(simCam.matrixWorldInverse);
 
-  const halfH = d => Math.tan(fovRad/2) * d, halfW = d => halfH(d) * aspect;
-  const cornersAt = d => {
-    const hw=halfW(d), hh=halfH(d);
-    return [ new THREE.Vector3(-hw,-hh,-d), new THREE.Vector3(hw,-hh,-d),
-             new THREE.Vector3(hw,hh,-d),  new THREE.Vector3(-hw,hh,-d) ].map(v => v.applyMatrix4(M));
-  };
+  // ---- offscreen render of the true image ----
+  capTeapot.position.set(p.tx,p.ty,p.tz); capTeapot.scale.setScalar(p.ts);
+  capAmphora.position.set(p.ax,p.ay,p.az); capAmphora.scale.setScalar(p.as);
+  const texH=480, texW=Math.max(2,Math.round(texH*aspect)); rt.setSize(texW,texH);
+  renderer.setRenderTarget(rt); renderer.setClearColor(0x070b14,1); renderer.clear(); renderer.render(capScene, simCam); renderer.setRenderTarget(null);
 
-  // ── Render the camera's actual view of the teapot into the offscreen target ──
-  let screenMat;
-  if (teapotGeo){
-    capTeapot.position.set(p.tx, p.ty, p.tz);
-    capTeapot.rotation.copy(TEAPOT_ROT);
-    const texH = 480, texW = Math.max(2, Math.round(texH * aspect));
-    rt.setSize(texW, texH);
-    renderer.setRenderTarget(rt);
-    renderer.clear();
-    renderer.render(capScene, simCam);
-    renderer.setRenderTarget(null);
-    screenMat = new THREE.MeshBasicMaterial({ map: rt.texture, toneMapped:false, side:THREE.DoubleSide });
-  } else {
-    screenMat = basicMat(0x13132a, 0.6);
+  // ---- the screen (fixed, shows the render) ----
+  const corner=(sx,sy)=>new THREE.Vector3(sx*W, sy*H, 0);
+  const sc=[corner(-1,-1),corner(1,-1),corner(1,1),corner(-1,1)];
+  const screen=new THREE.Mesh(new THREE.PlaneGeometry(2*W,2*H), new THREE.MeshBasicMaterial({map:rt.texture,toneMapped:false,side:THREE.DoubleSide,transparent:true,opacity:0.82,depthWrite:false}));
+  g.add(screen); g.add(rect(sc, COL.screen, 0.9));
+  addLabel('(0,0) px', corner(-1,1).clone().add(new THREE.Vector3(-0.06*W,0.12*H,0)), 'rgba(216,222,240,0.55)', H*0.16);
+  addLabel(`(${p.rw}, ${p.rh}) px`, corner(1,-1).clone().add(new THREE.Vector3(0.02*W,-0.12*H,0)), 'rgba(216,222,240,0.5)', H*0.16);
+  addLabel('the screen', new THREE.Vector3(0,-H-0.22*H,0), cssHex(COL.screen), H*0.17);
+
+  // ---- apex + frustum ----
+  g.add(dot(apex, H*0.05, COL.lens));
+  addLabel('center of\nprojection', apex.clone().add(new THREE.Vector3(0,H*0.22,0)), cssHex(COL.lens), H*0.15);
+  // frustum edges apex → screen corners → far
+  const farD = Math.min(p.far, focal*2.4);                // visual cap for the drawn far plane
+  const zFar = focal - farD;
+  const farCorners = sc.map(cc=>{ const d=cc.clone().sub(apex); const t=(zFar-apex.z)/d.z; return apex.clone().addScaledVector(d,t); });
+  sc.forEach((cc,i)=> g.add(line([apex, farCorners[i]], COL.lens, 0.22)));
+  g.add(rect(farCorners, COL.lens, 0.18, true));
+
+  // ---- near / far clip planes (drawn) + real clipping of the wireframes ----
+  const planeAt = (distFromApex)=>{ const z=focal-distFromApex, hh=H*distFromApex/focal, hw=hh*aspect, ctr=new THREE.Vector3(0,0,z);
+    return [new THREE.Vector3(-hw,-hh,z),new THREE.Vector3(hw,-hh,z),new THREE.Vector3(hw,hh,z),new THREE.Vector3(-hw,hh,z)]; };
+  g.add(rect(planeAt(Math.min(p.near, farD*0.98)), COL.lens, 0.5));
+  addLabel('near', planeAt(Math.min(p.near,farD*0.98))[2].clone().add(new THREE.Vector3(0,0.04*H,0)), 'rgba(255,209,102,0.6)', H*0.12);
+  addLabel(farD<p.far?`far (${fmt(p.far)}, capped)`:'far', farCorners[2].clone().add(new THREE.Vector3(0,0.04*H,0)), 'rgba(255,209,102,0.4)', H*0.12);
+  // clip planes in diagram space (constant z = view axis)
+  const clipNear = new THREE.Plane(new THREE.Vector3(0,0,-1), focal - p.near);   // keep z <= focal-near
+  const clipFar  = new THREE.Plane(new THREE.Vector3(0,0, 1), -(focal - p.far)); // keep z >= focal-far
+
+  // ---- world axes (the authoring frame), transformed into the diagram ----
+  const wO=new THREE.Vector3(0,0,0).applyMatrix4(diag);
+  const axLen=2.2;
+  [['x',new THREE.Vector3(axLen,0,0),COL.x],['y',new THREE.Vector3(0,axLen,0),COL.y],['z',new THREE.Vector3(0,0,axLen),COL.z]].forEach(([n,v,c])=>{
+    const tip=v.clone().applyMatrix4(diag); g.add(arrow(wO,tip,c,H*0.012,0.85)); addLabel('+'+n.toUpperCase(), tip.clone().lerp(wO,-0.12), cssHex(c), H*0.13);
+  });
+  g.add(dot(wO, H*0.03, COL.z, 0.9)); addLabel('world (0,0,0)', wO.clone().add(new THREE.Vector3(0,-0.18*H,0)), 'rgba(170,182,210,0.7)', H*0.12);
+
+  // ---- the two objects (wireframe, in diagram space) + sightlines ----
+  function placeObject(geo, col, pos, scl, name){
+    const mat=new THREE.MeshBasicMaterial({color:col, wireframe:true, transparent:true, opacity:0.7, clippingPlanes:[clipNear, clipFar]});
+    (name==='teapot'?objMatTeapot:objMatAmphora).length=0; (name==='teapot'?objMatTeapot:objMatAmphora).push(mat);
+    const m=new THREE.Mesh(geo, mat);
+    const world=new THREE.Matrix4().compose(new THREE.Vector3(pos[0],pos[1],pos[2]), new THREE.Quaternion(), new THREE.Vector3(scl,scl,scl));
+    m.matrixAutoUpdate=false; m.matrix.copy(new THREE.Matrix4().multiplyMatrices(diag, world)); m.matrixWorldNeedsUpdate=true;
+    g.add(m);
+    // sightlines from apex through the object's bounding-box corners to the screen
+    const bb=geo.boundingBox, mm=m.matrix;
+    const cs=[];
+    for(const X of [bb.min.x,bb.max.x]) for(const Y of [bb.min.y,bb.max.y]) for(const Z of [bb.min.z,bb.max.z]) cs.push(new THREE.Vector3(X,Y,Z).applyMatrix4(mm));
+    cs.forEach(pt=>{
+      g.add(line([apex, pt], col, 0.13));
+      const d=pt.clone().sub(apex); if(Math.abs(d.z)>1e-6){ const t=(0-apex.z)/d.z; if(t>0){ const hit=apex.clone().addScaledVector(d,t); g.add(dot(hit, H*0.012, col, 0.85)); } }
+    });
+    const lc=new THREE.Vector3(0,0,0).applyMatrix4(mm);
+    addLabel(name, lc.clone().add(new THREE.Vector3(0, (bb.max.y-bb.min.y)*scl*0.6+0.3, 0)), cssHex(col), H*0.14);
   }
+  placeObject(teapotGeo, COL.teapot, [p.tx,p.ty,p.tz], p.ts, 'teapot');
+  placeObject(amphoraGeo, COL.amphora, [p.ax,p.ay,p.az], p.as, 'amphora');
 
-  // ── Screen (fixed) — textured with the rendered frame ────────────────────────
-  const screen = new THREE.Mesh(new THREE.PlaneGeometry(2*hwS, 2*hhS), screenMat);
-  g.add(screen);
-  g.add(rectLoop(screenCorners, 0x5a5a8a, 0.95));
+  // ---- line of sight (the camera's view axis) ----
+  g.add(line([apex, new THREE.Vector3(0,0,focal-Math.min(farD,10))], COL.view, 0.45, true));
 
-  // ── Browser pixel ruling ──────────────────────────────────────────────────────
-  g.add(arrow(corner(-1.14,1), corner(1.14,1), 0xe05555, S, 0.9));
-  g.add(arrow(corner(-1,1.14), corner(-1,-1.14), 0x4ec97a, S, 0.9));
-  g.add(sphere(corner(-1,1), S*0.02, 0xffffff));
-  addLabel('(0,0) px', corner(-1,1).clone().add(right.clone().multiplyScalar(-0.18*hwS)).add(up.clone().multiplyScalar(0.18*hhS)), 'rgba(255,255,255,0.8)', lblH*0.85);
-  addLabel('+X px', corner(1.14,1).clone().add(right.clone().multiplyScalar(0.12*hwS)), '#e05555', lblH*0.85);
-  addLabel('+Y px ↓', corner(-1,-1.14).clone().add(up.clone().multiplyScalar(-0.10*hhS)), '#4ec97a', lblH*0.85);
-
-  // ── three.js unit ruling (slightly in front so it overlays the image) ─────────
-  g.add(arrow(corner(-1.18,0).setZ(0.02), corner(1.18,0).setZ(0.02), 0x9d7fff, S, 0.7));
-  g.add(arrow(corner(0,-1.18).setZ(0.02), corner(0,1.18).setZ(0.02), 0x6fffa8, S, 0.7));
-  g.add(sphere(new THREE.Vector3(0,0,0.02), S*0.02, 0x9d7fff, 0.9));
-  addLabel('+X', corner(1.18,0).clone().add(right.clone().multiplyScalar(0.12*hwS)), 'rgba(157,127,255,0.9)', lblH*0.85);
-  addLabel('+Y', corner(0,1.18).clone().add(up.clone().multiplyScalar(0.10*hhS)), 'rgba(111,255,168,0.9)', lblH*0.85);
-
-  [
-    { p:corner(-1, 1), px:`(0, 0)`,             tj:`(${fmt(-hwS)}, ${fmt(hhS)})` },
-    { p:corner( 1, 1), px:`(${p.rw}, 0)`,       tj:`(${fmt(hwS)}, ${fmt(hhS)})` },
-    { p:corner( 1,-1), px:`(${p.rw}, ${p.rh})`, tj:`(${fmt(hwS)}, ${fmt(-hhS)})` },
-    { p:corner(-1,-1), px:`(0, ${p.rh})`,       tj:`(${fmt(-hwS)}, ${fmt(-hhS)})` },
-  ].forEach(ci => addLabel(ci.px + '\n' + ci.tj, ci.p.clone().setZ(0.03), 'rgba(255,255,255,0.6)', lblH*0.56));
-
-  // ── three.js +Z axis ──────────────────────────────────────────────────────────
-  const zLen = hhS;   // keep the Z axis a tidy indicator on the screen, not a line spanning the scene
-  g.add(arrow(new THREE.Vector3(0,0,-zLen*0.15), new THREE.Vector3(0,0,zLen), 0x4a9edd, S, 0.9));
-  addLabel('+Z (toward viewer)', new THREE.Vector3(0, 0.12*hhS, zLen), '#4a9edd', lblH*0.7);
-
-  // ── Simulated camera body ─────────────────────────────────────────────────────
-  const camGrp = new THREE.Group(); camGrp.position.copy(C);
-  const b = S * 0.05;
-  const bodyMat = new THREE.MeshLambertMaterial({ color:0xf0a030 });
-  camGrp.add(new THREE.Mesh(new THREE.BoxGeometry(b*1.5, b, b*0.85), bodyMat));
-  const lens = new THREE.Mesh(new THREE.CylinderGeometry(b*0.3, b*0.34, b*0.6, 16), new THREE.MeshLambertMaterial({ color:0x1a2980 }));
-  lens.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), camFwd);
-  lens.position.copy(camFwd.clone().multiplyScalar(b*0.5)); camGrp.add(lens);
-  const vf = new THREE.Mesh(new THREE.BoxGeometry(b*0.4, b*0.35, b*0.3), bodyMat); vf.position.set(0, b*0.62, 0); camGrp.add(vf);
-  g.add(camGrp);
-  addLabel(`camera (${fmt(p.cx)}, ${fmt(p.cy)}, ${fmt(p.cz)})`, C.clone().add(up.clone().multiplyScalar(b*2.6)), '#f0a030', lblH*0.78);
-
-  // ── Frustum ─────────────────────────────────────────────────────────────────
-  const nearCorners = cornersAt(p.near);
-  const capFar = Math.min(p.far, D * 3.2);
-  const farCorners = cornersAt(capFar);
-  g.add(rectLoop(nearCorners, 0xf0a030, 0.8));
-  g.add(rectLoop(farCorners, 0xf0a030, 0.22, true));
-  for (let i=0;i<4;i++) g.add(line([C, farCorners[i]], 0xf0a030, 0.22));
-  addLabel('near', nearCorners[2].clone().add(up.clone().multiplyScalar(0.05*hhS)), 'rgba(240,160,48,0.7)', lblH*0.56);
-  addLabel(capFar < p.far ? `far (${fmt(p.far)}, clipped)` : 'far', farCorners[2].clone().add(up.clone().multiplyScalar(0.04*hhS)), 'rgba(240,160,48,0.45)', lblH*0.56);
-  g.add(line([C, L], 0xf0a030, 0.55, true));
-  g.add(sphere(L, S*0.014, 0xf0a030, 0.7));
-  addLabel(`lookAt (${fmt(p.lx)}, ${fmt(p.ly)}, ${fmt(p.lz)})`, L.clone().add(up.clone().multiplyScalar(-0.16*hhS)).add(right.clone().multiplyScalar(0.06*hwS)), 'rgba(240,160,48,0.7)', lblH*0.62);
-
-  // ── 3D teapot (solid) on the far side of the screen ──────────────────────────
-  if (teapotGeo){
-    const teapot = new THREE.Mesh(teapotGeo, new THREE.MeshBasicMaterial({ color:0x63d6c0, wireframe:true, transparent:true, opacity:0.7 }));
-    teapot.position.set(p.tx, p.ty, p.tz);
-    teapot.rotation.copy(TEAPOT_ROT);
-    g.add(teapot);
-    addLabel('teapot (3D construct)', new THREE.Vector3(p.tx, p.ty, p.tz).add(up.clone().multiplyScalar(1.9)), '#63d6c0', lblH*0.66);
-    addLabel('the screen shows this, as the camera sees it', new THREE.Vector3(0, -hhS*0.82, 0.06), 'rgba(154,255,232,0.8)', lblH*0.5);
+  updateCode();
+  if (reframe){
+    const span=Math.max(W*2, focal+farD*0.6, 12);
+    orbitTarget.set(0,0,(focal + (focal-farD))*0.12);
+    orbitRadius=span*1.15; updateViewCam();
   }
-
-  if (reframe){ orbitRadius = Math.max(S*1.9, C.length()*1.45, D*1.45); updateViewCam(); }
 }
 
-// ── Observer controls ──────────────────────────────────────────────────────────
-let dragging=false, prevX=0, prevY=0, prevPinch=null;
-const el = renderer.domElement;
-el.addEventListener('mousedown', e=>{ dragging=true; prevX=e.clientX; prevY=e.clientY; });
-window.addEventListener('mouseup', ()=> dragging=false);
-window.addEventListener('mousemove', e=>{
-  if(!dragging) return;
-  spherical.theta -= (e.clientX-prevX)*0.006;
-  spherical.phi = Math.max(0.05, Math.min(Math.PI-0.05, spherical.phi - (e.clientY-prevY)*0.006));
-  prevX=e.clientX; prevY=e.clientY; updateViewCam();
-});
-el.addEventListener('wheel', e=>{
-  e.preventDefault();
-  orbitRadius = Math.max(0.5, Math.min(100000, orbitRadius*(1+e.deltaY*0.001)));
-  updateViewCam();
-}, { passive:false });
-el.addEventListener('touchstart', e=>{
-  if(e.touches.length===1){ dragging=true; prevX=e.touches[0].clientX; prevY=e.touches[0].clientY; prevPinch=null; }
-  else if(e.touches.length===2){ dragging=false; const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY; prevPinch=Math.hypot(dx,dy); }
-}, { passive:false });
-el.addEventListener('touchmove', e=>{
-  e.preventDefault();
-  if(e.touches.length===1 && dragging){
-    spherical.theta -= (e.touches[0].clientX-prevX)*0.006;
-    spherical.phi = Math.max(0.05, Math.min(Math.PI-0.05, spherical.phi - (e.touches[0].clientY-prevY)*0.006));
-    prevX=e.touches[0].clientX; prevY=e.touches[0].clientY; updateViewCam();
-  } else if(e.touches.length===2 && prevPinch){
-    const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
-    const d=Math.hypot(dx,dy);
-    orbitRadius = Math.max(0.5, Math.min(100000, orbitRadius*(1+(prevPinch-d)*0.005)));
-    prevPinch=d; updateViewCam();
-  }
-}, { passive:false });
-el.addEventListener('touchend', ()=>{ dragging=false; prevPinch=null; }, { passive:false });
-
-// ── Build the control rows (slider + number + steppers) ──────────────────────
-const controls = document.getElementById('controls');
-const widgets = {};   // id -> { slider, num }
-function clamp(v, mn, mx){ return Math.max(mn, Math.min(mx, v)); }
-function roundStep(v, step){ const dec=(String(step).split('.')[1]||'').length; return +(+v).toFixed(dec); }
-
-function setValue(id, v, { fromNum=false } = {}){
-  const cfg = CFG[id];
-  v = roundStep(clamp(v, cfg.min, cfg.max), cfg.step);
-  state[id] = v;
-  const w = widgets[id];
-  w.slider.value = v;
-  if (!fromNum) w.num.value = v;     // don't fight the user mid-typing
-  buildScene(false);
-}
-
-GROUPS.forEach(([title, ids])=>{
-  const h = document.createElement('div'); h.className='ctrl-group'; h.textContent=title; controls.appendChild(h);
-  ids.forEach(id=>{
-    const cfg = CFG[id];
-    const row = document.createElement('div'); row.className='ctrl';
-    const top = document.createElement('div'); top.className='ctrl-top';
-    const lab = document.createElement('span'); lab.className='ctrl-label'; lab.textContent=cfg.label;
-    const numWrap = document.createElement('span'); numWrap.className='num';
-    const num = document.createElement('input'); num.className='cnum'; num.id='p-'+id;
-    num.value = state[id];
-    numWrap.appendChild(num);
-    top.appendChild(lab); top.appendChild(numWrap);
-    const slider = document.createElement('input');
-    slider.type='range'; slider.className='cslider'; slider.id='s-'+id;
-    slider.min=cfg.min; slider.max=cfg.max; slider.step=cfg.step; slider.value=state[id];
-    row.appendChild(top); row.appendChild(slider); controls.appendChild(row);
-    widgets[id] = { slider, num };
-
-    slider.addEventListener('input', ()=> setValue(id, parseFloat(slider.value)));
-    num.addEventListener('input', ()=>{ const v=parseFloat(num.value); if(isFinite(v)) setValue(id, v, { fromNum:true }); });
-    num.addEventListener('blur', ()=>{ num.value = state[id]; });
-    num.addEventListener('keydown', e=>{ if(e.key==='Enter') num.blur(); });
-
-    // ▲▼ steppers
-    const spin = document.createElement('span'); spin.className='spin';
-    const upB = document.createElement('button'); upB.type='button'; upB.className='up'; upB.tabIndex=-1; upB.textContent='▲';
-    const dnB = document.createElement('button'); dnB.type='button'; dnB.className='dn'; dnB.tabIndex=-1; dnB.textContent='▼';
-    spin.appendChild(upB); spin.appendChild(dnB); numWrap.appendChild(spin);
-    const hold = (btn, dir)=>{
-      let to, iv;
-      const tick = ()=> setValue(id, state[id] + dir*cfg.step);
-      const start = ev => { ev.preventDefault(); tick(); to=setTimeout(()=>{ iv=setInterval(tick, 80); }, 360); };
-      const stop = ()=>{ clearTimeout(to); clearInterval(iv); };
-      btn.addEventListener('mousedown', start);
-      btn.addEventListener('touchstart', start, { passive:false });
-      ['mouseup','mouseleave','touchend','touchcancel'].forEach(evn=>btn.addEventListener(evn, stop));
-    };
-    hold(upB, 1); hold(dnB, -1);
+// ── Code panel (live values + click-to-control) ──────────────────────────────
+function updateCode(){ for(const k of Object.keys(DEFAULTS)){ const el=document.querySelector(`.cv[data-id="${k}"]`); if(el) el.textContent=fmt(state[k]); } }
+document.querySelectorAll('.cv').forEach(el=>{
+  const id=el.dataset.id; const c=groupColorFor(id); el.style.color=c;
+  el.addEventListener('click', ()=>{
+    const row=document.getElementById('row-'+id); if(!row) return;
+    const grp=row.closest('.grp'); if(grp && grp.classList.contains('closed')) toggleGroup(grp);
+    row.scrollIntoView({block:'center', behavior:'smooth'}); row.classList.remove('pulse'); void row.offsetWidth; row.classList.add('pulse');
+    const num=document.getElementById('p-'+id); if(num) num.focus();
   });
 });
+function groupColorFor(id){ for(const grp of GROUPS) if(grp.ids.includes(id)) return grp.color; return 'var(--c-lens)'; }
 
-function syncAllWidgets(){
-  for (const id of Object.keys(CFG)){ widgets[id].slider.value = state[id]; widgets[id].num.value = state[id]; }
+// ── Build controls (collapsible, color-coded) ────────────────────────────────
+const controls=document.getElementById('controls'); const widgets={};
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function roundStep(v,s){ const d=(String(s).split('.')[1]||'').length; return +(+v).toFixed(d); }
+function setVal(id,v,fromNum=false){
+  const cfg=CFG[id]; v=roundStep(clamp(v,cfg.min,cfg.max),cfg.step); state[id]=v;
+  const w=widgets[id]; w.slider.value=v; if(!fromNum) w.num.value=v; buildScene(false);
 }
+function toggleGroup(grp){ grp.classList.toggle('closed'); }
+GROUPS.forEach(group=>{
+  const wrap=document.createElement('div'); wrap.className='grp';
+  const head=document.createElement('div'); head.className='grp-head';
+  head.innerHTML=`<span class="swatch" style="background:${group.color}"></span><span>${group.title}</span><span class="arrow">▾</span>`;
+  head.addEventListener('click', ()=>toggleGroup(wrap));
+  const body=document.createElement('div'); body.className='grp-body';
+  wrap.appendChild(head); wrap.appendChild(body); controls.appendChild(wrap);
+  group.ids.forEach(id=>{
+    const cfg=CFG[id]; const row=document.createElement('div'); row.className='ctrl'; row.id='row-'+id;
+    const top=document.createElement('div'); top.className='ctrl-top';
+    const lab=document.createElement('span'); lab.className='ctrl-label'; lab.textContent=cfg.label;
+    const nw=document.createElement('span'); nw.className='num';
+    const num=document.createElement('input'); num.className='cnum'; num.id='p-'+id; num.value=state[id]; num.style.color=group.color; nw.appendChild(num);
+    top.appendChild(lab); top.appendChild(nw);
+    const slider=document.createElement('input'); slider.type='range'; slider.id='s-'+id; slider.className='cslider';
+    slider.min=cfg.min; slider.max=cfg.max; slider.step=cfg.step; slider.value=state[id]; slider.style.accentColor=group.color;
+    row.appendChild(top); row.appendChild(slider); body.appendChild(row); widgets[id]={slider,num};
+    slider.addEventListener('input', ()=>setVal(id, parseFloat(slider.value)));
+    num.addEventListener('input', ()=>{ const v=parseFloat(num.value); if(isFinite(v)) setVal(id,v,true); });
+    num.addEventListener('blur', ()=>{ num.value=state[id]; });
+    num.addEventListener('keydown', e=>{ if(e.key==='Enter') num.blur(); });
+    const spin=document.createElement('span'); spin.className='spin';
+    const up=document.createElement('button'); up.type='button'; up.className='up'; up.tabIndex=-1; up.textContent='▲';
+    const dn=document.createElement('button'); dn.type='button'; dn.className='dn'; dn.tabIndex=-1; dn.textContent='▼';
+    spin.appendChild(up); spin.appendChild(dn); nw.appendChild(spin);
+    const hold=(btn,dir)=>{ let to,iv; const tick=()=>setVal(id, state[id]+dir*cfg.step);
+      const start=e=>{ e.preventDefault(); tick(); to=setTimeout(()=>iv=setInterval(tick,80),360); };
+      const stop=()=>{ clearTimeout(to); clearInterval(iv); };
+      btn.addEventListener('mousedown',start); btn.addEventListener('touchstart',start,{passive:false});
+      ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev=>btn.addEventListener(ev,stop)); };
+    hold(up,1); hold(dn,-1);
+  });
+});
+function syncWidgets(){ for(const id of Object.keys(CFG)){ widgets[id].slider.value=state[id]; widgets[id].num.value=state[id]; } }
 
 // ── Presets / reset / frame ──────────────────────────────────────────────────
-document.querySelectorAll('.preset').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.preset').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    state.rw = +btn.dataset.w; state.rh = +btn.dataset.h;
-    syncAllWidgets(); buildScene(false);
-  });
-});
-document.getElementById('reset-btn').addEventListener('click', ()=>{
-  Object.assign(state, DEFAULTS);
-  syncAllWidgets();
+document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.preset').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  state.rw=+b.dataset.w; state.rh=+b.dataset.h; syncWidgets(); buildScene(false);
+}));
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  Object.assign(state,DEFAULTS); syncWidgets();
   document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active', +b.dataset.w===DEFAULTS.rw && +b.dataset.h===DEFAULTS.rh));
   buildScene(false);
 });
-document.getElementById('frame-btn').addEventListener('click', ()=> buildScene(true));
+document.getElementById('frame-btn').addEventListener('click',()=>buildScene(true));
+
+// ── Observer controls ─────────────────────────────────────────────────────────
+let drag=false, pX=0, pY=0, pinch=null; const el=renderer.domElement;
+el.addEventListener('mousedown',e=>{ drag=true; pX=e.clientX; pY=e.clientY; });
+window.addEventListener('mouseup',()=>drag=false);
+window.addEventListener('mousemove',e=>{ if(!drag) return; spherical.theta-=(e.clientX-pX)*0.006;
+  spherical.phi=clamp(spherical.phi-(e.clientY-pY)*0.006,0.05,Math.PI-0.05); pX=e.clientX; pY=e.clientY; updateViewCam(); });
+el.addEventListener('wheel',e=>{ e.preventDefault(); orbitRadius=clamp(orbitRadius*(1+e.deltaY*0.001),1,100000); updateViewCam(); },{passive:false});
+el.addEventListener('touchstart',e=>{ if(e.touches.length===1){ drag=true; pX=e.touches[0].clientX; pY=e.touches[0].clientY; pinch=null; }
+  else if(e.touches.length===2){ drag=false; pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); } },{passive:false});
+el.addEventListener('touchmove',e=>{ e.preventDefault();
+  if(e.touches.length===1&&drag){ spherical.theta-=(e.touches[0].clientX-pX)*0.006; spherical.phi=clamp(spherical.phi-(e.touches[0].clientY-pY)*0.006,0.05,Math.PI-0.05); pX=e.touches[0].clientX; pY=e.touches[0].clientY; updateViewCam(); }
+  else if(e.touches.length===2&&pinch){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); orbitRadius=clamp(orbitRadius*(1+(pinch-d)*0.005),1,100000); pinch=d; updateViewCam(); } },{passive:false});
+el.addEventListener('touchend',()=>{ drag=false; pinch=null; },{passive:false});
 
 // ── Panel toggle ──────────────────────────────────────────────────────────────
-const panelBody = document.getElementById('panel-body');
-const toggleArrow = document.getElementById('toggle-arrow');
-function isDocked(){ return window.matchMedia('(min-width: 820px) and (min-aspect-ratio: 1/1)').matches; }
-function syncArrow(open){ toggleArrow.innerHTML = (open || isDocked()) ? '&#9650;' : '&#9660;'; }
-document.getElementById('panel-toggle').addEventListener('click', ()=>{
-  const open = panelBody.classList.toggle('open'); syncArrow(open); setTimeout(resizeRenderer, 320);
-});
+const panelBody=document.getElementById('panel-body'), toggleArrow=document.getElementById('toggle-arrow');
+function docked(){ return window.matchMedia('(min-width:860px) and (min-aspect-ratio:1/1)').matches; }
+function syncArrow(open){ toggleArrow.innerHTML=(open||docked())?'&#9650;':'&#9660;'; }
+document.getElementById('panel-toggle').addEventListener('click',()=>{ const o=panelBody.classList.toggle('open'); syncArrow(o); setTimeout(resizeRenderer,320); });
 syncArrow(true);
 
 // ── Init ────────────────────────────────────────────────────────────────────
-const ro = new ResizeObserver(()=> resizeRenderer()); ro.observe(viewport);
-window.addEventListener('resize', ()=>{ resizeRenderer(); syncArrow(panelBody.classList.contains('open')); });
-resizeRenderer();
-buildScene(true);
+new ResizeObserver(()=>resizeRenderer()).observe(viewport);
+window.addEventListener('resize',()=>{ resizeRenderer(); syncArrow(panelBody.classList.contains('open')); });
+resizeRenderer(); buildScene(true);
 (function animate(){ requestAnimationFrame(animate); renderer.render(scene, viewCam); })();
 </script>
 </body>

@@ -1,87 +1,126 @@
 ---
 layout: default
-title: Three.js Camera & Frustum Visualizer — Schuck Data
-description: An interactive tool for seeing how three.js code — camera position, field of view, aspect, near/far — shapes the view frustum and maps 3D space onto the 2D canvas.
-social_title: How three.js code moves the camera
+title: What reaches the screen — a three.js render visualizer — Schuck Data
+description: An interactive, first-principles look at how three.js turns a 3D scene into the 2D pixels on your screen — the view transform, the projection, the frustum, and the perspective divide.
+social_title: What actually reaches the screen
 noindex: true
 ---
 
 <style>
-    .tj-embed {
-        margin: 1.5rem 0 0.75rem;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 8px;
-        overflow: hidden;
-        background: #0b0b0f;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-    }
-    .tj-embed iframe {
-        display: block;
-        width: 100%;
-        height: min(80vh, 760px);
-        min-height: 480px;
-        border: 0;
-    }
-    .tj-cap {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        line-height: 1.6;
-        max-width: 44rem;
-        margin-bottom: 2.5rem;
-    }
-    @media (max-width: 48rem) {
-        .tj-embed iframe { height: 78vh; min-height: 420px; }
-    }
-    .tj-params { margin: 0.5rem 0 0; }
-    .tj-params dt {
-        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-        font-size: 0.9rem; color: var(--text); margin-top: 1rem;
-    }
-    .tj-params dd {
-        margin: 0.2rem 0 0; color: var(--text-muted);
-        line-height: 1.6; max-width: 42rem;
-    }
+  .tj-embed { margin:1.5rem 0 0.75rem; border:1px solid rgba(255,255,255,0.1); border-radius:8px; overflow:hidden;
+    background:#0d1320; box-shadow:0 10px 40px rgba(0,0,0,0.35); }
+  .tj-embed iframe { display:block; width:100%; height:min(82vh, 780px); min-height:500px; border:0; }
+  .tj-cap { font-size:0.85rem; color:var(--text-muted); line-height:1.6; max-width:44rem; margin-bottom:2.5rem; }
+
+  .tj-pipe { margin:1.25rem 0 0.5rem; width:100%; height:auto; }
+  .tj-pipe text { font-family:Inter, system-ui, sans-serif; }
+
+  .tj-try { border-left:2px solid var(--accent, #6fb1ff); background:rgba(255,255,255,0.03);
+    padding:0.7rem 1rem; margin:1rem 0 1.5rem; border-radius:0 6px 6px 0; font-size:0.92rem; line-height:1.6; color:var(--text-muted); }
+  .tj-try strong { color:var(--text); }
+
+  .tj-params { margin:0.5rem 0 0; }
+  .tj-params dt { font-family:ui-monospace, Menlo, Consolas, monospace; font-size:0.9rem; color:var(--text); margin-top:1rem; }
+  .tj-params dd { margin:0.2rem 0 0; color:var(--text-muted); line-height:1.6; max-width:42rem; }
+  @media (max-width:48rem){ .tj-embed iframe { height:80vh; min-height:440px; } }
 </style>
 
 <section class="hero" aria-labelledby="tj-heading">
     <p class="hero-eyebrow">Edu · Three.js</p>
-    <h1 id="tj-heading" class="hero-h1">See how the code moves the camera.</h1>
-    <p class="hero-lead">A <code>PerspectiveCamera</code> is just six numbers — field of view, aspect, near, far, position, and where it looks. This tool draws all of them at once so you can watch the view frustum open up, intersect the screen, and decide what your canvas actually shows.</p>
+    <h1 id="tj-heading" class="hero-h1">What actually reaches the screen.</h1>
+    <p class="hero-lead">The screen is the only real thing — a grid of pixels. The 3D world, the camera, the frustum: all of it is a coordinate <em>construct</em> whose only job is to decide what color each pixel becomes. This tool lets you watch that decision happen.</p>
 </section>
 
 <section aria-label="Interactive visualizer">
     <div class="tj-embed">
         <iframe src="/edu/threejs/visualizer.html?v={{ site.time | date: '%s' }}"
-                title="Three.js camera and frustum visualizer"
-                loading="lazy"
-                allowfullscreen></iframe>
+                title="Three.js render pipeline visualizer" loading="lazy" allowfullscreen></iframe>
     </div>
-    <p class="tj-cap">The <strong>scene setup</strong> panel shows the equivalent three.js code; the controls beneath it drive each variable with a slider, a number field, or the ▲▼ buttons, and the model updates live. Drag to orbit, scroll or pinch to zoom. On a phone the panel sits below the view; on a wide screen it docks to the side.</p>
+    <p class="tj-cap">The screen never moves — it's the fixed canvas. Everything you can drag is a construct hanging in front of it. Sightlines run from the center of projection through each pot's corners to the dot it lands on. Drag to orbit, scroll or pinch to zoom; the panel docks to the side on a wide screen, below on a phone.</p>
 </section>
 
-<section class="content-section" aria-label="How to read it">
-    <h2>How to read it</h2>
-    <p>Start from one idea: the <strong>screen is the only real thing here</strong>. It's the physical canvas — the pixels that actually reach you. Everything else — the camera, its <strong>frustum</strong>, the teapot, the axes — is a coordinate <em>construct</em> that exists only to explain what arrives on that surface. So the screen stays fixed, and the constructs move within the imagined space around it. This is the browser's own point of view: it never sees a 3D world, only the finished image.</p>
-    <p>The orange shape is the camera's <strong>frustum</strong>, its view volume from the near plane out to the far plane. Both the <strong>camera</strong> and the <strong>teapot</strong> can be moved with the controls — drag either through the scene and watch the rendered image on the screen update in step. At the default settings the frustum's edges meet the screen's corners, which is what "correctly framed" looks like.</p>
-    <p>The screen carries two coordinate systems at once. In <strong>browser pixels</strong> the origin is the top-left corner, X runs right and Y runs <em>down</em>, ending at the <code>renderer.setSize</code> dimensions. In <strong>three.js units</strong> the origin is the center, X runs right and Y runs <em>up</em>. Reading the same corner in both systems is the whole point: it shows the conversion the renderer does on every frame.</p>
-    <p>Try pushing <code>fov</code> up and watch the frustum widen; pull the camera's <code>z</code> back and watch the teapot shrink on the screen; slide the <strong>teapot</strong> left or right and watch its image slide the opposite way; swap the aspect-ratio presets and watch the screen reshape. Use <strong>⊕ frame view</strong> to recenter your vantage if a construct wanders out of sight.</p>
-    <p>The image painted on the screen is the <em>actual</em> frame the camera renders — the teapot is drawn a second time, offscreen, through the simulated camera, and that result is mapped onto the screen. So it isn't an approximation of what the camera sees; it <em>is</em> what the camera sees.</p>
+<section class="content-section" aria-label="The pipeline">
+    <h2>The journey of a vertex</h2>
+    <p>Every corner of every pot takes the same trip each frame — and it's pure arithmetic, finished before a single pixel is painted. Nothing is ever drawn "flat" and then bent; the perspective is baked into each point up front, and only then is the triangle between the points filled in.</p>
+
+    <svg class="tj-pipe" viewBox="0 0 920 188" role="img" aria-label="Pipeline: local to world to eye to clip to NDC to pixels">
+      <defs>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.4)"/>
+        </marker>
+      </defs>
+      <!-- stage boxes -->
+      <g font-size="13" text-anchor="middle">
+        <g>
+          <rect x="6"   y="58" width="120" height="60" rx="7" fill="rgba(79,209,197,0.12)" stroke="#4fd1c5" stroke-width="1"/>
+          <text x="66" y="82" fill="#cfe9e6">local</text><text x="66" y="100" fill="rgba(255,255,255,0.45)" font-size="10">the pot's own coords</text>
+        </g>
+        <g>
+          <rect x="190" y="58" width="120" height="60" rx="7" fill="rgba(232,127,166,0.10)" stroke="#e87fa6" stroke-width="1"/>
+          <text x="250" y="82" fill="#f0cfdb">world</text><text x="250" y="100" fill="rgba(255,255,255,0.45)" font-size="10">scene coords</text>
+        </g>
+        <g>
+          <rect x="374" y="58" width="120" height="60" rx="7" fill="rgba(255,140,66,0.10)" stroke="#ff8c42" stroke-width="1"/>
+          <text x="434" y="82" fill="#ffd9bf">eye</text><text x="434" y="100" fill="rgba(255,255,255,0.45)" font-size="10">relative to camera</text>
+        </g>
+        <g>
+          <rect x="558" y="58" width="120" height="60" rx="7" fill="rgba(255,209,102,0.12)" stroke="#ffd166" stroke-width="1"/>
+          <text x="618" y="78" fill="#ffe9b0">clip → NDC</text><text x="618" y="98" fill="rgba(255,255,255,0.45)" font-size="10">the −1…+1 cube</text>
+        </g>
+        <g>
+          <rect x="742" y="58" width="120" height="60" rx="7" fill="rgba(216,222,240,0.12)" stroke="#d8def0" stroke-width="1"/>
+          <text x="802" y="82" fill="#eef1f8">pixels</text><text x="802" y="100" fill="rgba(255,255,255,0.45)" font-size="10">the screen</text>
+        </g>
+      </g>
+      <!-- arrows + operations -->
+      <g font-size="10.5" text-anchor="middle" fill="rgba(255,255,255,0.6)">
+        <line x1="128" y1="88" x2="186" y2="88" stroke="rgba(255,255,255,0.35)" marker-end="url(#ar)"/>
+        <text x="157" y="44">model</text><text x="157" y="138" fill="rgba(255,255,255,0.38)">position · scale</text>
+        <line x1="312" y1="88" x2="370" y2="88" stroke="rgba(255,255,255,0.35)" marker-end="url(#ar)"/>
+        <text x="341" y="44">view</text><text x="341" y="138" fill="rgba(255,255,255,0.38)">camera pos · lookAt</text>
+        <line x1="496" y1="88" x2="554" y2="88" stroke="rgba(255,255,255,0.35)" marker-end="url(#ar)"/>
+        <text x="525" y="44">projection</text><text x="525" y="138" fill="rgba(255,255,255,0.38)">fov · near · far</text>
+        <line x1="680" y1="88" x2="738" y2="88" stroke="rgba(255,255,255,0.35)" marker-end="url(#ar)"/>
+        <text x="709" y="44">÷w, viewport</text><text x="709" y="138" fill="rgba(255,255,255,0.38)">width · height · Y-flip</text>
+      </g>
+    </svg>
+    <p>The divide marked <code>÷w</code> is the actual perspective — dividing each point by its own depth is what makes far things small. And the final <em>Y-flip</em> is the whole reason browser pixels count <em>down</em> from the top-left while three.js units count <em>up</em> from the center: it happens once, at the very last step.</p>
+
+    <div class="tj-try"><strong>Try it:</strong> follow one sightline from the center of projection to the dot it strikes on the screen. That convergence <em>is</em> the projection — drawn, not asserted.</div>
 </section>
 
-<section class="content-section" aria-label="What each number means">
-    <h2>What each number means</h2>
+<section class="content-section" aria-label="Camera versus world">
+    <h2>Move the camera, or move the world?</h2>
+    <p>Under the hood there's no camera that moves — the renderer puts the camera at the origin and transforms everything else to suit. That's why moving the camera one way and moving the entire world the opposite way produce identical pixels: the <code>view</code> step is literally the inverse of the camera's placement, applied to all geometry.</p>
+    <p>But "the whole world" is the catch. Moving the camera moves <em>everything together</em>. Moving a single object moves only it. That gap is the difference between a view transform and a model transform — which is exactly why there are two pots.</p>
+
+    <div class="tj-try"><strong>Try it:</strong> nudge <code>camX</code> — both pots slide across the screen together. Now nudge the amphora's <code>posX</code> — only the amphora moves. Same kind of motion, completely different meaning.</div>
+</section>
+
+<section class="content-section" aria-label="Zoom and clipping">
+    <h2>Zoom is the lens moving; clipping is real</h2>
+    <p>With the screen pinned, the only way to change <code>fov</code> is to move the center of projection toward or away from it — that distance <em>is</em> the focal length. Wide fov pulls the apex in close and gathers a wide cone of the world onto the same screen (everything looks smaller); telephoto pushes it far away. The <code>near</code> and <code>far</code> values are clip walls: anything past them is genuinely cut away, not just hidden.</p>
+
+    <div class="tj-try"><strong>Try it:</strong> change <code>fov</code> and watch the apex slide along the axis — that's a zoom lens. Then pull <code>far</code> inward until a pot loses its back to the clip plane.</div>
+</section>
+
+<section class="content-section" aria-label="Control reference">
+    <h2>What each control does</h2>
     <dl class="tj-params">
-        <dt><code>renderer.setSize(width, height)</code></dt>
-        <dd>The canvas size in pixels. Only the <em>ratio</em> matters here — it drives the aspect, which sets the screen's shape.</dd>
+        <dt><code>width</code> / <code>height</code></dt>
+        <dd>The canvas size in pixels. Their ratio sets the screen's shape (the aspect); the projection stretches horizontally to match so the image isn't distorted.</dd>
         <dt><code>fov</code></dt>
-        <dd>Vertical field of view, in degrees. Larger means a wider frustum and more of the scene squeezed into the frame.</dd>
-        <dt><code>aspect</code></dt>
-        <dd>Width ÷ height. Stretches the frustum horizontally so the image isn't distorted on a non-square canvas.</dd>
+        <dd>Vertical field of view in degrees — i.e. the focal length. Larger = wider cone, more world gathered onto the screen, smaller subjects.</dd>
         <dt><code>near</code> / <code>far</code></dt>
-        <dd>The closest and farthest distances the camera renders. Anything nearer than <code>near</code> or beyond <code>far</code> is clipped.</dd>
-        <dt><code>camera.position.set(x, y, z)</code></dt>
-        <dd>Where the camera sits in three.js world units. <code>+z</code> is toward the viewer, so the default <code>(0, 0, 5)</code> sits in front of the screen looking back at it.</dd>
-        <dt><code>camera.lookAt(x, y, z)</code></dt>
-        <dd>The point the camera aims at. The dashed line of sight runs from the camera to this target.</dd>
+        <dd>The clip walls. Geometry nearer than <code>near</code> or beyond <code>far</code> is removed before anything is drawn.</dd>
+        <dt><code>camera.position</code> · <code>camera.lookAt</code></dt>
+        <dd>The view. Together they place the whole world relative to the camera; editing them slides and turns <em>everything</em> at once.</dd>
+        <dt><code>teapot</code> / <code>amphora</code> · <code>position</code>, <code>scale</code></dt>
+        <dd>Per-object transforms. These move or resize one pot, leaving the rest of the world where it was.</dd>
     </dl>
+</section>
+
+<section class="content-section" aria-label="About the pots">
+    <h2>Why a teapot and an amphora</h2>
+    <p>The teapot is the <em>Utah teapot</em>, modeled by Martin Newell in 1975 and ever since the unofficial mascot of computer graphics — the "hello, world" of 3D. The amphora is built with a lathe: a 2D profile spun around an axis, which is exactly how a potter throws a vessel on a wheel. Two ways of making a pot, one fixed screen to land them on.</p>
 </section>
