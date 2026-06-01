@@ -1,25 +1,36 @@
 ---
 layout: default
 title: Contact — Schuck Data
-description: Get in touch with Schuck Data — email, call, or text.
+description: Get in touch with Schuck Data — start with the inquiry form, or email, call, or text.
 nav: contact
+redirect_from:
+  - /CONTACT/
 ---
+
+<style>
+  .form-embed { margin: 1.75rem 0 0; }
+  .form-embed iframe {
+    width: 100%; min-height: 1100px; border: 1px solid var(--border);
+    border-radius: 14px; background: #fff;
+  }
+  .form-fallback { margin-top: 0.85rem; font-size: 0.9375rem; color: var(--text-subtle); }
+</style>
 
 <section class="hero" aria-labelledby="contact-heading">
     <p class="hero-eyebrow">Contact</p>
 
     <h1 id="contact-heading" class="hero-h1">Let's talk about your data.</h1>
 
-    <p class="hero-lead">Schuck Data is open for inquiries. The quickest way to start is the inquiry form — it routes your request to the right place. Prefer a person? Email, call, or text works too.</p>
+    <p class="hero-lead">Schuck Data is open for inquiries. The quickest way to start is the inquiry form below — it routes your request to the right place. Prefer a person? Email, call, or text works just as well.</p>
 
-    <div class="contact-methods">
-        <!-- PRIMARY: client inquiry form. TODO before deploy: replace the href below with your
-             published Google Form link (see docs/forms-setup.md for the fields to create). -->
-        <a class="contact-method" href="https://forms.gle/REPLACE-WITH-CLIENT-INQUIRY-FORM" target="_blank" rel="noopener">
-            <span class="cm-label">Inquiry form</span>
-            <span class="cm-value">Start your inquiry →</span>
-            <span class="oarrow" aria-hidden="true">→</span>
-        </a>
+    <div class="form-embed">
+        <iframe
+            src="https://docs.google.com/forms/d/e/1FAIpQLScMQ_SyI1lmfqSPl1fGHNLdW8olA6vpDFKYL6n3IzC2EzIBRg/viewform?embedded=true"
+            title="Schuck Data inquiry form"
+            loading="lazy">
+            Loading…
+        </iframe>
+        <p class="form-fallback">Form not loading on your network? <a href="https://forms.gle/fX1kLua6dekHETae9" target="_blank" rel="noopener">Open it in a new tab</a>, or just email us below.</p>
     </div>
 
     <p class="contact-note">Prefer to reach out directly?</p>

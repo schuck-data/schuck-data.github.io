@@ -1,53 +1,109 @@
 ---
 layout: default
 title: Services — Schuck Data
-description: Dashboards, data pipelines, data quality, AI readiness, and statistical modeling.
+description: The full information pipeline — sampling, measurement, cleaning, databasing, analytics, reporting, and presentation — plus AI readiness and statistical modeling.
 nav: services
+redirect_from:
+  - /SERVICES/
+  - /WORK/
 ---
+
+<style>
+  /* Pipeline — a vertical list of stages, each with a one-line description.
+     Scoped to this page; reuses the site's surface/border tokens. */
+  .pipeline { list-style: none; margin: 1.75rem 0 0; padding: 0; }
+  .pipeline li {
+    display: grid; grid-template-columns: 1fr; gap: 0.15rem;
+    padding: 1rem 1.15rem; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface); margin-bottom: 0.7rem;
+  }
+  .pipeline .stage { font-weight: 600; color: var(--text-strong); letter-spacing: -0.01em; }
+  .pipeline .stage small { display: inline; font-weight: 500; color: var(--text-subtle); letter-spacing: 0; }
+  .pipeline .stage-do { color: var(--text-muted); font-size: 0.9375rem; line-height: 1.55; margin: 0; }
+  @media (min-width: 40rem) {
+    .pipeline li { grid-template-columns: 12rem 1fr; gap: 1.25rem; align-items: baseline; }
+  }
+  .offer-cta { margin-top: 1.5rem; }
+  .offer-cta a { font-weight: 600; }
+</style>
 
 <section class="hero" aria-labelledby="services-heading">
     <p class="hero-eyebrow">Services</p>
-    <h1 id="services-heading" class="hero-h1">Catching up, or getting ahead.</h1>
-    <p class="hero-lead">Whether something's broken and needs fixing or the fundamentals are solid and you want leverage, start with the path that fits.</p>
+    <h1 id="services-heading" class="hero-h1">The whole pipeline, end to end.</h1>
+    <p class="hero-lead">Schuck Data specializes in understanding, developing, and repairing each step of the information pipeline — from how data is collected to how it's finally understood. Whether your process has a crack in the foundation or just needs a better finish, we can help.</p>
 </section>
 
-<section class="content-section" aria-label="Catching Up services">
-    <span class="placeholder-note">Placeholder copy — draft</span>
-    <h2>Catching Up</h2>
-    <p>Something's broken, missing, or you're not sure where to start.</p>
-    <div class="svc-grid">
-        <div class="svc-item">
-            <h3>Fix a broken data pipeline</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-        </div>
-        <div class="svc-item">
-            <h3>Create a data dashboard</h3>
-            <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        </div>
-        <div class="svc-item">
-            <h3>Data Health Report</h3>
-            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
-        </div>
-    </div>
+<section class="content-section" aria-label="The information pipeline">
+    <h2>The pipeline</h2>
+    <p>Good data work isn't one step — it's a chain, and a break anywhere degrades everything downstream. We work across all seven stages.</p>
+
+    <ul class="pipeline">
+        <li>
+            <span class="stage">Sampling</span>
+            <p class="stage-do">Statistical methodology that ensures your data is representative before collection ever begins.</p>
+        </li>
+        <li>
+            <span class="stage">Measurement</span>
+            <p class="stage-do">Instrument design that captures what you actually need to know.</p>
+        </li>
+        <li>
+            <span class="stage">Data cleaning</span>
+            <p class="stage-do">Outlier identification and correction, so your analysis starts on solid ground.</p>
+        </li>
+        <li>
+            <span class="stage">Databasing</span>
+            <p class="stage-do">Normalization and architecture that make your data reliable and queryable.</p>
+        </li>
+        <li>
+            <span class="stage">Analytics</span>
+            <p class="stage-do">Modeling and forecasting that turn structured data into answers.</p>
+        </li>
+        <li>
+            <span class="stage">Reporting</span>
+            <p class="stage-do">Automated dashboards that replace manual, repeated work.</p>
+        </li>
+        <li>
+            <span class="stage">Presentation</span>
+            <p class="stage-do">At-a-glance design that communicates findings without a decoder ring.</p>
+        </li>
+    </ul>
 </section>
 
-<section class="content-section" aria-label="Getting Ahead services">
-    <h2>Getting Ahead</h2>
-    <p>The fundamentals are working and you're ready to get more out of your data.</p>
+<section class="content-section" aria-label="What we offer">
+    <h2>What we offer</h2>
+    <p>Our services range from quick data health reports, to development and delivery of custom report automations, to helping your organization build its own data department using your existing staff. Our goal is to get things working for you — so you don't need us anymore.</p>
+
     <div class="svc-grid">
         <div class="svc-item">
-            <h3>Prepare for AI</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <h3>Data Health Reports</h3>
+            <p>A front-to-back assessment of your data management process. We tell you what you're doing well, where the gaps are, and how to better leverage the information you already have. A good place to start when you're not sure where to begin.</p>
         </div>
         <div class="svc-item">
-            <h3>Risk analysis and statistical modeling</h3>
-            <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <h3>Report Automation &amp; Dynamic Dashboards</h3>
+            <p>We turn tedious, repeated manual reports into beautiful, automated visualizations — reclaiming hours of labor previously tied up in tedium. If your team is copy-pasting numbers into spreadsheets every week, this is for you.</p>
         </div>
         <div class="svc-item">
-            <h3>Rent-an-Expert data consulting</h3>
-            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+            <h3>Statistical Modeling &amp; Forecasting</h3>
+            <p>Regression, risk analysis, and scenario modeling — ways to put the data you already have to better use. We scope these engagements to your questions, not the other way around.</p>
+        </div>
+        <div class="svc-item">
+            <h3>AI Readiness</h3>
+            <p>Like all data, AI is garbage in, garbage out. We assess your organization's data front to back and get it clean, structured, and trustworthy enough to actually build on — before you invest in the models that depend on it.</p>
+        </div>
+        <div class="svc-item">
+            <h3>Data Department Development</h3>
+            <p>For organizations ready to build internal capability, we help you develop your own data function using your existing staff. The goal is to get things working so you don't need us anymore.</p>
+        </div>
+        <div class="svc-item">
+            <h3>Retainer Packages</h3>
+            <p>Short- and long-term retainers — much more affordable than a full-time in-house hire, with the flexibility to scale up or down as your needs change.</p>
+        </div>
+        <div class="svc-item">
+            <h3>Data Sculptures <small>(prestige)</small></h3>
+            <p>Your organization's unique data signature, rendered as digital art for public display. Our most distinctive offering — equal parts analytics and artifact.</p>
         </div>
     </div>
 
-    <p class="page-cta"><a href="/CONTACT/">Start a conversation →</a></p>
+    <p class="offer-cta">Not sure which fits? Start with a <a href="/contact/">Data Health Report</a>.</p>
+    <p class="page-cta"><a href="/contact/">Start a conversation →</a></p>
 </section>

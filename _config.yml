@@ -17,5 +17,9 @@ exclude:
   - Gemfile.lock
   - vendor/
 
-# Disable default Jekyll plugins we don't need; keep build minimal.
-plugins: []
+# Keep the build minimal. jekyll-redirect-from is a GitHub Pages-supported
+# plugin; it generates redirect stubs at the old UPPERCASE paths (declared via
+# `redirect_from:` in each page's front matter) so links to the pre-2026-06
+# capitalized routes don't 404 after the move to lowercase URLs.
+plugins:
+  - jekyll-redirect-from

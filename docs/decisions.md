@@ -10,20 +10,53 @@ A running log of meaningful choices made while building schuckdata.com. New entr
 
 ## Current State (kept up to date)
 
-*Last updated: 2026-05-26*
+*Last updated: 2026-06-01*
 
 - **Hosting:** GitHub Pages from the `schuck-data.github.io` repo; custom domain `schuckdata.com` via Namecheap DNS. Auto-deploys on push to `main`.
 - **Engine:** Jekyll — shared `_layouts/default.html` with `_includes/header.html` and `_includes/footer.html`.
 - **Theme:** A single fixed **medium-navy** presentation (faint grid overlay + glass-morphic surfaces). **No light/dark toggle** — it was removed 2026-05-21.
 - **Type:** Inter (Google Fonts), with monospace accents for eyebrows/labels.
-- **Public pages:** `/` (home), `/ABOUT/`, `/FOUNDER/`, `/SERVICES/`, `/WORK/` (case-study stub), `/CAREERS/`, `/CONTACT/`. Header nav: About · Services · Work · Careers · Contact. Routes are UPPERCASE by convention.
+- **Public pages:** `/` (home), `/services/`, `/founder/`, `/careers/`, `/contact/`. Header nav: Services · Founder · Careers · Contact. **About and Work were cut 2026-06-01.** **Routing convention (2026-06-01): lowercase is the norm; UPPERCASE is reserved for QR material only** (`/QR/`, `/QRLIBRARY/*`). All other routes (incl. `/sitemap/`, `/backstage/`, `/artmath/`) are lowercase. Old caps paths redirect via `jekyll-redirect-from` (`redirect_from:` front matter). **Note:** the source folders still need a one-time git case-rename on the host to match the lowercase URLs — see the 2026-06-01 entry.
 - **Home hero:** the brand wordmark lives in the header nav bar (all pages, incl. home — no separate hero logo). The hero leads with a mono eyebrow ("Dashboards. Automation. Analytics."), the H1 "Data consultancy that makes sense.", a rotating tagline sub-line, and the Census-Bureau credential. Below it, the "What's your current need?" section has two expanding cards — "Something needs fixing." / "Looking to get ahead." — whose every option and the skip link point to `/CONTACT/`. (Social card title is set separately via `social_title`.)
-- **Contact / Careers:** both pages lead with a Google Form CTA (link-out) and keep direct email/call/text as a fallback (Forms can be blocked on gov networks). Form URLs are placeholders pending the real forms — see `docs/forms-setup.md`.
-- **Content:** About / Founder / Services / Work prose is placeholder lorem ipsum except confirmed facts (founder Dakota Schuck = former U.S. Census Bureau statistician, 2014–2019). No political content.
+- **Contact:** leads with the **embedded** client inquiry Google Form (iframe), with direct email/call/text kept below as a fallback (Forms can be blocked on gov networks) plus an "open in new tab" escape hatch. Live form: `forms.gle/fX1kLua6dekHETae9`.
+- **Careers:** simplified to email-only (2026-06-01) — directs applicants to email `dakota@schuckdata.com` with a resume and any relevant skills/interests. The subcontractor Google Form was removed.
+- **Content:** Services and Founder now carry **real copy** (2026-06-01). Founder = blended bio (Kelvin epigraph + narrative with a few concrete specifics: Census MAF/TIGER quality work, 2021 Texas vaccine processing, federal dashboards). Services = full seven-stage pipeline + offerings (incl. AI readiness). No political content.
 - **Brand assets:** SD monogram favicon (`favicon.svg` + `favicon-32/16.png` + `apple-touch-icon.png` + `site.webmanifest`) and `og-image.png` for link previews. Logos in `/images/` (white version used on navy; the white variants were regenerated from the black master on 2026-05-26).
 - **Licensing:** whole-site **All Rights Reserved** (see root `LICENSE`); the name/logo are trademarks and `/ARTMATH/` is reserved. Not open-source.
-- **Backstage:** `/BACKSTAGE/`, `/QR/`, and `/QRLIBRARY/*` are kept out of search via per-page `noindex` (deliberately NOT a robots `Disallow`, which would both list the paths and block crawlers from reading the noindex). They stay reachable by direct URL; the footer em-dash link is `rel="nofollow"`.
+- **Backstage:** `/backstage/`, `/QR/`, and `/QRLIBRARY/*` are kept out of search via per-page `noindex` (deliberately NOT a robots `Disallow`, which would both list the paths and block crawlers from reading the noindex). They stay reachable by direct URL; the footer em-dash link is `rel="nofollow"`.
 - **Mockups:** `/mockups/*` are retained in the repo as workshop reference but excluded from the Jekyll build (no longer published).
+
+---
+
+## 2026-06-01 — Launch pass: lowercase routes, cut About/Work, real Services & Founder copy, embedded form
+
+**Decision:** Workshop-then-implement session to finish the public site.
+
+- **Routing convention flipped to lowercase.** UPPERCASE is now reserved *only* for QR material (`/QR/`, `/QRLIBRARY/SVSD1`, `/QRLIBRARY/SVSD2`). Every other route is lowercase, and all internal links/nav/sitemap/footer were repointed. Chosen over Jekyll-permalink trickery (owner wanted real lowercase folders, cleaner repo) and over a no-redirect rename (keep old links alive).
+- **Redirects via `jekyll-redirect-from`.** Added the plugin to `_config.yml` and a `redirect_from:` block to each moved page naming its old caps path, so pre-existing links to `/SERVICES/`, `/CONTACT/`, etc. don't 404. Cut pages redirect too: `/ABOUT/` → `/founder/`, `/WORK/` → `/services/`. *This plugin is GitHub Pages-supported but could not be tested locally (no local build); if the build ever misbehaves, removing the `plugins:` line disables redirects without affecting the main pages.*
+- **Filesystem constraint that shaped the approach.** The repo is on a case-insensitive Windows volume, so `SERVICES/` and `services/` are the same folder — you cannot keep a caps redirect stub next to a lowercase page in source, and a case-only rename can't be done through the mounted volume. The redirect stubs are therefore generated at *build* time (Linux, case-sensitive) by the plugin, and the source folder rename must be done with git on the host. **Required one-time host step (run before pushing, in the repo root):**
+
+  ```
+  git mv SERVICES SERVICES_tmp && git mv SERVICES_tmp services
+  git mv FOUNDER FOUNDER_tmp && git mv FOUNDER_tmp founder
+  git mv CAREERS CAREERS_tmp && git mv CAREERS_tmp careers
+  git mv CONTACT CONTACT_tmp && git mv CONTACT_tmp contact
+  git mv SITEMAP SITEMAP_tmp && git mv SITEMAP_tmp sitemap
+  git mv BACKSTAGE BACKSTAGE_tmp && git mv BACKSTAGE_tmp backstage
+  git mv ARTMATH ARTMATH_tmp && git mv ARTMATH_tmp artmath
+  git add -A
+  git commit -m "Lowercase routes (QR stays caps); cut About/Work; real Services/Founder copy; embed inquiry form; Careers to email"
+  git push
+  ```
+
+  The two-step `_tmp` rename is needed because git on Windows is case-insensitive by default. **Sequence matters:** rename *before* pushing — otherwise the still-caps `SERVICES/` page and the generated `/SERVICES/` redirect would collide on the build.
+- **About and Work pages cut.** `ABOUT/` and `WORK/` deleted from the working tree (`git add -A` records the removal). Removed from nav and sitemap; old URLs redirect (above).
+- **Services — real copy.** Replaced lorem with the full seven-stage information pipeline (sampling → presentation) as a styled stage list, plus offering cards (Data Health Reports, Report Automation & Dashboards, Statistical Modeling & Forecasting, **AI Readiness** — new selling point, Data Department Development, Retainer Packages, Data Sculptures). Page-scoped CSS only; no change to global `styles.css`.
+- **Founder — real bio.** Replaced lorem with a Lord Kelvin epigraph + a narrative bio seasoned with a few concrete specifics (Census MAF/TIGER quality work incl. PCA and block-canvassing risk measures, 2021 Texas vaccine applicant processing, federal data dashboards). Tone is an about-section, not a resume.
+- **Contact — embedded form.** Swapped the placeholder link-out for the real client inquiry form **embedded** as an iframe (`forms.gle/fX1kLua6dekHETae9`), keeping email/call/text fallback + an "open in new tab" link below for locked-down networks.
+- **Careers — email-only.** Removed the (placeholder) subcontractor form; the page now directs applicants to email a resume + relevant skills/interests.
+
+**Open:** run the git rename script above and push; rebuild `og-image.png` from the updated logo (still pending from 2026-05-26); the root `LICENSE`/`README` still reference the artwork at `/ARTMATH/` — update to `/artmath/` when convenient (build-excluded, legal doc, so left for owner to edit).
 
 ---
 

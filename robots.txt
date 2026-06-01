@@ -2,7 +2,7 @@
 User-agent: *
 Allow: /
 
-# Note: the backstage areas (/BACKSTAGE/, /QR/, /QRLIBRARY/) are kept out of
+# Note: the backstage areas (/backstage/, /QR/, /QRLIBRARY/) are kept out of
 # search results via per-page "noindex" meta tags, NOT a Disallow rule here.
 # Reasoning: a Disallow would (1) publicly enumerate these "hidden" paths in a
 # file anyone can read, and (2) stop crawlers from ever reading the noindex tag,
