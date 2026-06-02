@@ -7,7 +7,7 @@ hero_anim: true
 ---
 
 <section class="hero" aria-labelledby="hero-heading">
-    <p class="hero-eyebrow">Schuck Data — Dashboards. Automation. Analytics.</p>
+    <p class="hero-eyebrow">Dashboards. Automation. Analytics.</p>
 
     <h1 id="hero-heading" class="hero-h1">Data consultancy that makes sense.</h1>
 
@@ -135,14 +135,16 @@ hero_anim: true
     function draw() {
         ctx.clearRect(0, 0, W, H);
         var i, j, TH = Math.min(150, Math.max(90, Math.min(W, H) * 0.16)), p, a, b;
+        // Slightly heavier strokes/dots overall, a touch more on phone-width where they read thinnest.
+        var isM = W < 768, nodeR = isM ? 2.1 : 1.7, connW = isM ? 1.0 : 0.8, nodeA = isM ? 0.55 : 0.48, connA = isM ? 0.24 : 0.2;
         for (i = 0; i < nodes.length; i++) { p = nodes[i]; p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1; }
-        ctx.lineWidth = 0.7;
+        ctx.lineWidth = connW;
         for (i = 0; i < nodes.length; i++) for (j = i + 1; j < nodes.length; j++) {
             a = nodes[i]; b = nodes[j]; var dx = a.x - b.x, dy = a.y - b.y, d = Math.sqrt(dx * dx + dy * dy);
-            if (d < TH) { ctx.strokeStyle = 'rgba(147,197,253,' + ((1 - d / TH) * 0.18) + ')'; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+            if (d < TH) { ctx.strokeStyle = 'rgba(147,197,253,' + ((1 - d / TH) * connA) + ')'; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
         }
-        ctx.fillStyle = 'rgba(191,219,254,0.45)';
-        for (i = 0; i < nodes.length; i++) { p = nodes[i]; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, 7); ctx.fill(); }
+        ctx.fillStyle = 'rgba(191,219,254,' + nodeA + ')';
+        for (i = 0; i < nodes.length; i++) { p = nodes[i]; ctx.beginPath(); ctx.arc(p.x, p.y, nodeR, 0, 7); ctx.fill(); }
         // Tesseract easter egg: waits 10s, then emerges from the left and drifts.
         var now = (window.performance && performance.now) ? performance.now() : Date.now();
         var since = (now - startTime - 10000) / 1000;

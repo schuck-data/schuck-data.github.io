@@ -251,6 +251,7 @@ a:focus-visible {
     color: var(--accent);
     margin-bottom: 1.5rem;
     display: block;
+    text-wrap: balance;   /* even two-line wrap on narrow screens instead of a lone "ANALYTICS." */
 }
 
 .section-eyebrow {
