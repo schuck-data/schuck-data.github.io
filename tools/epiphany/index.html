@@ -1,0 +1,76 @@
+---
+layout: default
+title: epiphany — the Normal distribution in stained glass
+social_title: epiphany — distributions in stained glass
+description: An interactive stained-glass visualization of the Normal distribution. Drag the mean, standard deviation, skewness, and kurtosis and watch a statistically rigorous object rendered as living glass — with optional value labels, quantile sections, and high-contrast mode.
+noindex: true
+permalink: /tools/epiphany/
+---
+
+<style>
+  .ep-embed { margin:1.5rem 0 0.75rem; border:1px solid rgba(255,255,255,0.10); border-radius:10px; overflow:hidden;
+    background:#0a0908; box-shadow:0 12px 44px rgba(0,0,0,0.45); }
+  .ep-embed iframe { display:block; width:100%; height:min(90vh, 1000px); min-height:560px; border:0; }
+  .ep-cap { font-size:0.9rem; color:var(--text-muted); line-height:1.6; max-width:44rem; margin-bottom:2.5rem; }
+  .ep-params { margin:0.5rem 0 0; }
+  .ep-params dt { font-family:ui-monospace, Menlo, Consolas, monospace; font-size:0.9rem; color:var(--text); margin-top:1rem; }
+  .ep-params dd { margin:0.2rem 0 0; color:var(--text-muted); line-height:1.6; max-width:42rem; }
+  .ep-try { border-left:2px solid var(--accent); background:rgba(255,255,255,0.03);
+    padding:0.7rem 1rem; margin:1rem 0 1.5rem; border-radius:0 6px 6px 0; font-size:0.92rem; line-height:1.6; color:var(--text-muted); }
+  .ep-try strong { color:var(--text); }
+</style>
+
+<section class="hero" aria-labelledby="ep-heading">
+    <p class="hero-eyebrow">Tools · epiphany</p>
+    <h1 id="ep-heading" class="hero-h1">A distribution, in glass and light.</h1>
+    <p class="hero-lead">The bell curve is usually drawn as a thin line on a flat axis. Here it is a
+        stained-glass window: a statistically rigorous distribution computed for correctness, then
+        rendered as living leaded glass. Move the controls and the figure — and its math — change with you.</p>
+</section>
+
+<section aria-label="Interactive visualizer">
+    <div class="ep-embed">
+        <iframe src="/tools/epiphany/app.html?v={{ site.time | date: '%s' }}"
+                title="Interactive stained-glass Normal distribution" loading="lazy" allowfullscreen></iframe>
+    </div>
+    <p class="ep-cap">Drag the four sliders to reshape the distribution. <strong>Show Values</strong>
+        labels the real numbers on the glass — the mean, median and mode, the standard-deviation axis, and
+        the true probability in each band. <strong>Quantiles</strong> re-cuts the window into equal-volume
+        sections (every pane the same share of the area). <strong>High Contrast</strong> renders it as white
+        glass on black. <strong>Save Window</strong> downloads the current window as an image.</p>
+</section>
+
+<section class="content-section" aria-label="The object behind the picture">
+    <h2>A real object, not a drawing</h2>
+    <p>Under the glass is an actual distribution — a <em>sinh-arcsinh normal</em>, which is an ordinary
+        bell curve when skewness and kurtosis are zero and a principled generalization of it otherwise.
+        Every number you see is computed by integrating that density, not eyeballed to fit the art: the
+        standard deviation, the skewness, the excess kurtosis, the mean, the median, the mode, and the
+        probability mass inside each section are all measured from the object itself.</p>
+    <div class="ep-try"><strong>Try it:</strong> turn on <em>Show Values</em>, then add skewness. The
+        mean holds its place while the <em>mode</em> slides off toward the peak and the <em>median</em>
+        settles between them — the textbook ordering mode &lt; median &lt; mean, drawn rather than asserted.</div>
+</section>
+
+<section class="content-section" aria-label="What each control does">
+    <h2>What each control does</h2>
+    <dl class="ep-params">
+        <dt>μ — mean</dt>
+        <dd>Slides the whole distribution left and right. The mean line stays anchored to it.</dd>
+        <dt>σ — standard deviation</dt>
+        <dd>The spread. The ±1σ and ±2σ section lines move with it; the realized standard deviation always equals this value.</dd>
+        <dt>γ₁ — skewness</dt>
+        <dd>Leans the distribution, lengthening one tail. The readout shows the <em>true</em> skewness of the resulting shape.</dd>
+        <dt>γ₂ — excess kurtosis</dt>
+        <dd>Sharpens the peak and fattens the tails (positive) or flattens it (negative). The readout shows the true excess kurtosis — zero is a true Normal.</dd>
+    </dl>
+</section>
+
+<section class="content-section" aria-label="Standard deviation versus quantiles">
+    <h2>Equal width, or equal volume?</h2>
+    <p>By default the vertical sections sit at equal <em>standard-deviation</em> distances — the famous
+        68 / 95 / 99.7 split, where the central panes hold most of the mass and the outer ones almost none.
+        Switch on <strong>Quantiles</strong> and the same window is re-cut so every section holds an
+        <em>equal share</em> of the distribution instead: the panes crowd together where the glass is bright
+        and fan out into the dim tails. Same distribution, two ways of dividing the light.</p>
+</section>

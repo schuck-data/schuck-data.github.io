@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>epiphany — the Normal distribution in stained glass</title>
+<style>
+  :root{ --gold:#c9a44c; --gold-l:#e7cf8a; --parchment:#e9ddc2; }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+  body{
+    background:radial-gradient(120% 90% at 50% 14%, #14110d 0%, #0a0908 55%, #050403 100%);
+    color:var(--parchment);
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+    height:100vh; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center;
+    padding:12px 12px 10px; gap:8px;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1{
+    font-weight:500; letter-spacing:.30em; text-transform:uppercase;
+    font-size:14px; margin:0; padding-left:.30em;
+    color:var(--gold-l); text-shadow:0 0 18px rgba(201,164,76,.35);
+  }
+
+  /* ---- window (scaled to fit) ---- */
+  .stageWrap{
+    flex:1 1 auto; width:100%; max-width:640px; min-height:0;
+    display:flex; justify-content:center; align-items:flex-start; overflow:hidden;
+  }
+  .stage{ width:600px; height:820px; position:relative; transform-origin:top center; }
+  .glow{
+    position:absolute; inset:-50px -30px; border-radius:50% 50% 16px 16px;
+    background:radial-gradient(58% 54% at 50% 40%,
+      rgba(228,184,96,.30), rgba(120,90,40,.10) 45%, transparent 70%);
+    filter:blur(8px); pointer-events:none; z-index:0;
+  }
+  .window{
+    position:absolute; inset:0; z-index:1;
+    clip-path:path('M20,320 Q50,112 300,36 Q550,112 580,320 L580,800 L20,800 Z');
+    -webkit-clip-path:path('M20,320 Q50,112 300,36 Q550,112 580,320 L580,800 L20,800 Z');
+  }
+  #gl{ display:block; width:600px; height:820px; }
+  .frame{ position:absolute; inset:0; z-index:3; pointer-events:none; }
+  .overlay{ position:absolute; inset:0; z-index:2; pointer-events:none; display:none;
+    clip-path:path('M20,320 Q50,112 300,36 Q550,112 580,320 L580,800 L20,800 Z');
+    -webkit-clip-path:path('M20,320 Q50,112 300,36 Q550,112 580,320 L580,800 L20,800 Z'); }
+  .overlay.on{ display:block; }
+  .overlay text{ paint-order:stroke; stroke:rgba(8,6,4,.82); stroke-width:2.6px; stroke-linejoin:round;
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif; }
+  .overlay .tick{ font-size:15px; fill:#f0d99a; }
+  .overlay .pct{ font-size:15px; fill:#fdf6e3; }
+  .overlay .plab{ font-size:15px; font-style:italic; }
+  .overlay .axis{ stroke:rgba(243,231,197,.5); stroke-width:1.2; }
+
+  /* ---- controls ---- */
+  .panel{
+    flex:0 0 auto; width:100%; max-width:560px;
+    background:linear-gradient(180deg,#1b170f,#100d09);
+    border:1px solid #2c2618; border-radius:13px; padding:14px 22px 16px;
+    box-shadow:0 16px 40px rgba(0,0,0,.55), inset 0 1px 0 rgba(201,164,76,.10);
+  }
+  .eq{ text-align:center; color:#9b8d63; font-size:14px; margin:0 0 12px; line-height:1.4; }
+  .eq .name{ color:var(--gold-l); font-variant:small-caps; letter-spacing:.06em; }
+  .eq .f{ font-style:italic; color:#8a7d56; }
+  .ctrl{ display:grid; grid-template-columns:148px 1fr 56px; align-items:center; gap:12px; margin:9px 0; }
+  .ctrl label{ font-size:13px; color:var(--parchment); }
+  .ctrl .sym{ color:var(--gold); font-style:italic; font-size:15px; margin-right:8px; }
+  .ctrl output{
+    font-variant-numeric:tabular-nums; text-align:right; font-size:13px;
+    color:var(--gold-l); background:#000; border:1px solid #2c2618; border-radius:6px; padding:3px 6px;
+  }
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:4px;
+    background:linear-gradient(90deg,#7a6a3e,#2a2418); outline:none; touch-action:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,var(--gold-l),var(--gold) 55%,#7c5e22);
+    border:1px solid #3a2d10; box-shadow:0 0 10px rgba(201,164,76,.55); cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:20px; height:20px; border-radius:50%; border:1px solid #3a2d10;
+    background:radial-gradient(circle at 35% 30%,var(--gold-l),var(--gold) 55%,#7c5e22);
+    box-shadow:0 0 10px rgba(201,164,76,.55); cursor:pointer;
+  }
+  .row{ display:flex; align-items:center; justify-content:space-between; margin-top:12px; gap:12px; }
+  .copy{ font-size:10px; letter-spacing:.20em; text-transform:uppercase; color:#6f6750; }
+  .switch{ display:flex; align-items:center; gap:9px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#9b8d63; cursor:pointer; }
+  .switch input{ position:absolute; opacity:0; width:0; height:0; }
+  .switch .track{ position:relative; width:34px; height:18px; border-radius:9px; flex:0 0 auto;
+    background:#2a2418; border:1px solid #4a3f22; transition:background .18s, border-color .18s; }
+  .switch .track::after{ content:''; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,var(--gold-l),var(--gold) 60%,#7c5e22); transition:transform .18s; }
+  .switch input:checked + .track{ background:#5a4a1e; border-color:var(--gold); }
+  .switch input:checked + .track::after{ transform:translateX(16px); }
+  .switch input:focus-visible + .track{ outline:2px solid var(--gold); outline-offset:2px; }
+  .switches{ display:flex; flex-direction:column; gap:9px; }
+  .btns{ display:flex; gap:10px; }
+  button{ font-family:inherit; cursor:pointer; font-size:11px; letter-spacing:.16em; text-transform:uppercase; border-radius:8px; }
+  button.save{
+    color:#1a1407; padding:8px 18px; border:1px solid #7c5e22;
+    background:linear-gradient(180deg,var(--gold-l),var(--gold) 60%,#9c7a2c);
+    box-shadow:0 3px 12px rgba(201,164,76,.30);
+  }
+  button.ghost{ color:var(--gold-l); padding:8px 16px; border:1px solid #5a4a22; background:transparent; }
+  button.ghost:hover{ border-color:var(--gold); }
+  button:active{ transform:translateY(1px); }
+</style>
+</head>
+<body>
+  <h1>epiphany</h1>
+
+  <div class="stageWrap">
+    <div class="stage" id="stage">
+      <div class="glow"></div>
+      <div class="window"><canvas id="gl"></canvas></div>
+      <svg class="overlay" id="overlay" width="600" height="820" viewBox="0 0 600 820" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <svg class="frame" width="600" height="820" viewBox="0 0 600 820" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#8a7e63"/><stop offset=".5" stop-color="#5d5341"/>
+            <stop offset="1" stop-color="#332c20"/>
+          </linearGradient>
+          <filter id="fshadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.6"/>
+          </filter>
+        </defs>
+        <path d="M20,320 Q50,112 300,36 Q550,112 580,320 L580,800 L20,800 Z"
+              fill="none" stroke="url(#stone)" stroke-width="30" filter="url(#fshadow)"/>
+        <path d="M20,320 Q50,112 300,36 Q550,112 580,320 L580,800 L20,800 Z"
+              fill="none" stroke="#c9a44c" stroke-width="2.2" opacity=".55"/>
+        <path d="M29,320 Q58,124 300,50 Q542,124 571,320 L571,792 L29,792 Z"
+              fill="none" stroke="#1c1710" stroke-width="3"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="eq"><span class="name" id="dname">Normal</span> &nbsp;·&nbsp;
+      <span class="f">f(x) = (1 ⁄ σ√2π) · e<sup>−(x−μ)² ⁄ 2σ²</sup></span></div>
+
+    <div class="ctrl">
+      <label><span class="sym">μ</span>Mean</label>
+      <input id="mu" type="range" min="-1" max="1" step="0.005" value="0">
+      <output id="mu_o">0.00</output>
+    </div>
+    <div class="ctrl">
+      <label><span class="sym">σ</span>Std. Deviation</label>
+      <input id="sigma" type="range" min="0.05" max="0.24" step="0.001" value="0.13">
+      <output id="sigma_o">0.13</output>
+    </div>
+    <div class="ctrl">
+      <label><span class="sym">γ₁</span>Skewness</label>
+      <input id="skew" type="range" min="-1" max="1" step="0.005" value="0">
+      <output id="skew_o">0.00</output>
+    </div>
+    <div class="ctrl">
+      <label><span class="sym">γ₂</span>Kurtosis</label>
+      <input id="kurt" type="range" min="-1" max="1" step="0.005" value="0">
+      <output id="kurt_o">0.00</output>
+    </div>
+
+    <div class="row">
+      <div class="switches">
+        <label class="switch"><input type="checkbox" id="contrast"><span class="track"></span>High Contrast</label>
+        <label class="switch"><input type="checkbox" id="labels"><span class="track"></span>Show Values</label>
+        <label class="switch"><input type="checkbox" id="quant"><span class="track"></span>Quantiles</label>
+      </div>
+      <div class="btns">
+        <button class="ghost" id="reset">Reset</button>
+        <button class="save" id="save">Save Window</button>
+      </div>
+    </div>
+    <div class="copy" style="text-align:center;margin-top:10px">© 2026 Schuck Data</div>
+  </div>
+
+  <script src="./three.min.js"></script>
+  <script>
+  const ARCH = 'M20,320 Q50,112 300,36 Q550,112 580,320 L580,800 L20,800 Z';
+
+  const vert = `
+    varying vec2 vUv;
+    void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+  `;
+
+  const frag = `
+    precision highp float;
+    varying vec2 vUv;
+    uniform vec2  u_res;
+    uniform float u_time, u_cell, u_contrast;
+    uniform float u_loc, u_scale, u_eps, u_delta, u_peakNorm;   // shape params handed in by the model
+    uniform float u_mean, u_std;                                 // TRUE mean & std (window coords)
+    uniform float u_secX[5];                                     // section boundary x-positions (model)
+
+    const float BASE = 0.085;
+    const float PEAK = 0.60;
+    const float NR   = 5.0;     // contour courses in the distribution
+
+    vec2 hash2(vec2 p){
+      p = vec2(dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)));
+      return fract(sin(p)*43758.5453);
+    }
+    float hash1(vec2 p){ return fract(sin(dot(p,vec2(41.3,289.7)))*43758.5453); }
+    float vnoise(vec2 p){
+      vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
+      float a=hash1(i), b=hash1(i+vec2(1,0)), c=hash1(i+vec2(0,1)), d=hash1(i+vec2(1,1));
+      return mix(mix(a,b,f.x), mix(c,d,f.x), f.y);
+    }
+    // sinh-arcsinh normal silhouette (WebGL1 lacks sinh/cosh/asinh — define them). The shape comes
+    // entirely from the model's params; the shader just draws it.
+    float ssinh(float x){ return 0.5*(exp(x)-exp(-x)); }
+    float scosh(float x){ return 0.5*(exp(x)+exp(-x)); }
+    float sasinh(float x){ return log(x + sqrt(x*x+1.0)); }
+    float sasPdf(float w){
+      float D = u_delta*sasinh(w) - u_eps;
+      return (u_delta*scosh(D))/sqrt(1.0+w*w) * exp(-0.5*ssinh(D)*ssinh(D));
+    }
+    float hillH(float x){ return BASE + PEAK*sasPdf((x-u_loc)/u_scale)*u_peakNorm; }
+
+    // Option B — re-flowing foam: nudge each Voronoi feature point away from the silhouette so the
+    // EXISTING background panes rearrange around the figure (no new lines). Bounded + decaying so the
+    // Voronoi neighbourhood search stays valid.
+    vec2 foamShift(vec2 cell){
+      vec2 base = cell + hash2(cell);
+      vec2 puv  = base*u_cell/u_res;
+      float gap = puv.y - hillH(puv.x);
+      if(gap <= 0.0) return vec2(0.0);
+      float sl  = (hillH(puv.x+0.004)-hillH(puv.x-0.004))/0.008;
+      vec2  nrm = normalize(vec2(-sl, 1.0));
+      // Fade IN toward the silhouette (smoothstep -> 0 with zero slope at gap=0) so a point crossing
+      // the figure edge doesn't snap from full offset to none; then decay with distance into the sky.
+      float mag = 0.020 * smoothstep(0.0, 0.045, gap) * exp(-gap/0.12);
+      return nrm * mag * (u_res/u_cell);             // -> voronoi-space offset
+    }
+    vec2 sitePos(vec2 cell){ return cell + hash2(cell) + foamShift(cell); }
+
+    vec4 voronoi(vec2 x){          // .xy canonical centre (stable colour/seed), .z F1, .w edge distance
+      vec2 n=floor(x); vec2 mr; vec2 mcell; float md=1.0e9;
+      for(int j=-1;j<=1;j++) for(int i=-1;i<=1;i++){
+        vec2 cell=n+vec2(float(i),float(j));
+        vec2 r=sitePos(cell)-x; float d=dot(r,r);
+        if(d<md){ md=d; mr=r; mcell=cell; }
+      }
+      float me=1.0e9;
+      for(int j=-2;j<=2;j++) for(int i=-2;i<=2;i++){
+        vec2 cell=mcell+vec2(float(i),float(j));
+        vec2 r=sitePos(cell)-x; vec2 df=mr-r;
+        if(dot(df,df)>0.00001) me=min(me, dot(0.5*(mr+r), normalize(r-mr)));
+      }
+      return vec4(mcell+hash2(mcell), sqrt(md), me);    // canonical (undisplaced) centre keeps seed stable
+    }
+    float markerX(float k){ return u_mean + k*u_std; }            // TRUE k-th std-dev line
+    float zt(float x){ return (x-u_mean)/u_std; }                 // standardized by true moments
+    // texture coordinate that lives in the OBJECT's own space, so it distorts with the shape
+    vec2 hillTC(vec2 uv, float curve){ return vec2(zt(uv.x), uv.y/max(curve,0.15)) * vec2(58.0,300.0); }
+
+    vec3 glassTexture(vec3 col, vec2 tc, float seed){
+      float rip=vnoise(tc*0.05+seed*13.0), fine=vnoise(tc*0.22+seed*7.0);
+      col*=0.93+0.10*rip+0.04*fine;
+      col*=1.0+0.04*sin(dot(tc,vec2(0.5,0.86))*0.05+seed*10.0);
+      return col;
+    }
+
+    void main(){
+      vec2 uv=vUv, px=uv*u_res;
+      float curve=hillH(uv.x);
+
+      // local slope -> perpendicular seam thickness (constant along each line)
+      float eps=0.0025;
+      float slope=(hillH(uv.x+eps)-hillH(uv.x-eps))/(2.0*eps);   // d(uv.y)/d(uv.x)
+      float sl = slope*u_res.y/u_res.x;
+
+      vec3 leadCol=vec3(0.05,0.045,0.04);
+      vec3 col;
+      float came=0.0;
+
+      if(uv.y < curve){
+        // ---------- DISTRIBUTION: panes split by the model's section boundaries x contour courses ----------
+        float sec=0.0, vmin=1.0e6;
+        for(int i=0;i<5;i++){ float bx=u_secX[i];
+          if(uv.x>bx) sec+=1.0;
+          vmin=min(vmin, abs(uv.x-bx)*u_res.x);
+        }
+        float w  = uv.y/curve;
+        float ri = floor(w*NR);                   // which contour course
+        float seed = hash1(vec2(sec,ri)+0.123);
+
+        float band = min(sec, 5.0-sec);           // 0 (outer) .. 2 (centre)
+        vec3 band0=vec3(0.37,0.64,0.22), band1=vec3(0.18,0.47,0.14), band2=vec3(0.08,0.27,0.09);
+        vec3 g = band>1.5 ? band0 : (band>0.5 ? band1 : band2);
+        float wmid=(ri+0.5)/NR;
+        g *= mix(0.70, 1.14, wmid);               // shadowed roots, sunlit crest
+        col = g + vec3(0.11,0.08,-0.02)*(hash1(vec2(seed,1.7))-0.5);
+        col *= 0.82+0.36*hash1(vec2(seed,4.2));
+        col = glassTexture(col, hillTC(uv,curve), seed);   // texture distorts with the shape
+
+        // thin vertical section cames (std-dev or quantile boundaries, from the model)
+        came=max(came, 1.0 - smoothstep(0.8, 1.7, vmin));
+        // thin horizontal contour cames, following the curve (perpendicular thickness)
+        float hmin=1.0e6;
+        for(int i=1;i<=4;i++){
+          float fr=float(i)/NR; float s2=fr*sl;
+          hmin=min(hmin, abs(uv.y - fr*curve)*u_res.y / sqrt(1.0 + s2*s2));
+        }
+        came=max(came, 1.0 - smoothstep(1.0, 2.0, hmin));
+      } else {
+        // ---------- ATMOSPHERE: foam glass, cut to fit above the hill ----------
+        vec4 v=voronoi(px/u_cell);
+        vec2 pc=v.xy*u_cell/u_res;
+        float seed=hash1(v.xy);
+        float ch=hillH(pc.x);
+        float ty=clamp((pc.y-ch)/(1.0-ch+0.001),0.0,1.0);
+        vec3 amber=vec3(0.97,0.60,0.24),rose=vec3(0.86,0.40,0.42),indigo=vec3(0.12,0.18,0.52),deepb=vec3(0.05,0.08,0.30);
+        col=mix(amber,rose,smoothstep(0.0,0.30,ty));
+        col=mix(col,indigo,smoothstep(0.25,0.70,ty));
+        col=mix(col,deepb,smoothstep(0.70,1.0,ty));
+        col+=vec3(0.10,0.05,0.11)*(hash1(vec2(seed,1.7))-0.5);
+        col*=0.82+0.36*hash1(vec2(seed,4.2));
+        vec2 sun=vec2(0.72,0.82); vec2 d=(pc-sun); d.x*=u_res.x/u_res.y; float dist=length(d);
+        col=mix(col,vec3(1.0,0.80,0.40),smoothstep(0.30,0.135,dist)*0.38);
+        col=mix(col,vec3(1.0,0.90,0.50),smoothstep(0.135,0.122,dist));
+        col=glassTexture(col, px, seed);
+        came=max(came, 1.0 - smoothstep(0.0, 0.040, v.w));
+        col += vec3(0.22,0.14,0.05)*smoothstep(0.07,0.0, uv.y-curve)*0.55;   // halo on the shape
+      }
+
+      // silhouette came: true PERPENDICULAR pixel distance -> constant thickness
+      float perp = abs(uv.y-curve)*u_res.y / sqrt(1.0 + sl*sl);
+      came=max(came, 1.0 - smoothstep(1.7, 3.1, perp));
+
+      // ---------- High-Contrast mode: white figure, black background ----------
+      if(u_contrast>0.5){
+        bool fig = uv.y < curve;
+        float t = fig ? vnoise(hillTC(uv,curve)*0.05+11.0) : vnoise(px*0.05+11.0);
+        col     = fig ? vec3(0.84+0.13*t) : vec3(0.015+0.035*t);
+        leadCol = fig ? vec3(0.0) : vec3(0.95);   // black cames on white, white cames on black
+      }
+
+      col=mix(col, leadCol, clamp(came,0.0,1.0));
+      col*=1.06*(1.0+0.03*sin(u_time*0.6));               // gentle backlight breathing
+      vec2 q=uv-0.5; col*=1.0-dot(q,q)*0.45;              // vignette
+      gl_FragColor=vec4(col,1.0);
+    }
+  `;
+
+  const W=600, H=820;
+  const canvas = document.getElementById('gl');
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, preserveDrawingBuffer:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(W,H,false);
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+  const uniforms = {
+    u_res:{value:new THREE.Vector2(W,H)}, u_time:{value:0},
+    u_loc:{value:0.50}, u_scale:{value:0.13}, u_eps:{value:0.0}, u_delta:{value:1.0}, u_peakNorm:{value:1.0},
+    u_mean:{value:0.50}, u_std:{value:0.13},
+    u_secX:{value:[0.24,0.37,0.50,0.63,0.76]},
+    u_cell:{value:42.0}, u_contrast:{value:0.0},
+  };
+  scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),
+    new THREE.ShaderMaterial({vertexShader:vert, fragmentShader:frag, uniforms})));
+
+  // ====================  THE DISTRIBUTION MODEL — rigorous source of truth  ====================
+  // A distribution is its own conceptual object: computed by real statistics, not shaped to look
+  // nice. The renderer downstream just turns it into glass. (sinh-arcsinh normal, Jones & Pewsey
+  // 2009 — reduces EXACTLY to Normal at eps=0, delta=1; valid density for all params.) Every
+  // statistic below comes from numerically integrating the ACTUAL density.
+  function sasPdfStd(w, eps, delta){      // standardized density (1/√2π dropped — cancels everywhere)
+    const D = delta*Math.asinh(w) - eps;
+    return (delta*Math.cosh(D))/Math.sqrt(1+w*w) * Math.exp(-0.5*Math.sinh(D)*Math.sinh(D));
+  }
+  function sasShape(eps, delta){          // standardized moments + peak of the (eps,delta) shape
+    const lo=-50, hi=50, N=5000, h=(hi-lo)/N;
+    let m0=0,m1=0,maxf=0,wmode=0;
+    for(let i=0;i<N;i++){ const w=lo+(i+0.5)*h, f=sasPdfStd(w,eps,delta); m0+=f; m1+=w*f; if(f>maxf){maxf=f; wmode=w;} }
+    const mean=m1/m0; let c2=0,c3=0,c4=0;
+    for(let i=0;i<N;i++){ const w=lo+(i+0.5)*h, f=sasPdfStd(w,eps,delta), d=w-mean; c2+=d*d*f; c3+=d*d*d*f; c4+=d*d*d*d*f; }
+    const v=c2/m0, sd=Math.sqrt(v);
+    return { meanW:mean, sdW:sd, skew:(c3/m0)/(sd*sd*sd), exKurt:(c4/m0)/(v*v)-3, maxf, wmode };
+  }
+  // Inverse standard-normal CDF (Acklam) — for quantile positions.
+  function probit(p){
+    if(p<=0) return -38; if(p>=1) return 38;
+    const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+    const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+    const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+    const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+    const pl=0.02425;
+    if(p<pl){ const q=Math.sqrt(-2*Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+    if(p<=1-pl){ const q=p-0.5,r=q*q; return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1); }
+    const q=Math.sqrt(-2*Math.log(1-p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  }
+  // Map UI params -> a distribution fully specified in window coordinates.
+  // m: mean position [-1,1]; sigma: std (window units); s,k: skew/tail-weight knobs [-1,1].
+  function buildDist(m, sigma, s, k){
+    const eps = 1.3*s;                    // skew knob  (+slider -> +skewness / long right tail)
+    const delta = Math.exp(-0.55*k);      // tail-weight knob (+slider -> heavier tails -> +kurtosis)
+    const sh = sasShape(eps, delta);
+    const meanX = 0.5 + 0.30*m;           // the MEAN sits exactly where the slider puts it
+    const stdX  = sigma;                  // the realized std equals the slider
+    const scale = stdX / sh.sdW;
+    const loc   = meanX - scale*sh.meanW; // place so the realized mean == meanX (mode drifts off it under skew)
+    const qx = p => loc + scale*Math.sinh((Math.asinh(probit(p))+eps)/delta);   // exact SAS quantile
+    const secXsig = [-2,-1,0,1,2].map(kk => meanX + kk*stdX);     // σ-distance section boundaries
+    const secXqua = [1,2,3,4,5].map(j => qx(j/6));                // equal-volume (sextile) boundaries
+    return { eps, delta, scale, loc, peakNorm:1/sh.maxf, meanX, stdX,
+             skew:sh.skew, exKurt:sh.exKurt, modeX: loc + scale*sh.wmode, median: qx(0.5),
+             secXsig, secXqua };
+  }
+  function applyDist(d, secX){             // hand the model's shape to the renderer
+    uniforms.u_eps.value=d.eps; uniforms.u_delta.value=d.delta;
+    uniforms.u_scale.value=d.scale; uniforms.u_loc.value=d.loc; uniforms.u_peakNorm.value=d.peakNorm;
+    uniforms.u_mean.value=d.meanX; uniforms.u_std.value=d.stdX;
+    uniforms.u_secX.value=secX;
+  }
+  // Window-coordinate readouts for the overlay — match the shader exactly.
+  const BASE_J=0.085, PEAK_J=0.60;
+  function curveH(d,x){ const w=(x-d.loc)/d.scale; return BASE_J + PEAK_J*sasPdfStd(w,d.eps,d.delta)*d.peakNorm; }
+  function erf(x){ const s=x<0?-1:1; x=Math.abs(x); const t=1/(1+0.3275911*x);
+    const y=1-(((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t)*Math.exp(-x*x);
+    return s*y; }
+  function normalCdf(z){ return 0.5*(1+erf(z/Math.SQRT2)); }
+  // SAS cdf is exact: sinh(delta·asinh(w) − eps) is standard normal.
+  function cdfWindow(d,x){ const w=(x-d.loc)/d.scale; return normalCdf(Math.sinh(d.delta*Math.asinh(w)-d.eps)); }
+
+  // ---- controls ----
+  const $=id=>document.getElementById(id);
+  const fmt=x=>{ if(Math.abs(x)<0.005) x=0; return (x<0?'−':'')+Math.abs(x).toFixed(2); };
+  // UI lives in slider space {m, sigma, s, k}; the loop eases `cur` toward `target` and rebuilds the
+  // rigorous distribution each frame. Skew/kurtosis readouts show the TRUE computed moments.
+  const target = { m:0.0, sigma:0.13, s:0.0, k:0.0, q:0.0 };   // q: 0 = σ sections, 1 = equal-volume
+  const cur    = { m:0.0, sigma:0.13, s:0.0, k:0.0, q:0.0 };
+  const blendSecX = (d,q)=> d.secXsig.map((v,i)=> v + (d.secXqua[i]-v)*q);   // morph σ <-> quantile
+  function updateName(){
+    const sk=Math.abs(target.s)>0.02, ku=Math.abs(target.k)>0.02;
+    $('dname').textContent = sk&&ku ? 'Skewed Generalized Normal'
+      : ku ? 'Generalized Normal' : sk ? 'Skew-Normal' : 'Normal';
+  }
+  function refreshReadouts(){
+    $('mu_o').textContent=fmt(target.m);
+    $('sigma_o').textContent=target.sigma.toFixed(2);
+    const d=buildDist(target.m,target.sigma,target.s,target.k);   // true moments of the selected shape
+    $('skew_o').textContent=fmt(d.skew);
+    $('kurt_o').textContent=fmt(d.exKurt);
+  }
+  $('mu').addEventListener('input', ()=>{ target.m=parseFloat($('mu').value); refreshReadouts(); });
+  $('sigma').addEventListener('input', ()=>{ target.sigma=parseFloat($('sigma').value); refreshReadouts(); });
+  $('skew').addEventListener('input', ()=>{ target.s=parseFloat($('skew').value); updateName(); refreshReadouts(); });
+  $('kurt').addEventListener('input', ()=>{ target.k=parseFloat($('kurt').value); updateName(); refreshReadouts(); });
+  $('contrast').addEventListener('change', e=>{ uniforms.u_contrast.value = e.target.checked?1.0:0.0; });
+  $('quant').addEventListener('change', e=>{ target.q = e.target.checked?1.0:0.0; });
+
+  // ---- values overlay: labels the model's real numbers onto the glass ----
+  const ov=$('overlay'); let showLabels=false;
+  // a small stained-glass-style label plaque (leaded border + glass fill)
+  function plaque(x, y, text, color){
+    const w = text.length*8.0 + 18;
+    return `<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})">`
+      + `<rect x="${(-w/2).toFixed(1)}" y="-22" width="${w.toFixed(1)}" height="22" rx="5" `
+      + `fill="rgba(16,11,6,0.86)" stroke="${color}" stroke-width="1.3"/>`
+      + `<text class="plab" x="0" y="-6" text-anchor="middle" fill="${color}" stroke="none">${text}</text></g>`;
+  }
+  function drawOverlay(d, secX, q){
+    const W=600,Hh=820, baseY=(1-0.085)*Hh;
+    const X=x=>x*W, Y=uv=>(1-uv)*Hh;
+    const cAt=x=>cdfWindow(d,x);
+    const c=secX.map(cAt);
+    const mass=[c[0], c[1]-c[0], c[2]-c[1], c[3]-c[2], c[4]-c[3], 1-c[4]];
+    const bnds=[0,...secX,1];
+    let s=`<line class="axis" x1="42" y1="${baseY+2}" x2="558" y2="${baseY+2}"/>`;
+    // band masses
+    for(let i=0;i<6;i++){ const mx=Math.min(Math.max((bnds[i]+bnds[i+1])/2,0.06),0.94), p=mass[i]*100;
+      s+=`<text class="pct" x="${X(mx).toFixed(1)}" y="${baseY-12}" text-anchor="middle">${(p<0.95?p.toFixed(2):p.toFixed(1))}%</text>`; }
+    // σ tick labels (fade out as the sections morph to quantiles)
+    if(q<0.97){ const labs=['−2σ','−1σ','μ','+1σ','+2σ'];
+      s+=`<g opacity="${(1-q).toFixed(2)}">`;
+      for(let i=0;i<5;i++){ const px=X(d.meanX+(i-2)*d.stdX).toFixed(1);
+        s+=`<text class="tick" x="${px}" y="${baseY+22}" text-anchor="middle">${labs[i]}</text>`; }
+      s+=`</g>`; }
+    // mean / median / mode reference lines + callouts
+    const refs=[ {x:d.meanX,c:'#ffe08a',t:'mean'}, {x:d.median,c:'#9fd0ff',t:'median'}, {x:d.modeX,c:'#ff9db0',t:'mode'} ];
+    for(const r of refs){ const px=X(r.x).toFixed(1), topY=Y(curveH(d,r.x)).toFixed(1);
+      s+=`<line x1="${px}" y1="${baseY}" x2="${px}" y2="${topY}" stroke="${r.c}" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.92"/>`; }
+    const xs=refs.map(r=>r.x), spread=Math.max(...xs)-Math.min(...xs);
+    if(spread<0.02){ s+=plaque(X(d.meanX), Y(curveH(d,d.meanX))-14, 'mean = median = mode', '#ffe08a'); }
+    else { for(const r of refs) s+=plaque(X(r.x), Y(curveH(d,r.x))-14, r.t, r.c); }
+    ov.innerHTML=s;
+  }
+  $('labels').addEventListener('change', e=>{ showLabels=e.target.checked; ov.classList.toggle('on',showLabels);
+    if(showLabels){ const d=buildDist(cur.m,cur.sigma,cur.s,cur.k); drawOverlay(d, blendSecX(d,cur.q), cur.q); } });
+
+  updateName(); refreshReadouts();
+
+  // ---- reset to the Normal default ----
+  $('reset').addEventListener('click', ()=>{
+    const d={mu:'0', sigma:'0.13', skew:'0', kurt:'0'};
+    for(const id in d){ $(id).value=d[id]; $(id).dispatchEvent(new Event('input')); }
+  });
+
+  // ---- fit the window into the available space ----
+  const stage=$('stage'), wrap=document.querySelector('.stageWrap');
+  function fit(){ stage.style.transform=`scale(${Math.min(wrap.clientWidth/W, wrap.clientHeight/H, 1.12)})`; }
+  window.addEventListener('resize', fit); fit(); requestAnimationFrame(fit);
+
+  // ---- save the framed window as PNG ----
+  $('save').addEventListener('click', ()=>{
+    // settle to the exact selected values for a clean capture
+    cur.m=target.m; cur.sigma=target.sigma; cur.s=target.s; cur.k=target.k; cur.q=target.q;
+    const d=buildDist(cur.m,cur.sigma,cur.s,cur.k);
+    applyDist(d, blendSecX(d,cur.q));
+    renderer.render(scene,camera);
+    const out=document.createElement('canvas'); out.width=W; out.height=H;
+    const ctx=out.getContext('2d');
+    ctx.fillStyle='#0a0908'; ctx.fillRect(0,0,W,H);
+    ctx.save(); ctx.clip(new Path2D(ARCH)); ctx.drawImage(canvas,0,0,W,H); ctx.restore();
+    const xml=new XMLSerializer().serializeToString(document.querySelector('svg.frame'));
+    const img=new Image();
+    img.onload=()=>{ ctx.drawImage(img,0,0,W,H);
+      ctx.font='13px "Iowan Old Style",Georgia,serif'; ctx.fillStyle='rgba(201,164,76,0.9)'; ctx.textAlign='center';
+      ctx.fillText('schuckdata.com/tools/epiphany', W/2, H-10);   // stamp the window's home
+      const a=document.createElement('a'); a.download='epiphany-window.png';
+      a.href=out.toDataURL('image/png'); a.click(); };
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml);
+  });
+
+  // ---- render loop: eases params each frame; pauses when offscreen/hidden; respects reduced-motion ----
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const start=performance.now(); let lastT=start, rafId=null;
+  function frame(){
+    const now=performance.now(); const dt=Math.min(0.05,(now-lastT)/1000); lastT=now;
+    const a=1.0-Math.exp(-dt/0.12);                 // ~0.12s settle: fluid, not jumpy
+    cur.m+=(target.m-cur.m)*a; cur.sigma+=(target.sigma-cur.sigma)*a;
+    cur.s+=(target.s-cur.s)*a; cur.k+=(target.k-cur.k)*a; cur.q+=(target.q-cur.q)*a;
+    const d=buildDist(cur.m, cur.sigma, cur.s, cur.k);      // rebuild the rigorous object from eased params
+    const secX=blendSecX(d, cur.q);
+    applyDist(d, secX);
+    if(showLabels) drawOverlay(d, secX, cur.q);
+    uniforms.u_time.value = reduce ? 0.0 : (now-start)/1000; // no idle "breathing" under reduced-motion
+    renderer.render(scene,camera); rafId=requestAnimationFrame(frame);
+  }
+  function startLoop(){ if(rafId==null){ lastT=performance.now(); rafId=requestAnimationFrame(frame); } }
+  function stopLoop(){ if(rafId!=null){ cancelAnimationFrame(rafId); rafId=null; } }
+  document.addEventListener('visibilitychange', ()=> document.hidden ? stopLoop() : startLoop());
+  if('IntersectionObserver' in window){ new IntersectionObserver(es=>{ es[0].isIntersecting?startLoop():stopLoop(); }).observe(canvas); }
+  startLoop();
+  </script>
+</body>
+</html>
