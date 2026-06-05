@@ -18,15 +18,21 @@
     -webkit-font-smoothing:antialiased;
   }
   h1{
-    font-weight:500; letter-spacing:.30em; text-transform:uppercase;
-    font-size:14px; margin:0; padding-left:.30em;
+    font-weight:500; letter-spacing:.06em; font-size:13px; margin:0;
     color:var(--gold-l); text-shadow:0 0 18px rgba(201,164,76,.35);
   }
+  h1 a{ color:inherit; text-decoration:none; }
+  h1 a:hover, h1 a:focus-visible{ text-decoration:underline; }
 
-  /* ---- window (scaled to fit) ---- */
+  /* ---- window (scaled to fit; pan & zoom on the viewport) ---- */
   .stageWrap{
     flex:1 1 auto; width:100%; max-width:640px; min-height:0;
-    display:flex; justify-content:center; align-items:flex-start; overflow:hidden;
+    position:relative; overflow:hidden; touch-action:none; cursor:grab;
+  }
+  .stageWrap:active{ cursor:grabbing; }
+  .viewport{
+    position:absolute; inset:0; display:flex; justify-content:center; align-items:flex-start;
+    transform-origin:0 0; will-change:transform;
   }
   .stage{ width:600px; height:820px; flex:0 0 auto; position:relative; transform-origin:top center; }
   .glow{
@@ -109,9 +115,10 @@
 </style>
 </head>
 <body>
-  <h1>epiphany</h1>
+  <h1><a href="https://schuckdata.com/tools/epiphany/" target="_top">schuckdata.com/tools/epiphany</a></h1>
 
   <div class="stageWrap">
+    <div class="viewport" id="viewport">
     <div class="stage" id="stage">
       <div class="glow"></div>
       <div class="window"><canvas id="gl"></canvas></div>
@@ -133,6 +140,7 @@
         <path d="M29,320 Q58,124 300,50 Q542,124 571,320 L571,792 L29,792 Z"
               fill="none" stroke="#1c1710" stroke-width="3"/>
       </svg>
+    </div>
     </div>
   </div>
 
@@ -502,6 +510,42 @@
   const stage=$('stage'), wrap=document.querySelector('.stageWrap');
   function fit(){ stage.style.transform=`scale(${Math.min(wrap.clientWidth/W, wrap.clientHeight/H, 1.12)})`; }
   window.addEventListener('resize', fit); fit(); requestAnimationFrame(fit);
+
+  // ---- pan & zoom the window: wheel / drag / pinch (touch), double-tap or double-click to reset ----
+  const vp=$('viewport');
+  let uz=1, ux=0, uy=0;
+  function applyVP(){ vp.style.transform=`translate(${ux.toFixed(1)}px,${uy.toFixed(1)}px) scale(${uz.toFixed(4)})`; }
+  function clampPan(){ const Wd=wrap.clientWidth, Hd=wrap.clientHeight;
+    ux=Math.min(0, Math.max(-(uz-1)*Wd, ux)); uy=Math.min(0, Math.max(-(uz-1)*Hd, uy)); }
+  function zoomAt(px,py,factor){ const nz=Math.min(6, Math.max(1, uz*factor)); factor=nz/uz;
+    ux=px-(px-ux)*factor; uy=py-(py-uy)*factor; uz=nz; clampPan(); applyVP(); }
+  function resetView(){ uz=1; ux=0; uy=0; applyVP(); }
+  wrap.addEventListener('wheel', e=>{ e.preventDefault(); const r=wrap.getBoundingClientRect();
+    zoomAt(e.clientX-r.left, e.clientY-r.top, Math.exp(-e.deltaY*0.0015)); }, {passive:false});
+  wrap.addEventListener('dblclick', e=>{ e.preventDefault(); resetView(); });
+  // mouse drag
+  let md=false, mlx, mly;
+  wrap.addEventListener('mousedown', e=>{ md=true; mlx=e.clientX; mly=e.clientY; });
+  window.addEventListener('mousemove', e=>{ if(!md)return; ux+=e.clientX-mlx; uy+=e.clientY-mly; mlx=e.clientX; mly=e.clientY; clampPan(); applyVP(); });
+  window.addEventListener('mouseup', ()=> md=false);
+  // touch drag + pinch
+  let tn=0, tlx, tly, tdist, tmx, tmy, lastTap=0;
+  wrap.addEventListener('touchstart', e=>{
+    if(e.touches.length===1){ tn=1; tlx=e.touches[0].clientX; tly=e.touches[0].clientY;
+      const now=Date.now(); if(now-lastTap<320){ resetView(); } lastTap=now; }
+    else if(e.touches.length>=2){ tn=2; const a=e.touches[0], b=e.touches[1];
+      tdist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY); tmx=(a.clientX+b.clientX)/2; tmy=(a.clientY+b.clientY)/2; }
+  }, {passive:false});
+  wrap.addEventListener('touchmove', e=>{ e.preventDefault(); const r=wrap.getBoundingClientRect();
+    if(tn===1 && e.touches.length===1){ const t=e.touches[0]; ux+=t.clientX-tlx; uy+=t.clientY-tly; tlx=t.clientX; tly=t.clientY; clampPan(); applyVP(); }
+    else if(e.touches.length>=2){ const a=e.touches[0], b=e.touches[1];
+      const dd=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY), mx=(a.clientX+b.clientX)/2, my=(a.clientY+b.clientY)/2;
+      ux+=mx-tmx; uy+=my-tmy;                       // pan with the fingers
+      zoomAt(mx-r.left, my-r.top, dd/tdist);        // zoom about the pinch midpoint
+      tdist=dd; tmx=mx; tmy=my; }
+  }, {passive:false});
+  wrap.addEventListener('touchend', e=>{ if(e.touches.length===0) tn=0;
+    else if(e.touches.length===1){ tn=1; tlx=e.touches[0].clientX; tly=e.touches[0].clientY; } }, {passive:false});
 
   // ---- save the framed window as PNG ----
   $('save').addEventListener('click', ()=>{
