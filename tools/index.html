@@ -1,0 +1,52 @@
+---
+layout: default
+title: Tools — Schuck Data
+social_title: Tools — Schuck Data
+description: Free interactive tools from Schuck Data — including epiphany, a stained-glass visualization of statistical distributions, and an in-browser QR code generator.
+nav: tools
+permalink: /tools/
+---
+
+<style>
+  .tool-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(16rem, 1fr)); gap:1.25rem; margin-top:1.5rem; }
+  .tool-card {
+    display:flex; flex-direction:column; gap:0.6rem;
+    padding:1.5rem 1.6rem; border:1px solid var(--border); border-radius:14px;
+    background:var(--surface); color:inherit; text-decoration:none;
+    transition:transform 140ms ease, border-color 140ms ease, background-color 140ms ease;
+  }
+  .tool-card:hover, .tool-card:focus-visible {
+    transform:translateY(-2px); border-color:var(--border-hover); background:var(--surface-hover); outline:none;
+  }
+  .tool-card h2 { font-size:1.25rem; font-weight:700; letter-spacing:-0.01em; color:var(--text-strong); }
+  .tool-card p { color:var(--text-muted); line-height:1.6; font-size:0.95rem; flex:1; }
+  .tool-go { color:var(--accent); font-size:0.85rem; font-family:ui-monospace, Consolas, monospace; letter-spacing:0.04em; }
+  .tool-card:hover .tool-go, .tool-card:focus-visible .tool-go { color:var(--accent-hover); }
+  .tool-note { margin-top:1.75rem; font-size:0.9rem; color:var(--text-muted); line-height:1.6; }
+</style>
+
+<section class="hero" aria-labelledby="tools-heading">
+    <p class="hero-eyebrow">Tools</p>
+    <h1 id="tools-heading" class="hero-h1">Built to make ideas tangible.</h1>
+    <p class="hero-lead">Small, free interactive tools from the Schuck Data workbench — the kind of thing
+        we make to turn an abstract idea into something you can see and touch.</p>
+</section>
+
+<section class="content-section" aria-label="Available tools">
+    <div class="tool-grid">
+        <a class="tool-card" href="/tools/epiphany/">
+            <h2>epiphany</h2>
+            <p>The Normal distribution as a living stained-glass window. Drag the mean, spread, skewness
+                and kurtosis and watch a statistically rigorous object render itself in glass — with
+                optional value labels, equal-volume quantile sections, and a high-contrast mode.</p>
+            <span class="tool-go">Open →</span>
+        </a>
+        <a class="tool-card" href="/QR/">
+            <h2>QR Generator</h2>
+            <p>Generate and download QR codes entirely in your browser. Nothing is uploaded — the code
+                is built on your own machine and saved as an SVG or PNG, captioned with its contents.</p>
+            <span class="tool-go">Open →</span>
+        </a>
+    </div>
+    <p class="tool-note">More on the way — epiphany is the first window in a planned gallery of distributions.</p>
+</section>
