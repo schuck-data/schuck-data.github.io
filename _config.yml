@@ -17,23 +17,11 @@ exclude:
   - Gemfile.lock
   - vendor/
 
-# Jekyll skips files and directories beginning with a dot by default, silently
-# and with no warning, so .well-known/ would simply never appear on the built
-# site. It has to be named here to survive the build.
-#
-# This is load-bearing, not tidiness. Android verifies the Pretty Number Machine
-# Android app against https://schuckdata.com/.well-known/assetlinks.json; if
-# that file 404s, the installed app still runs but shows a browser address bar
-# across the top forever. Asset links are checked at the DOMAIN ROOT, which is
-# this repo — not the app's own repo, which serves the /pretty-number-machine/
-# path. See docs/PLAY-STORE-HANDOFF.md section 2 in that repo.
-#
-# The fix usually suggested for this — adding an empty .nojekyll file — would
-# BREAK this site, because it disables Jekyll entirely and takes the
-# jekyll-redirect-from plugin below with it, along with every legacy uppercase
-# redirect. Do not do that. This include: line is the correct fix.
-include:
-  - .well-known
+# If a dot-directory such as .well-known/ is ever needed on the live site (e.g.
+# security.txt), Jekyll skips it silently by default — add an `include:` list
+# naming it here. Do NOT add a .nojekyll file instead: that disables Jekyll
+# entirely and takes jekyll-redirect-from with it, breaking every legacy
+# uppercase redirect below.
 
 # Keep the build minimal. jekyll-redirect-from is a GitHub Pages-supported
 # plugin; it generates redirect stubs at the old UPPERCASE paths (declared via
